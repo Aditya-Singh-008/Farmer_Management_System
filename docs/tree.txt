@@ -1,0 +1,56 @@
+smart-farmer-management-system/
+│
+├── 📁 public/                      # Static files accessible in browser
+│   ├── index.html                  # Main dashboard page
+│   ├── login.html                  # Login / Register page
+│   ├── favicon.ico
+│   └── images/
+│       ├── crops/                  # Crop images (wheat, corn, apple, etc.)
+│       ├── icons/                  # Sidebar icons (SVG)
+│       └── bg/                     # Background textures / patterns
+│
+├── 📁 src/
+│   ├── 📁 css/
+│   │   ├── style.css               # Main stylesheet (Tailwind or custom)
+│   │   └── dashboard.css           # Additional dashboard styling
+│   │
+│   ├── 📁 js/
+│   │   ├── main.js                 # Entry script (handles routing + init)
+│   │   ├── auth.js                 # Supabase login/signup/logout
+│   │   ├── dashboard.js            # Chart.js logic + data visualization
+│   │   ├── crops.js                # Crop CRUD and progress tracking
+│   │   ├── inventory.js            # Inventory management logic
+│   │   ├── marketplace.js          # Crop listings and order handling
+│   │   ├── reports.js              # Yield & sales analytics
+│   │   ├── supabase.js             # Supabase client setup
+│   │   └── utils.js                # Helper functions (formatting, API calls)
+│   │
+│   ├── 📁 components/
+│   │   ├── navbar.html             # Top navbar template
+│   │   ├── sidebar.html            # Collapsible sidebar (hover expand)
+│   │   ├── weather-cards.html      # Soil, air, wind cards
+│   │   ├── chart-section.html      # Line + bar chart templates
+│   │   ├── task-list.html          # Upcoming task cards
+│   │   └── crop-cards.html         # Small crop production boxes
+│   │
+│   ├── 📁 data/
+│   │   ├── sample-data.json        # Dummy data for testing UI
+│   │   └── chart-data.json         # Placeholder for Chart.js datasets
+│   │
+│   └── 📁 assets/
+│       ├── fonts/
+│       └── logo.svg
+│
+├── 📁 docs/
+│   ├── ERD.png                     # ER diagram for project report
+│   ├── architecture.png            # System architecture diagram
+│   ├── README.md                   # Documentation (copied to GitHub)
+│   └── setup-guide.md              # How to deploy or run locally
+│
+├── 📁 dist/                        # (Optional) Compiled build for deployment
+│
+├── package.json                    # If you use npm (for Tailwind/Chart.js)
+├── tailwind.config.js              # Tailwind configuration
+├── .env                            # Supabase keys (optional, gitignored)
+├── .gitignore
+└── README.md
