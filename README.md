@@ -1,4 +1,4 @@
-<img width="3840" height="2800" alt="architecture_dbms" src="https://github.com/user-attachments/assets/da36a7fd-0e1a-4f14-9bc4-99902242bfc3" /># 🌾 Smart Farmer Management System (SFMS)
+#🌾 Smart Farmer Management System (SFMS)
 
 ### 🚀 Overview
 **Smart Farmer Management System (SFMS)** is a cloud-based DBMS project designed to help farmers efficiently manage farm data, crop cycles, resources, and sales — all from one unified platform.
