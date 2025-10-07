@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Farmer Dashboard</title>
+    <link rel="stylesheet" href="../src/css/index.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="light-mode">
+    <div class="container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-content">
+                <div class="logo-section">
+                    <div class="logo">
+                        <i class="fas fa-tractor"></i>
+                    </div>
+                </div>
+                
+                <nav class="sidebar-nav">
+                    <ul>
+                        <li>
+                            <a href="#" class="nav-item active">
+                                <i class="fas fa-home"></i>
+                                <span class="nav-text">Home</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="nav-item">
+                                <i class="fas fa-seedling"></i>
+                                <span class="nav-text">Fields</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="nav-item">
+                                <i class="fas fa-leaf"></i>
+                                <span class="nav-text">Crops</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="nav-item">
+                                <i class="fas fa-cloud-sun"></i>
+                                <span class="nav-text">Weather</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="nav-item">
+                                <i class="fas fa-store"></i>
+                                <span class="nav-text">Marketplace</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="nav-item">
+                                <i class="fas fa-chart-bar"></i>
+                                <span class="nav-text">Reports</span>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+                
+                <div class="sidebar-footer">
+                    <div class="theme-toggle">
+                        <button id="themeToggle" class="theme-btn">
+                            <i class="fas fa-moon"></i>
+                            <span class="nav-text">Dark Mode</span>
+                        </button>
+                    </div>
+                    <a href="#" class="nav-item">
+                        <i class="fas fa-cog"></i>
+                        <span class="nav-text">Settings</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Top Navbar -->
+            <header class="navbar">
+                <div class="navbar-content">
+                    <div class="greeting">
+                        <h1>Good Morning, Farmer John</h1>
+                        <p>Here's your farm overview for today</p>
+                    </div>
+                    
+                    <div class="navbar-actions">
+                        <!-- Quick Actions -->
+                        <div class="quick-actions">
+                            <button class="action-btn">
+                                <i class="fas fa-plus"></i> Add Farm
+                            </button>
+                            <button class="action-btn">
+                                <i class="fas fa-seedling"></i> Add Crop
+                            </button>
+                            <button class="action-btn">
+                                <i class="fas fa-tasks"></i> Add Task
+                            </button>
+                        </div>
+                        
+                        <!-- Notification & Profile -->
+                        <div class="user-actions">
+                            <button class="notification-btn" title="Notifications">
+                                <i class="fas fa-bell"></i>
+                                <span class="notification-dot"></span>
+                            </button>
+                            <div class="user-profile">
+                                <div class="avatar">FJ</div>
+                                <span class="user-name">Farmer John</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Main Dashboard Content -->
+            <main class="dashboard">
+                <!-- Weather Stats Cards -->
+                <div class="stats-grid">
+                    <!-- Soil Moisture Card -->
+                    <div class="stat-card card-hover">
+                        <div class="card-header">
+                            <div>
+                                <p class="card-label">Soil Moisture</p>
+                                <h3 class="card-value">42%</h3>
+                            </div>
+                            <div class="card-icon soil-icon">
+                                <i class="fas fa-tint"></i>
+                            </div>
+                        </div>
+                        <div class="card-status">
+                            <span class="status-badge normal">Normal</span>
+                        </div>
+                    </div>
+
+                    <!-- Air Temperature Card -->
+                    <div class="stat-card card-hover">
+                        <div class="card-header">
+                            <div>
+                                <p class="card-label">Air Temperature</p>
+                                <h3 class="card-value">24°C</h3>
+                            </div>
+                            <div class="card-icon temp-icon">
+                                <i class="fas fa-thermometer-half"></i>
+                            </div>
+                        </div>
+                        <div class="card-status">
+                            <span class="status-badge optimal">Optimal</span>
+                        </div>
+                    </div>
+
+                    <!-- Wind Speed Card -->
+                    <div class="stat-card card-hover">
+                        <div class="card-header">
+                            <div>
+                                <p class="card-label">Wind Speed</p>
+                                <h3 class="card-value">12 km/h</h3>
+                            </div>
+                            <div class="card-icon wind-icon">
+                                <i class="fas fa-wind"></i>
+                            </div>
+                        </div>
+                        <div class="card-status">
+                            <span class="status-badge moderate">Moderate</span>
+                        </div>
+                    </div>
+
+                    <!-- Rainfall Probability Card -->
+                    <div class="stat-card card-hover">
+                        <div class="card-header">
+                            <div>
+                                <p class="card-label">Rainfall Probability</p>
+                                <h3 class="card-value">30%</h3>
+                            </div>
+                            <div class="card-icon rain-icon">
+                                <i class="fas fa-cloud-rain"></i>
+                            </div>
+                        </div>
+                        <div class="card-status">
+                            <span class="status-badge low">Low</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts Section -->
+                <div class="charts-grid">
+                    <!-- Crop Growth Chart -->
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <h2>Crop Growth Progress</h2>
+                            <div class="chart-controls">
+                                <button class="control-btn active">Weekly</button>
+                                <button class="control-btn">Monthly</button>
+                            </div>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="cropGrowthChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Monthly Yield Analysis -->
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <h2>Monthly Yield Analysis</h2>
+                            <div class="chart-controls">
+                                <button class="control-btn active">2023</button>
+                                <button class="control-btn">2024</button>
+                            </div>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="yieldAnalysisChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tasks & Crop Production -->
+                <div class="content-grid">
+                    <!-- Upcoming Tasks -->
+                    <div class="tasks-card">
+                        <div class="card-header">
+                            <h2>Upcoming Tasks</h2>
+                            <button class="add-btn">
+                                <i class="fas fa-plus"></i> Add New
+                            </button>
+                        </div>
+                        <div class="tasks-list">
+                            <!-- Task 1 -->
+                            <div class="task-item">
+                                <div class="task-info">
+                                    <div class="task-icon watering">
+                                        <i class="fas fa-tint"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="task-title">Watering</h3>
+                                        <p class="task-location">North Field</p>
+                                    </div>
+                                </div>
+                                <div class="task-meta">
+                                    <p class="task-due">Due: Tomorrow</p>
+                                    <span class="status-badge scheduled">Scheduled</span>
+                                </div>
+                            </div>
+
+                            <!-- Task 2 -->
+                            <div class="task-item">
+                                <div class="task-info">
+                                    <div class="task-icon fertilizer">
+                                        <i class="fas fa-spray-can"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="task-title">Fertilizer Application</h3>
+                                        <p class="task-location">South Field</p>
+                                    </div>
+                                </div>
+                                <div class="task-meta">
+                                    <p class="task-due">Due: In 2 days</p>
+                                    <span class="status-badge due-soon">2d due</span>
+                                </div>
+                            </div>
+
+                            <!-- Task 3 -->
+                            <div class="task-item">
+                                <div class="task-info">
+                                    <div class="task-icon harvesting">
+                                        <i class="fas fa-cut"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="task-title">Harvesting</h3>
+                                        <p class="task-location">West Field</p>
+                                    </div>
+                                </div>
+                                <div class="task-meta">
+                                    <p class="task-due">Due: In 5 days</p>
+                                    <span class="status-badge planned">Planned</span>
+                                </div>
+                            </div>
+
+                            <!-- Task 4 -->
+                            <div class="task-item">
+                                <div class="task-info">
+                                    <div class="task-icon plowing">
+                                        <i class="fas fa-tractor"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="task-title">Plowing</h3>
+                                        <p class="task-location">East Field</p>
+                                    </div>
+                                </div>
+                                <div class="task-meta">
+                                    <p class="task-due">Completed</p>
+                                    <span class="status-badge completed">Done</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Current Crop Production -->
+                    <div class="crops-card">
+                        <h2>Current Crop Production</h2>
+                        <div class="crops-grid">
+                            <!-- Wheat -->
+                            <div class="crop-item wheat">
+                                <div class="crop-icon">
+                                    <i class="fas fa-wheat-alt"></i>
+                                </div>
+                                <h3 class="crop-name">Wheat</h3>
+                                <p class="crop-yield">2.4 tons</p>
+                                <div class="crop-trend">
+                                    <span class="trend-badge positive">
+                                        <i class="fas fa-arrow-up"></i> 12%
+                                    </span>
+                                </div>
+                            </div>
+
+                            <!-- Corn -->
+                            <div class="crop-item corn">
+                                <div class="crop-icon">
+                                    <i class="fas fa-corn"></i>
+                                </div>
+                                <h3 class="crop-name">Corn</h3>
+                                <p class="crop-yield">1.8 tons</p>
+                                <div class="crop-trend">
+                                    <span class="trend-badge neutral">
+                                        <i class="fas fa-minus"></i> 3%
+                                    </span>
+                                </div>
+                            </div>
+
+                            <!-- Apple -->
+                            <div class="crop-item apple">
+                                <div class="crop-icon">
+                                    <i class="fas fa-apple-alt"></i>
+                                </div>
+                                <h3 class="crop-name">Apple</h3>
+                                <p class="crop-yield">0.9 tons</p>
+                                <div class="crop-trend">
+                                    <span class="trend-badge positive">
+                                        <i class="fas fa-arrow-up"></i> 8%
+                                    </span>
+                                </div>
+                            </div>
+
+                            <!-- Tomato -->
+                            <div class="crop-item tomato">
+                                <div class="crop-icon">
+                                    <i class="fas fa-pepper-hot"></i>
+                                </div>
+                                <h3 class="crop-name">Tomato</h3>
+                                <p class="crop-yield">1.2 tons</p>
+                                <div class="crop-trend">
+                                    <span class="trend-badge positive">
+                                        <i class="fas fa-arrow-up"></i> 15%
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="../src/js/index.js"></script>
+</body>
+</html>
