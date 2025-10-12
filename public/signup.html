@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up - Smart Farmer Dashboard</title>
+    <link rel="stylesheet" href="/src/css/signup.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-background">
+            <div class="background-overlay"></div>
+            <div class="background-content">
+                <div class="logo">
+                    <i class="fas fa-tractor"></i>
+                    <span>SmartFarm</span>
+                </div>
+                <h1>Join Our Farming Community</h1>
+                <p>Create your account to start managing your farm efficiently with our smart dashboard.</p>
+                <div class="benefits">
+                    <div class="benefit">
+                        <i class="fas fa-chart-line"></i>
+                        <div>
+                            <h3>Real-time Analytics</h3>
+                            <p>Monitor crop growth and yield predictions</p>
+                        </div>
+                    </div>
+                    <div class="benefit">
+                        <i class="fas fa-cloud-sun"></i>
+                        <div>
+                            <h3>Weather Insights</h3>
+                            <p>Get accurate weather forecasts for your farm</p>
+                        </div>
+                    </div>
+                    <div class="benefit">
+                        <i class="fas fa-tasks"></i>
+                        <div>
+                            <h3>Task Management</h3>
+                            <p>Organize and track farming activities</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="auth-form-container">
+            <div class="auth-form">
+                <div class="form-header">
+                    <h2>Create Your Account</h2>
+                    <p>Start your journey to smarter farming</p>
+                </div>
+
+                <form id="signupForm">
+                    <div class="name-fields">
+                        <div class="form-group">
+                            <label for="firstName">First Name</label>
+                            <div class="input-group">
+                                <i class="fas fa-user"></i>
+                                <input type="text" id="firstName" name="firstName" placeholder="John" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="lastName">Last Name</label>
+                            <div class="input-group">
+                                <i class="fas fa-user"></i>
+                                <input type="text" id="lastName" name="lastName" placeholder="Doe" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email">Email Address</label>
+                        <div class="input-group">
+                            <i class="fas fa-envelope"></i>
+                            <input type="email" id="email" name="email" placeholder="farmer@example.com" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="farmName">Farm Name</label>
+                        <div class="input-group">
+                            <i class="fas fa-tractor"></i>
+                            <input type="text" id="farmName" name="farmName" placeholder="Green Valley Farm" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="farmType">Farm Type</label>
+                        <div class="input-group">
+                            <i class="fas fa-leaf"></i>
+                            <select id="farmType" name="farmType" required>
+                                <option value="">Select farm type</option>
+                                <option value="crops">Crop Farming</option>
+                                <option value="livestock">Livestock</option>
+                                <option value="mixed">Mixed Farming</option>
+                                <option value="organic">Organic Farming</option>
+                                <option value="greenhouse">Greenhouse</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <div class="input-group">
+                            <i class="fas fa-lock"></i>
+                            <input type="password" id="password" name="password" placeholder="Create a password" required>
+                            <button type="button" class="password-toggle" id="passwordToggle" aria-label="Show or hide password">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                        <div class="password-strength">
+                            <div class="strength-bar">
+                                <div class="strength-fill"></div>
+                            </div>
+                            <span class="strength-text">Password strength</span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="confirmPassword">Confirm Password</label>
+                        <div class="input-group">
+                            <i class="fas fa-lock"></i>
+                            <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Confirm your password" required>
+                            <button type="button" class="password-toggle" id="confirmPasswordToggle" aria-label="Show or hide confirm password">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="checkbox-container">
+                            <input type="checkbox" id="agreeTerms" required>
+                            <span class="checkmark"></span>
+                            I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>
+                        </label>
+                    </div>
+
+                    <button type="submit" class="submit-btn">
+                        <span class="btn-text">Create Account</span>
+                        <div class="btn-loader"></div>
+                    </button>
+
+                    <div class="form-footer">
+                        <p>Already have an account? <a href="login.html">Sign in</a></p>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="/src/js/signup.js"></script>
+</body>
+</html>
