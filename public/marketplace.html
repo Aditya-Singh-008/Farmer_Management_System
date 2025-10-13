@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marketplace - Smart Farmer</title>
+    <link rel="stylesheet" href="../src/css/index.css">
+    <link rel="stylesheet" href="../src/css/marketplace.css">
+    <link rel="stylesheet" href="/src/css/theme.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="light-mode">
+    <div class="container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-content">
+                <div class="logo-section">
+                    <div class="logo">
+                        <i class="fas fa-tractor"></i>
+                    </div>
+                </div>
+                
+                <nav class="sidebar-nav">
+                    <ul>
+                        <li>
+                            <a href="index.html" class="nav-item">
+                                <i class="fas fa-home"></i>
+                                <span class="nav-text">Home</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="fields.html" class="nav-item">
+                                <i class="fas fa-seedling"></i>
+                                <span class="nav-text">Fields</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="crops.html" class="nav-item">
+                                <i class="fas fa-leaf"></i>
+                                <span class="nav-text">Crops</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="marketplace.html" class="nav-item active">
+                                <i class="fas fa-store"></i>
+                                <span class="nav-text">Marketplace</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="nav-item">
+                                <i class="fas fa-chart-bar"></i>
+                                <span class="nav-text">Reports</span>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+                
+                <div class="sidebar-footer">
+                    <div class="theme-toggle">
+                        <button id="themeToggle" class="theme-btn">
+                            <i class="fas fa-moon"></i>
+                            <span class="nav-text">Dark Mode</span>
+                        </button>
+                    </div>
+                    <a href="#" class="nav-item">
+                        <i class="fas fa-cog"></i>
+                        <span class="nav-text">Settings</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Top Navbar -->
+            <header class="navbar">
+                <div class="navbar-content">
+                    <div class="greeting">
+                        <h1>Farmers Marketplace</h1>
+                        <p>Buy and sell fresh crops directly from local farmers</p>
+                    </div>
+                    
+                    <div class="navbar-actions">
+                        <!-- Search Bar -->
+                        <div class="search-container">
+                            <i class="fas fa-search"></i>
+                            <input type="text" id="searchInput" placeholder="Search crops, farmers...">
+                        </div>
+                        
+                        <!-- Quick Actions -->
+                        <div class="quick-actions">
+                            <button class="action-btn" id="sellCropBtn">
+                                <i class="fas fa-plus"></i> Sell Crop
+                            </button>
+                            <button class="action-btn cart-btn" id="cartToggle">
+                                <i class="fas fa-shopping-cart"></i>
+                                <span class="cart-count">0</span>
+                            </button>
+                        </div>
+                        
+                        <!-- Notification & Profile -->
+                        <div class="user-actions">
+                            <button class="notification-btn" title="Notifications">
+                                <i class="fas fa-bell"></i>
+                                <span class="notification-dot"></span>
+                            </button>
+                            <div class="user-profile">
+                                <div class="avatar">FJ</div>
+                                <span class="user-name">Farmer John</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Main Marketplace Content -->
+            <main class="marketplace-dashboard">
+                <!-- Stats Overview -->
+                <div class="stats-grid">
+                    <div class="stat-card card-hover">
+                        <div class="card-header">
+                            <div>
+                                <p class="card-label">Active Listings</p>
+                                <h3 class="card-value">47</h3>
+                            </div>
+                            <div class="card-icon listings-icon">
+                                <i class="fas fa-list"></i>
+                            </div>
+                        </div>
+                        <div class="card-status">
+                            <span class="status-badge optimal">Live</span>
+                        </div>
+                    </div>
+
+                    <div class="stat-card card-hover">
+                        <div class="card-header">
+                            <div>
+                                <p class="card-label">Total Farmers</p>
+                                <h3 class="card-value">23</h3>
+                            </div>
+                            <div class="card-icon farmers-icon">
+                                <i class="fas fa-users"></i>
+                            </div>
+                        </div>
+                        <div class="card-status">
+                            <span class="status-badge normal">Active</span>
+                        </div>
+                    </div>
+
+                    <div class="stat-card card-hover">
+                        <div class="card-header">
+                            <div>
+                                <p class="card-label">Avg. Price</p>
+                                <h3 class="card-value">$2.15/kg</h3>
+                            </div>
+                            <div class="card-icon price-icon">
+                                <i class="fas fa-tag"></i>
+                            </div>
+                        </div>
+                        <div class="card-status">
+                            <span class="status-badge positive">+5%</span>
+                        </div>
+                    </div>
+
+                    <div class="stat-card card-hover">
+                        <div class="card-header">
+                            <div>
+                                <p class="card-label">Orders Today</p>
+                                <h3 class="card-value">12</h3>
+                            </div>
+                            <div class="card-icon orders-icon">
+                                <i class="fas fa-shopping-bag"></i>
+                            </div>
+                        </div>
+                        <div class="card-status">
+                            <span class="status-badge due-soon">Processing</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="marketplace-content">
+                    <!-- Filters & Sidebar -->
+                    <aside class="filters-sidebar">
+                        <div class="filters-header">
+                            <h3>Filters</h3>
+                            <button class="clear-filters" id="clearFilters">Clear All</button>
+                        </div>
+
+                        <!-- Crop Type Filter -->
+                        <div class="filter-group">
+                            <h4>Crop Type</h4>
+                            <div class="filter-options">
+                                <label class="filter-checkbox">
+                                    <input type="checkbox" name="cropType" value="wheat" checked>
+                                    <span class="checkmark"></span>
+                                    Wheat
+                                </label>
+                                <label class="filter-checkbox">
+                                    <input type="checkbox" name="cropType" value="corn" checked>
+                                    <span class="checkmark"></span>
+                                    Corn
+                                </label>
+                                <label class="filter-checkbox">
+                                    <input type="checkbox" name="cropType" value="tomato" checked>
+                                    <span class="checkmark"></span>
+                                    Tomato
+                                </label>
+                                <label class="filter-checkbox">
+                                    <input type="checkbox" name="cropType" value="rice" checked>
+                                    <span class="checkmark"></span>
+                                    Rice
+                                </label>
+                                <label class="filter-checkbox">
+                                    <input type="checkbox" name="cropType" value="potato" checked>
+                                    <span class="checkmark"></span>
+                                    Potato
+                                </label>
+                                <label class="filter-checkbox">
+                                    <input type="checkbox" name="cropType" value="apple">
+                                    <span class="checkmark"></span>
+                                    Apple
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Location Filter -->
+                        <div class="filter-group">
+                            <h4>Location</h4>
+                            <label for="locationFilter" class="visually-hidden">Location</label>
+                            <select class="filter-select" id="locationFilter" title="Location">
+                                <option value="">All Locations</option>
+                                <option value="north">North Region</option>
+                                <option value="south">South Region</option>
+                                <option value="east">East Region</option>
+                                <option value="west">West Region</option>
+                            </select>
+                        </div>
+
+                        <!-- Price Range -->
+                        <div class="filter-group">
+                            <h4>Price Range</h4>
+                            <div class="price-inputs">
+                                <input type="number" id="minPrice" placeholder="Min" min="0">
+                                <span>-</span>
+                                <input type="number" id="maxPrice" placeholder="Max" min="0">
+                            </div>
+                            <div class="price-slider">
+                                <label for="priceRange" class="visually-hidden">Price Range</label>
+                                <input type="range" id="priceRange" min="0" max="500" value="250" class="slider" title="Price Range">
+                            </div>
+                        </div>
+
+                        <!-- Availability -->
+                        <div class="filter-group">
+                            <h4>Harvest Date</h4>
+                            <div class="filter-options">
+                                <label class="filter-radio">
+                                    <input type="radio" name="harvestDate" value="immediate" checked>
+                                    <span class="radiomark"></span>
+                                    Immediate
+                                </label>
+                                <label class="filter-radio">
+                                    <input type="radio" name="harvestDate" value="week">
+                                    <span class="radiomark"></span>
+                                    Within Week
+                                </label>
+                                <label class="filter-radio">
+                                    <input type="radio" name="harvestDate" value="month">
+                                    <span class="radiomark"></span>
+                                    Within Month
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Quality Rating -->
+                        <div class="filter-group">
+                            <h4>Quality Rating</h4>
+                            <div class="rating-filter">
+                                <div class="stars">
+                                    <i class="fas fa-star" data-rating="5"></i>
+                                    <i class="fas fa-star" data-rating="4"></i>
+                                    <i class="fas fa-star" data-rating="3"></i>
+                                    <i class="fas fa-star" data-rating="2"></i>
+                                    <i class="fas fa-star" data-rating="1"></i>
+                                </div>
+                                <span class="rating-text">& up</span>
+                            </div>
+                        </div>
+                    </aside>
+
+                    <!-- Main Listings Area -->
+                    <section class="listings-section">
+                        <div class="listings-header">
+                            <h2>Available Crops</h2>
+                            <div class="sort-controls">
+                                <select id="sortBy" class="sort-select" title="Sort By">
+                                    <option value="newest">Newest First</option>
+                                    <option value="price-low">Price: Low to High</option>
+                                    <option value="price-high">Price: High to Low</option>
+                                    <option value="popular">Most Popular</option>
+                                    <option value="rating">Highest Rated</option>
+                                </select>
+                                <div class="view-toggle">
+                                    <button class="view-btn active" data-view="grid" title="Grid View">
+                                        <i class="fas fa-th"></i>
+                                    </button>
+                                    <button class="view-btn" data-view="list" title="List View">
+                                        <i class="fas fa-list"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Crop Listings Grid -->
+                        <div class="listings-grid" id="listingsGrid">
+                            <!-- Crop cards will be dynamically loaded here -->
+                        </div>
+
+                        <!-- Load More Button -->
+                        <div class="load-more-container">
+                            <button class="load-more-btn" id="loadMore">
+                                Load More Listings
+                            </button>
+                        </div>
+                    </section>
+                </div>
+
+                <!-- Analytics Section (For Farmers) -->
+                <div class="analytics-section">
+                    <h2>Marketplace Insights</h2>
+                    <div class="analytics-grid">
+                        <div class="analytics-card">
+                            <h3>Price Trends</h3>
+                            <div class="chart-container">
+                                <canvas id="priceTrendChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="analytics-card">
+                            <h3>Orders Overview</h3>
+                            <div class="chart-container">
+                                <canvas id="ordersChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="analytics-card">
+                            <h3>Top Selling Crops</h3>
+                            <div class="top-crops-list">
+                                <div class="top-crop-item">
+                                    <span class="crop-name">Wheat</span>
+                                    <span class="crop-sales">24 orders</span>
+                                </div>
+                                <div class="top-crop-item">
+                                    <span class="crop-name">Tomato</span>
+                                    <span class="crop-sales">18 orders</span>
+                                </div>
+                                <div class="top-crop-item">
+                                    <span class="crop-name">Corn</span>
+                                    <span class="crop-sales">15 orders</span>
+                                </div>
+                                <div class="top-crop-item">
+                                    <span class="crop-name">Rice</span>
+                                    <span class="crop-sales">12 orders</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Shopping Cart Sidebar -->
+    <div class="cart-sidebar" id="cartSidebar">
+        <div class="cart-header">
+            <h3>Shopping Cart</h3>
+            <button class="close-cart" id="closeCart" title="Close Cart">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="cart-items" id="cartItems">
+            <!-- Cart items will be dynamically added here -->
+            <div class="empty-cart">
+                <i class="fas fa-shopping-cart"></i>
+                <p>Your cart is empty</p>
+            </div>
+        </div>
+        <div class="cart-footer">
+            <div class="cart-total">
+                <span>Total:</span>
+                <span class="total-amount">$0.00</span>
+            </div>
+            <button class="checkout-btn" id="checkoutBtn" disabled>
+                Proceed to Checkout
+            </button>
+        </div>
+    </div>
+
+    <!-- Crop Detail Modal -->
+    <div id="cropDetailModal" class="modal">
+        <div class="modal-content crop-modal">
+            <div class="modal-header">
+                <h2 id="modalCropName">Crop Details</h2>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="crop-detail-content">
+                    <div class="crop-detail-image">
+                        <div class="image-placeholder" id="modalCropImage">
+                            <i class="fas fa-seedling"></i>
+                        </div>
+                    </div>
+                    <div class="crop-detail-info">
+                        <div class="detail-section">
+                            <h3>Product Information</h3>
+                            <div class="detail-grid">
+                                <div class="detail-item">
+                                    <label>Price</label>
+                                    <p class="detail-price" id="modalPrice">$0.00/kg</p>
+                                </div>
+                                <div class="detail-item">
+                                    <label>Available Quantity</label>
+                                    <p id="modalQuantity">0 kg</p>
+                                </div>
+                                <div class="detail-item">
+                                    <label>Harvest Date</label>
+                                    <p id="modalHarvest">Immediate</p>
+                                </div>
+                                <div class="detail-item">
+                                    <label>Quality Rating</label>
+                                    <div class="rating-stars" id="modalRating">
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star-half-alt"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="detail-section">
+                            <h3>Farmer Information</h3>
+                            <div class="farmer-info">
+                                <div class="farmer-avatar" id="modalFarmerAvatar">FJ</div>
+                                <div class="farmer-details">
+                                    <h4 id="modalFarmerName">Farmer John</h4>
+                                    <p id="modalFarmerLocation">North Region</p>
+                                    <div class="farmer-rating">
+                                        <span class="rating">4.8</span>
+                                        <i class="fas fa-star"></i>
+                                        <span class="reviews">(24 reviews)</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="detail-section">
+                            <h3>Order Details</h3>
+                            <div class="order-controls">
+                                <div class="quantity-selector">
+                                    <label>Quantity (kg)</label>
+                                    <div class="quantity-input">
+                                        <button class="qty-btn" id="decreaseQty">-</button>
+                                        <input type="number" id="orderQty" value="1" min="1" max="100" placeholder="Enter quantity" title="Order Quantity">
+                                        <button class="qty-btn" id="increaseQty">+</button>
+                                    </div>
+                                </div>
+                                <div class="delivery-info">
+                                    <p><i class="fas fa-shipping-fast"></i> Expected delivery: 2-3 days</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary close-modal">Cancel</button>
+                <button class="btn-primary" id="addToCartModal">Add to Cart - <span id="modalTotalPrice">$0.00</span></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sell Crop Modal -->
+    <div id="sellCropModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>List Your Crop for Sale</h2>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="sellCropForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="cropName">Crop Name</label>
+                            <select id="cropName" required>
+                                <option value="">Select Crop</option>
+                                <option value="wheat">Wheat</option>
+                                <option value="corn">Corn</option>
+                                <option value="tomato">Tomato</option>
+                                <option value="rice">Rice</option>
+                                <option value="potato">Potato</option>
+                                <option value="apple">Apple</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="cropPrice">Price per kg ($)</label>
+                            <input type="number" id="cropPrice" step="0.01" min="0.01" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="cropQuantity">Available Quantity (kg)</label>
+                            <input type="number" id="cropQuantity" min="1" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="harvestDate">Harvest Date</label>
+                            <input type="date" id="harvestDate" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="cropDescription">Description</label>
+                        <textarea id="cropDescription" rows="3" placeholder="Describe your crop quality, growing methods, etc."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="cropImage">Crop Image</label>
+                        <input type="file" id="cropImage" accept="image/*">
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn-secondary close-modal">Cancel</button>
+                        <button type="submit" class="btn-primary">List Crop</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="../src/js/marketplace.js"></script>
+    <script src="/src/js/utils.js" ></script>
+    <script>
+// Simple theme toggle as a quick fix
+document.addEventListener('DOMContentLoaded', function() {
+    const themeToggle = document.getElementById('themeToggle');
+    if (themeToggle) {
+        themeToggle.addEventListener('click', function() {
+            const isDark = document.body.getAttribute('data-theme') === 'dark';
+            const newTheme = isDark ? 'light' : 'dark';
+            
+            document.body.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            
+            // Update toggle button
+            const icon = this.querySelector('i');
+            const text = this.querySelector('.nav-text');
+            if (newTheme === 'dark') {
+                icon.className = 'fas fa-sun';
+                text.textContent = 'Light Mode';
+            } else {
+                icon.className = 'fas fa-moon';
+                text.textContent = 'Dark Mode';
+            }
+        });
+        
+        // Initialize theme from localStorage
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        document.body.setAttribute('data-theme', savedTheme);
+        
+        // Initialize toggle button
+        const icon = themeToggle.querySelector('i');
+        const text = themeToggle.querySelector('.nav-text');
+        if (savedTheme === 'dark') {
+            icon.className = 'fas fa-sun';
+            text.textContent = 'Light Mode';
+        } else {
+            icon.className = 'fas fa-moon';
+            text.textContent = 'Dark Mode';
+        }
+    }
+});
+</script>
+</body>
+</html>

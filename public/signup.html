@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sign Up - Smart Farmer Dashboard</title>
     <link rel="stylesheet" href="/src/css/signup.css">
+    <link rel="icon" href="data:,">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
@@ -77,31 +78,6 @@
                             <input type="email" id="email" name="email" placeholder="farmer@example.com" required>
                         </div>
                     </div>
-
-                    <div class="form-group">
-                        <label for="farmName">Farm Name</label>
-                        <div class="input-group">
-                            <i class="fas fa-tractor"></i>
-                            <input type="text" id="farmName" name="farmName" placeholder="Green Valley Farm" required>
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="farmType">Farm Type</label>
-                        <div class="input-group">
-                            <i class="fas fa-leaf"></i>
-                            <select id="farmType" name="farmType" required>
-                                <option value="">Select farm type</option>
-                                <option value="crops">Crop Farming</option>
-                                <option value="livestock">Livestock</option>
-                                <option value="mixed">Mixed Farming</option>
-                                <option value="organic">Organic Farming</option>
-                                <option value="greenhouse">Greenhouse</option>
-                                <option value="other">Other</option>
-                            </select>
-                        </div>
-                    </div>
-
                     <div class="form-group">
                         <label for="password">Password</label>
                         <div class="input-group">
@@ -151,6 +127,16 @@
         </div>
     </div>
 
-    <script src="/src/js/signup.js"></script>
+    <!-- ✅ Add this first (global Supabase bundle) -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<!-- ✅ Then your Supabase setup -->
+<script src="/src/js/supabase.js"></script>
+
+<!-- ✅ Then your app scripts -->
+<script src="/src/js/utils.js"></script>
+<script src="/src/js/main.js"></script>
+<script src="/src/js/signup.js"></script>
+
 </body>
 </html>

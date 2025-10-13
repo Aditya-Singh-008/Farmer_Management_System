@@ -1,0 +1,84 @@
+/* CSS Variables for Light and Dark Themes */
+:root {
+  /* Light Theme Colors */
+  --primary-color: #2e7d32;
+  --primary-dark: #1b5e20;
+  --primary-light: #4caf50;
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8f9fa;
+  --text-primary: #2d3748;
+  --text-secondary: #718096;
+  --text-tertiary: #a0aec0;
+  --border-color: #e2e8f0;
+  --success-color: #38a169;
+  --warning-color: #dd6b20;
+  --info-color: #3182ce;
+  --error-color: #e53e3e;
+}
+
+[data-theme="dark"] {
+  /* Dark Theme Colors */
+  --primary-color: #4caf50;
+  --primary-dark: #2e7d32;
+  --primary-light: #81c784;
+  --bg-primary: #1a202c;
+  --bg-secondary: #2d3748;
+  --text-primary: #f7fafc;
+  --text-secondary: #e2e8f0;
+  --text-tertiary: #a0aec0;
+  --border-color: #4a5568;
+  --success-color: #48bb78;
+  --warning-color: #ed8936;
+  --info-color: #4299e1;
+  --error-color: #f56565;
+}
+
+/* Base styles that use CSS variables */
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.sidebar {
+  background-color: var(--bg-secondary);
+  border-right: 1px solid var(--border-color);
+}
+
+.nav-item {
+  color: var(--text-primary);
+}
+
+.nav-item.active {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.stat-card,
+.chart-card,
+.crop-details-card,
+.filters-sidebar {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+}
+
+.card-label,
+.filter-group h4,
+.section-title {
+  color: var(--text-secondary);
+}
+
+.card-value {
+  color: var(--text-primary);
+}
+
+input, select, textarea {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+}
+
+input:focus, select:focus, textarea:focus {
+  border-color: var(--primary-color);
+  outline: none;
+}
