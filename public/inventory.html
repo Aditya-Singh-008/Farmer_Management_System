@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventory Management - Smart Farmer</title>
+    <link rel="stylesheet" href="../src/css/index.css">
+    <link rel="stylesheet" href="../src/css/theme.css">
+    <link rel="stylesheet" href="../src/css/inventory.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="light-mode">
+    <div class="container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-content">
+                <div class="logo-section">
+                    <div class="logo">
+                        <i class="fas fa-tractor"></i>
+                    </div>
+                </div>
+                
+                <nav class="sidebar-nav">
+                    <ul>
+                        <li>
+                            <a href="index.html" class="nav-item">
+                                <i class="fas fa-home"></i>
+                                <span class="nav-text">Home</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="fields.html" class="nav-item">
+                                <i class="fas fa-seedling"></i>
+                                <span class="nav-text">Fields</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="crops.html" class="nav-item">
+                                <i class="fas fa-leaf"></i>
+                                <span class="nav-text">Crops</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="inventory.html" class="nav-item active">
+                                <i class="fas fa-warehouse"></i>
+                                <span class="nav-text">Inventory</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="marketplace.html" class="nav-item">
+                                <i class="fas fa-store"></i>
+                                <span class="nav-text">Marketplace</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="nav-item">
+                                <i class="fas fa-chart-bar"></i>
+                                <span class="nav-text">Reports</span>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+                
+                <div class="sidebar-footer">
+                    <div class="theme-toggle">
+                        <button id="themeToggle" class="theme-btn">
+                            <i class="fas fa-moon"></i>
+                            <span class="nav-text">Dark Mode</span>
+                        </button>
+                    </div>
+                    <a href="#" class="nav-item">
+                        <i class="fas fa-cog"></i>
+                        <span class="nav-text">Settings</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Top Navbar -->
+            <header class="navbar">
+                <div class="navbar-content">
+                    <div class="greeting">
+                        <h1>Inventory Management</h1>
+                        <p>Track and manage your farm supplies and equipment</p>
+                    </div>
+                    
+                    <div class="navbar-actions">
+                        <!-- Quick Actions -->
+                        <div class="quick-actions">
+                            <button class="action-btn" id="addItemBtn">
+                                <i class="fas fa-plus"></i> Add Item
+                            </button>
+                            <button class="action-btn" id="exportBtn">
+                                <i class="fas fa-download"></i> Export
+                            </button>
+                            <button class="action-btn" id="lowStockBtn">
+                                <i class="fas fa-exclamation-triangle"></i> Low Stock
+                            </button>
+                        </div>
+                        
+                        <!-- Notification & Profile -->
+                        <div class="user-actions">
+                            <button class="notification-btn" title="Notifications">
+                                <i class="fas fa-bell"></i>
+                                <span class="notification-dot"></span>
+                            </button>
+                            <div class="user-profile">
+                                <div class="avatar">FJ</div>
+                                <span class="user-name">Farmer John</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Main Inventory Content -->
+            <main class="inventory-dashboard">
+                <!-- Stats Overview -->
+                <div class="stats-grid">
+                    <div class="stat-card card-hover">
+                        <div class="card-header">
+                            <div>
+                                <p class="card-label">Total Items</p>
+                                <h3 class="card-value">156</h3>
+                            </div>
+                            <div class="card-icon items-icon">
+                                <i class="fas fa-boxes"></i>
+                            </div>
+                        </div>
+                        <div class="card-status">
+                            <span class="status-badge optimal">Active</span>
+                        </div>
+                    </div>
+
+                    <div class="stat-card card-hover">
+                        <div class="card-header">
+                            <div>
+                                <p class="card-label">Low Stock Items</p>
+                                <h3 class="card-value">8</h3>
+                            </div>
+                            <div class="card-icon lowstock-icon">
+                                <i class="fas fa-exclamation-triangle"></i>
+                            </div>
+                        </div>
+                        <div class="card-status">
+                            <span class="status-badge warning">Needs Attention</span>
+                        </div>
+                    </div>
+
+                    <div class="stat-card card-hover">
+                        <div class="card-header">
+                            <div>
+                                <p class="card-label">Total Value</p>
+                                <h3 class="card-value">$12,450</h3>
+                            </div>
+                            <div class="card-icon value-icon">
+                                <i class="fas fa-dollar-sign"></i>
+                            </div>
+                        </div>
+                        <div class="card-status">
+                            <span class="status-badge positive">+5%</span>
+                        </div>
+                    </div>
+
+                    <div class="stat-card card-hover">
+                        <div class="card-header">
+                            <div>
+                                <p class="card-label">Categories</p>
+                                <h3 class="card-value">12</h3>
+                            </div>
+                            <div class="card-icon categories-icon">
+                                <i class="fas fa-tags"></i>
+                            </div>
+                        </div>
+                        <div class="card-status">
+                            <span class="status-badge normal">Active</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="inventory-content">
+                    <!-- Filters & Quick Actions -->
+                    <div class="inventory-header">
+                        <div class="search-filter-section">
+                            <div class="search-container">
+                                <i class="fas fa-search"></i>
+                                <input type="text" id="searchInventory" placeholder="Search inventory items...">
+                            </div>
+                            <div class="filter-buttons">
+                                <button class="filter-btn active" data-category="all">All Items</button>
+                                <button class="filter-btn" data-category="seeds">Seeds</button>
+                                <button class="filter-btn" data-category="fertilizers">Fertilizers</button>
+                                <button class="filter-btn" data-category="equipment">Equipment</button>
+                                <button class="filter-btn" data-category="tools">Tools</button>
+                            </div>
+                        </div>
+                        <div class="view-controls">
+                            <select id="sortInventory" class="sort-select">
+                                <option value="name">Sort by Name</option>
+                                <option value="quantity">Sort by Quantity</option>
+                                <option value="category">Sort by Category</option>
+                                <option value="value">Sort by Value</option>
+                            </select>
+                            <div class="view-toggle">
+                                <button class="view-btn active" data-view="grid">
+                                    <i class="fas fa-th"></i>
+                                </button>
+                                <button class="view-btn" data-view="list">
+                                    <i class="fas fa-list"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Inventory Grid -->
+                    <div class="inventory-grid" id="inventoryGrid">
+                        <!-- Inventory items will be dynamically loaded here -->
+                    </div>
+
+                    <!-- Low Stock Alert Section -->
+                    <div class="alerts-section">
+                        <div class="section-header">
+                            <h2>Low Stock Alerts</h2>
+                            <span class="alert-count">8 items need attention</span>
+                        </div>
+                        <div class="alerts-grid" id="lowStockAlerts">
+                            <!-- Low stock alerts will be dynamically loaded here -->
+                        </div>
+                    </div>
+
+                    <!-- Inventory Analytics -->
+                    <div class="analytics-section">
+                        <h2>Inventory Analytics</h2>
+                        <div class="analytics-grid">
+                            <div class="analytics-card">
+                                <h3>Inventory by Category</h3>
+                                <div class="chart-container">
+                                    <canvas id="categoryChart"></canvas>
+                                </div>
+                            </div>
+                            <div class="analytics-card">
+                                <h3>Stock Value Trend</h3>
+                                <div class="chart-container">
+                                    <canvas id="valueTrendChart"></canvas>
+                                </div>
+                            </div>
+                            <div class="analytics-card">
+                                <h3>Quick Actions</h3>
+                                <div class="quick-actions-list">
+                                    <button class="quick-action-btn" data-action="reorder">
+                                        <i class="fas fa-shopping-cart"></i>
+                                        <span>Place Reorder</span>
+                                    </button>
+                                    <button class="quick-action-btn" data-action="audit">
+                                        <i class="fas fa-clipboard-check"></i>
+                                        <span>Start Audit</span>
+                                    </button>
+                                    <button class="quick-action-btn" data-action="export">
+                                        <i class="fas fa-file-export"></i>
+                                        <span>Export Report</span>
+                                    </button>
+                                    <button class="quick-action-btn" data-action="suppliers">
+                                        <i class="fas fa-truck"></i>
+                                        <span>Contact Suppliers</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Add Item Modal -->
+    <div id="addItemModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Add New Inventory Item</h2>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="addItemForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="itemName">Item Name</label>
+                            <input type="text" id="itemName" placeholder="Enter item name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="itemCategory">Category</label>
+                            <select id="itemCategory" required>
+                                <option value="">Select Category</option>
+                                <option value="seeds">Seeds</option>
+                                <option value="fertilizers">Fertilizers</option>
+                                <option value="pesticides">Pesticides</option>
+                                <option value="equipment">Equipment</option>
+                                <option value="tools">Tools</option>
+                                <option value="machinery">Machinery</option>
+                                <option value="packaging">Packaging</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="itemQuantity">Quantity</label>
+                            <input type="number" id="itemQuantity" min="0" step="1" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="itemUnit">Unit</label>
+                            <select id="itemUnit" required>
+                                <option value="kg">Kilograms (kg)</option>
+                                <option value="g">Grams (g)</option>
+                                <option value="l">Liters (L)</option>
+                                <option value="ml">Milliliters (ml)</option>
+                                <option value="units">Units</option>
+                                <option value="bags">Bags</option>
+                                <option value="boxes">Boxes</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="itemCost">Unit Cost ($)</label>
+                            <input type="number" id="itemCost" step="0.01" min="0" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="itemSupplier">Supplier</label>
+                            <input type="text" id="itemSupplier" placeholder="Supplier name">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="itemMinStock">Minimum Stock Level</label>
+                            <input type="number" id="itemMinStock" min="0" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="itemLocation">Storage Location</label>
+                            <input type="text" id="itemLocation" placeholder="e.g., Warehouse A, Shelf 2">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="itemDescription">Description</label>
+                        <textarea id="itemDescription" rows="3" placeholder="Item description or notes"></textarea>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" class="btn-secondary close-modal">Cancel</button>
+                        <button type="submit" class="btn-primary">Add Item</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Item Modal -->
+    <div id="editItemModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Edit Inventory Item</h2>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="editItemForm">
+                    <input type="hidden" id="editItemId">
+                    <!-- Same form structure as add item modal -->
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="editItemName">Item Name</label>
+                            <input type="text" id="editItemName" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="editItemCategory">Category</label>
+                            <select id="editItemCategory" required>
+                                <option value="">Select Category</option>
+                                <option value="seeds">Seeds</option>
+                                <option value="fertilizers">Fertilizers</option>
+                                <option value="pesticides">Pesticides</option>
+                                <option value="equipment">Equipment</option>
+                                <option value="tools">Tools</option>
+                                <option value="machinery">Machinery</option>
+                                <option value="packaging">Packaging</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="editItemQuantity">Quantity</label>
+                            <input type="number" id="editItemQuantity" min="0" step="1" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="editItemUnit">Unit</label>
+                            <select id="editItemUnit" required>
+                                <option value="kg">Kilograms (kg)</option>
+                                <option value="g">Grams (g)</option>
+                                <option value="l">Liters (L)</option>
+                                <option value="ml">Milliliters (ml)</option>
+                                <option value="units">Units</option>
+                                <option value="bags">Bags</option>
+                                <option value="boxes">Boxes</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="editItemCost">Unit Cost ($)</label>
+                            <input type="number" id="editItemCost" step="0.01" min="0" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="editItemSupplier">Supplier</label>
+                            <input type="text" id="editItemSupplier">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="editItemMinStock">Minimum Stock Level</label>
+                            <input type="number" id="editItemMinStock" min="0" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="editItemLocation">Storage Location</label>
+                            <input type="text" id="editItemLocation">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="editItemDescription">Description</label>
+                        <textarea id="editItemDescription" rows="3"></textarea>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" class="btn-secondary close-modal">Cancel</button>
+                        <button type="submit" class="btn-primary">Update Item</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stock Adjustment Modal -->
+    <div id="adjustStockModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Adjust Stock Level</h2>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="adjustStockForm">
+                    <input type="hidden" id="adjustItemId">
+                    <input type="hidden" id="adjustCurrentStock">
+                    
+                    <div class="current-stock-info">
+                        <h3 id="adjustItemName">Item Name</h3>
+                        <p>Current Stock: <span id="adjustCurrentQty">0</span> <span id="adjustCurrentUnit">units</span></p>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="adjustmentType">Adjustment Type</label>
+                        <select id="adjustmentType" required>
+                            <option value="add">Add Stock</option>
+                            <option value="remove">Remove Stock</option>
+                            <option value="set">Set Stock Level</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="adjustmentQuantity">Quantity</label>
+                        <input type="number" id="adjustmentQuantity" min="1" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="adjustmentReason">Reason</label>
+                        <select id="adjustmentReason" required>
+                            <option value="purchase">New Purchase</option>
+                            <option value="usage">Farm Usage</option>
+                            <option value="waste">Waste/Damage</option>
+                            <option value="correction">Stock Correction</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="adjustmentNotes">Notes</label>
+                        <textarea id="adjustmentNotes" rows="3" placeholder="Additional notes about this adjustment"></textarea>
+                    </div>
+
+                    <div class="adjustment-preview">
+                        <p>New Stock Level: <strong id="newStockLevel">0</strong> <span id="newStockUnit">units</span></p>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" class="btn-secondary close-modal">Cancel</button>
+                        <button type="submit" class="btn-primary">Apply Adjustment</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="../src/js/theme.js"></script>
+    <script src="../src/js/inventory.js"></script>
+</body>
+</html>
