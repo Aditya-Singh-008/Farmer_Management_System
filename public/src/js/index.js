@@ -1,7 +1,8 @@
 // Initialize charts when the page loads
 document.addEventListener('DOMContentLoaded', function() {
     initializeCharts();
-    initializeThemeToggle();
+    // Theme toggle is now handled by theme.js, so we skip initializeThemeToggle
+    // initializeThemeToggle(); // Disabled - handled by theme.js
 });
 
 // Chart initialization
@@ -164,33 +165,17 @@ function initializeCharts() {
     });
 }
 
-// Theme toggle functionality
+// Theme toggle functionality - Now handled by theme.js
+// This function is kept for backward compatibility but does nothing
+// to avoid conflicts with the new theme system
 function initializeThemeToggle() {
+    // Theme toggle is now handled by theme.js
+    // This function remains to prevent errors but doesn't do anything
     const themeToggle = document.getElementById('themeToggle');
-    const themeIcon = themeToggle.querySelector('i');
-    
-    // Check for saved theme preference or default to light
-    const savedTheme = localStorage.getItem('theme') || 'light-mode';
-    document.body.className = savedTheme;
-    updateThemeIcon(themeIcon, savedTheme);
-    
-    themeToggle.addEventListener('click', function() {
-        const currentTheme = document.body.className;
-        const newTheme = currentTheme === 'light-mode' ? 'dark-mode' : 'light-mode';
-        
-        document.body.className = newTheme;
-        localStorage.setItem('theme', newTheme);
-        updateThemeIcon(themeIcon, newTheme);
-    });
-}
-
-function updateThemeIcon(iconElement, theme) {
-    if (theme === 'dark-mode') {
-        iconElement.className = 'fas fa-sun';
-        iconElement.parentElement.querySelector('.nav-text').textContent = 'Light Mode';
-    } else {
-        iconElement.className = 'fas fa-moon';
-        iconElement.parentElement.querySelector('.nav-text').textContent = 'Dark Mode';
+    if (!themeToggle) {
+        // Theme toggle doesn't exist yet (loaded dynamically via sidebar)
+        // This is expected and handled by theme.js
+        return;
     }
 }
 

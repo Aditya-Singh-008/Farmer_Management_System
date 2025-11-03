@@ -4,114 +4,61 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fields Management - Smart Farmer</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="src/css/index.css">
+    <link rel="stylesheet" href="src/css/sidebar.css">
+    <link rel="stylesheet" href="src/css/theme.css">
+    <link rel="stylesheet" href="src/css/fields.css">
+    <!-- Font Awesome with fallback CDN -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" 
+          onerror="this.onerror=null;this.href='https://use.fontawesome.com/releases/v6.4.0/css/all.css'">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../src/css/fields.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body class="light-mode">
-    <div class="container">
-        <!-- Sidebar -->
-        <div class="sidebar">
-            <div class="sidebar-content">
-                <div class="logo-section">
-                    <div class="logo">
-                        <i class="fas fa-tractor"></i>
-                    </div>
+    <!-- Sidebar Overlay for Mobile -->
+    <div class="sidebar-overlay"></div>
+
+    <!-- Sidebar Container -->
+    <div id="sidebar-container">
+        <!-- Sidebar will be loaded here by JavaScript -->
+    </div>
+
+    <!-- Main Content Wrapper -->
+    <main class="main-content">
+        <!-- Top Navbar -->
+        <header class="navbar">
+            <div class="navbar-content">
+                <div class="greeting">
+                    <h1>Hello, Farmer John! 👋</h1>
+                    <p>Welcome to your fields management dashboard</p>
                 </div>
                 
-                <nav class="sidebar-nav">
-                    <ul>
-                        <li>
-                            <a href="index.html" class="nav-item">
-                                <i class="fas fa-home"></i>
-                                <span class="nav-text">Dashboard</span>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="fields.html" class="nav-item active">
-                                <i class="fas fa-seedling"></i>
-                                <span class="nav-text">Fields</span>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="crops.html" class="nav-item">
-                                <i class="fas fa-leaf"></i>
-                                <span class="nav-text">Crops</span>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="weather.html" class="nav-item">
-                                <i class="fas fa-cloud-sun"></i>
-                                <span class="nav-text">Weather</span>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="marketplace.html" class="nav-item">
-                                <i class="fas fa-store"></i>
-                                <span class="nav-text">Marketplace</span>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="reports.html" class="nav-item">
-                                <i class="fas fa-chart-bar"></i>
-                                <span class="nav-text">Reports</span>
-                            </a>
-                        </li>
-                    </ul>
-                </nav>
-                
-                <div class="sidebar-footer">
-                    <div class="theme-toggle">
-                        <button class="theme-btn" id="themeToggle">
-                            <i class="fas fa-moon"></i>
-                            <span class="nav-text">Dark Mode</span>
+                <div class="navbar-actions">
+                    <div class="quick-actions">
+                        <button class="action-btn" onclick="window.location.href='fields.html?action=add'">
+                            <i class="fas fa-plus"></i> Add Farm
+                        </button>
+                        <button class="action-btn" onclick="window.location.href='crops.html'">
+                            <i class="fas fa-seedling"></i> Add Crop
                         </button>
                     </div>
-                    <a href="settings.html" class="nav-item">
-                        <i class="fas fa-cog"></i>
-                        <span class="nav-text">Settings</span>
-                    </a>
-                </div>
-            </div>
-        </div>
-
-        <!-- Main Content -->
-        <div class="main-content">
-            <!-- Navbar -->
-            <div class="navbar">
-                <div class="navbar-content">
-                    <div class="greeting">
-                        <h1>Hello, Farmer John! 👋</h1>
-                        <p>Welcome to your fields management dashboard</p>
-                    </div>
                     
-                    <div class="navbar-actions">
-                        <div class="quick-actions">
-                            <button class="action-btn" onclick="window.location.href='fields.html?action=add'">
-                                <i class="fas fa-plus"></i> Add Farm
-                            </button>
-                            <button class="action-btn" onclick="window.location.href='crops.html'">
-                                <i class="fas fa-seedling"></i> Add Crop
-                            </button>
-                        </div>
-                        
-                        <div class="user-actions">
-                            <button class="notification-btn" title="Notifications">
-                                <i class="fas fa-bell"></i>
-                                <span class="notification-dot"></span>
-                            </button>
-                            <div class="user-profile">
-                                <div class="avatar">FJ</div>
-                                <span class="user-name">Farmer John</span>
-                            </div>
+                    <div class="user-actions">
+                        <button class="notification-btn" title="Notifications">
+                            <i class="fas fa-bell"></i>
+                            <span class="notification-dot"></span>
+                        </button>
+                        <div class="user-profile">
+                            <div class="avatar">FJ</div>
+                            <span class="user-name">Farmer John</span>
                         </div>
                     </div>
                 </div>
             </div>
+        </header>
 
             <!-- Fields Management Content -->
-            <main class="dashboard">
+            <div class="dashboard">
                 <!-- Page Header -->
                 <div class="page-header">
                     <div class="header-content">
@@ -229,9 +176,8 @@
                         </div>
                     </div>
                 </div>
-            </main>
-        </div>
-    </div>
+            </div>
+        </main>
 
     <!-- Add Field Modal -->
     <div id="addFieldModal" class="modal">
@@ -378,9 +324,13 @@
         </div>
     </div>
 
-    <script src="../src/js/fields.js"></script>
-    <script src="../src/js/supabase.js"></script>
-    <script src="../src/js/utils.js"></script>
-    <script src="../src/js/main.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="src/js/utils.js"></script>
+    <script src="src/js/supabase.js"></script>
+    <script src="src/js/main.js"></script>
+    <script src="src/js/load-sidebar.js"></script>
+    <script src="src/js/theme.js"></script>
+    <script src="src/js/sidebar.js"></script>
+    <script src="src/js/fields.js"></script>
 </body>
 </html>

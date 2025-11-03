@@ -4,10 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sign Up - Smart Farmer Dashboard</title>
-    <link rel="stylesheet" href="/src/css/signup.css">
+    <link rel="stylesheet" href="src/css/signup.css">
     <link rel="icon" href="data:,">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Font Awesome with fallback CDN -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" 
+          onerror="this.onerror=null;this.href='https://use.fontawesome.com/releases/v6.4.0/css/all.css'">
 </head>
 <body>
     <div class="auth-container">
@@ -107,10 +109,10 @@
                     </div>
 
                     <div class="form-group">
-                        <label class="checkbox-container">
-                            <input type="checkbox" id="agreeTerms" required>
+                        <label class="checkbox-container" for="agreeTerms">
+                            <input type="checkbox" id="agreeTerms" name="agreeTerms" required>
                             <span class="checkmark"></span>
-                            I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>
+                            <span class="checkbox-text">I agree to the <a href="#" tabindex="-1">Terms of Service</a> and <a href="#" tabindex="-1">Privacy Policy</a></span>
                         </label>
                     </div>
 
@@ -131,12 +133,12 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <!-- ✅ Then your Supabase setup -->
-<script src="/src/js/supabase.js"></script>
+<script src="src/js/supabase.js"></script>
 
 <!-- ✅ Then your app scripts -->
-<script src="/src/js/utils.js"></script>
-<script src="/src/js/main.js"></script>
-<script src="/src/js/signup.js"></script>
+<script src="src/js/utils.js"></script>
+<script src="src/js/main.js"></script>
+<script src="src/js/signup.js"></script>
 
 </body>
 </html>

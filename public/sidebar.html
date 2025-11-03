@@ -1,0 +1,73 @@
+<!-- public/sidebar.html -->
+<aside class="sidebar" id="mainSidebar">
+    <div class="sidebar-header">
+        <div class="logo">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="farmer-icon">
+                <!-- Farmer hat -->
+                <path d="M6 8L8 6L10 7L12 5L14 7L16 6L18 8L17 12L16 14L15 16L14 18L10 18L9 16L8 14L7 12L6 8Z" fill="currentColor" opacity="0.9"/>
+                <!-- Farmer head -->
+                <circle cx="12" cy="11" r="3" fill="currentColor"/>
+                <!-- Farmer body/shirt -->
+                <path d="M10 14L9 18L10 20L14 20L15 18L14 14L12 15L10 14Z" fill="currentColor"/>
+                <!-- Seeds/plants on ground -->
+                <circle cx="5" cy="21" r="1.5" fill="currentColor" opacity="0.7"/>
+                <circle cx="9" cy="21" r="1.5" fill="currentColor" opacity="0.7"/>
+                <circle cx="15" cy="21" r="1.5" fill="currentColor" opacity="0.7"/>
+                <circle cx="19" cy="21" r="1.5" fill="currentColor" opacity="0.7"/>
+            </svg>
+            <h2>Smart Farmer</h2>
+        </div>
+        <!-- Static sidebar - always expanded -->
+    </div>
+    
+    <nav class="sidebar-nav">
+        <ul>
+            <li class="nav-item">
+                <a href="index.html" class="nav-link" data-page="dashboard">
+                    <i class="fas fa-home"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="crops.html" class="nav-link" data-page="crops">
+                    <i class="fas fa-seedling"></i>
+                    <span>Crops</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="fields.html" class="nav-link" data-page="fields">
+                    <i class="fas fa-tractor"></i>
+                    <span>Fields</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="marketplace.html" class="nav-link" data-page="marketplace">
+                    <i class="fas fa-store"></i>
+                    <span>Marketplace</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="inventory.html" class="nav-link" data-page="inventory">
+                    <i class="fas fa-boxes"></i>
+                    <span>Inventory</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="report.html" class="nav-link" data-page="report">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Reports</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+    
+    <div class="sidebar-footer">
+        <!-- Theme Toggle Button -->
+        <div class="theme-toggle-container">
+            <button class="theme-toggle-btn" id="themeToggle" title="Toggle Theme">
+                <i class="fas fa-moon"></i>
+                <span>Dark Mode</span>
+            </button>
+        </div>
+    </div>
+</aside>

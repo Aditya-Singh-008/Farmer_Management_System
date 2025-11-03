@@ -18,7 +18,8 @@ class FieldsManager {
         this.initEventListeners();
         this.renderFieldsGrid();
         this.renderTasks();
-        this.initThemeToggle();
+        // Theme toggle now handled by theme.js
+        // this.initThemeToggle();
     }
 
     async checkAuth() {

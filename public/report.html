@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reports - Smart Farmer</title>
+    <link rel="stylesheet" href="src/css/index.css">
+    <link rel="stylesheet" href="src/css/sidebar.css">
+    <link rel="stylesheet" href="src/css/theme.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .reports-dashboard {
+            padding: 2rem;
+        }
+
+        .reports-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .reports-header h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .report-controls {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .date-range-selector {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .date-input {
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            background: var(--bg-card);
+            color: var(--text-primary);
+            font-size: 0.875rem;
+        }
+
+        .export-btn {
+            padding: 0.75rem 1.5rem;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s ease;
+        }
+
+        .export-btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+        }
+
+        .reports-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .report-card {
+            background: var(--bg-card);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+            border: 1px solid var(--border-color);
+        }
+
+        .report-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .report-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .report-card-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .report-card-icon {
+            width: 3rem;
+            height: 3rem;
+            border-radius: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            background: rgba(76, 175, 80, 0.1);
+            color: var(--primary-color);
+        }
+
+        .report-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .report-change {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .report-change.positive {
+            color: #16A34A;
+        }
+
+        .report-change.negative {
+            color: #DC2626;
+        }
+
+        .charts-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .chart-card {
+            background: var(--bg-card);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .chart-header h2 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .chart-container {
+            height: 300px;
+            position: relative;
+        }
+
+        .report-table {
+            background: var(--bg-card);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+            overflow-x: auto;
+        }
+
+        .report-table h2 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: var(--bg-secondary);
+        }
+
+        th {
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            color: var(--text-primary);
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-secondary);
+        }
+
+        tr:hover {
+            background: var(--bg-secondary);
+        }
+
+        @media (max-width: 768px) {
+            .reports-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+
+            .report-controls {
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .charts-section {
+                grid-template-columns: 1fr;
+            }
+
+            .reports-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body class="light-mode">
+    <!-- Sidebar Overlay for Mobile -->
+    <div class="sidebar-overlay"></div>
+
+    <!-- Sidebar Container -->
+    <div id="sidebar-container">
+        <!-- Sidebar will be loaded here by JavaScript -->
+    </div>
+
+    <!-- Main Content Wrapper -->
+    <main class="main-content">
+        <!-- Top Navbar -->
+        <header class="navbar">
+            <div class="navbar-content">
+                <div class="greeting">
+                    <h1>Farm Reports & Analytics</h1>
+                    <p>Comprehensive insights into your farming operations</p>
+                </div>
+                
+                <div class="navbar-actions">
+                    <div class="quick-actions">
+                        <button class="action-btn">
+                            <i class="fas fa-download"></i> Export Report
+                        </button>
+                        <button class="action-btn">
+                            <i class="fas fa-calendar"></i> Select Period
+                        </button>
+                    </div>
+                    
+                    <div class="user-actions">
+                        <button class="notification-btn" title="Notifications">
+                            <i class="fas fa-bell"></i>
+                            <span class="notification-dot"></span>
+                        </button>
+                        <div class="user-profile">
+                            <div class="avatar">FJ</div>
+                            <span class="user-name">Farmer John</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Reports Dashboard -->
+        <div class="reports-dashboard">
+            <!-- Reports Header -->
+            <div class="reports-header">
+                <h1>Farm Reports</h1>
+                <div class="report-controls">
+                    <div class="date-range-selector">
+                        <input type="date" class="date-input" id="startDate">
+                        <span>to</span>
+                        <input type="date" class="date-input" id="endDate">
+                    </div>
+                    <button class="export-btn">
+                        <i class="fas fa-file-pdf"></i>
+                        Export PDF
+                    </button>
+                </div>
+            </div>
+
+            <!-- Quick Stats -->
+            <div class="reports-grid">
+                <div class="report-card card-hover">
+                    <div class="report-card-header">
+                        <div class="report-card-title">Total Revenue</div>
+                        <div class="report-card-icon">
+                            <i class="fas fa-dollar-sign"></i>
+                        </div>
+                    </div>
+                    <div class="report-value">$24,580</div>
+                    <div class="report-change positive">
+                        <i class="fas fa-arrow-up"></i>
+                        +12.5% from last month
+                    </div>
+                </div>
+
+                <div class="report-card card-hover">
+                    <div class="report-card-header">
+                        <div class="report-card-title">Total Yield</div>
+                        <div class="report-card-icon">
+                            <i class="fas fa-weight"></i>
+                        </div>
+                    </div>
+                    <div class="report-value">18.5 tons</div>
+                    <div class="report-change positive">
+                        <i class="fas fa-arrow-up"></i>
+                        +8.3% from last month
+                    </div>
+                </div>
+
+                <div class="report-card card-hover">
+                    <div class="report-card-header">
+                        <div class="report-card-title">Active Fields</div>
+                        <div class="report-card-icon">
+                            <i class="fas fa-tractor"></i>
+                        </div>
+                    </div>
+                    <div class="report-value">12</div>
+                    <div class="report-change">
+                        <i class="fas fa-minus"></i>
+                        No change
+                    </div>
+                </div>
+
+                <div class="report-card card-hover">
+                    <div class="report-card-header">
+                        <div class="report-card-title">Avg. Crop Price</div>
+                        <div class="report-card-icon">
+                            <i class="fas fa-tag"></i>
+                        </div>
+                    </div>
+                    <div class="report-value">$2.45/kg</div>
+                    <div class="report-change positive">
+                        <i class="fas fa-arrow-up"></i>
+                        +5.2% from last month
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Section -->
+            <div class="charts-section">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h2>Revenue Trend</h2>
+                        <select class="control-btn">
+                            <option>Last 3 Months</option>
+                            <option>Last 6 Months</option>
+                            <option>Last Year</option>
+                        </select>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="revenueChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h2>Crop Yield Distribution</h2>
+                        <select class="control-btn">
+                            <option>This Year</option>
+                            <option>Last Year</option>
+                        </select>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="yieldChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Detailed Reports Table -->
+            <div class="report-table">
+                <h2>Monthly Performance Summary</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Month</th>
+                            <th>Revenue</th>
+                            <th>Yield (tons)</th>
+                            <th>Fields Active</th>
+                            <th>Avg. Price/kg</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>December 2024</td>
+                            <td>$24,580</td>
+                            <td>18.5</td>
+                            <td>12</td>
+                            <td>$2.45</td>
+                            <td><span class="status-badge optimal">Optimal</span></td>
+                        </tr>
+                        <tr>
+                            <td>November 2024</td>
+                            <td>$21,850</td>
+                            <td>17.1</td>
+                            <td>12</td>
+                            <td>$2.33</td>
+                            <td><span class="status-badge optimal">Optimal</span></td>
+                        </tr>
+                        <tr>
+                            <td>October 2024</td>
+                            <td>$19,420</td>
+                            <td>15.8</td>
+                            <td>11</td>
+                            <td>$2.28</td>
+                            <td><span class="status-badge normal">Normal</span></td>
+                        </tr>
+                        <tr>
+                            <td>September 2024</td>
+                            <td>$22,150</td>
+                            <td>16.9</td>
+                            <td>11</td>
+                            <td>$2.41</td>
+                            <td><span class="status-badge optimal">Optimal</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="src/js/utils.js"></script>
+    <script src="src/js/load-sidebar.js"></script>
+    <script src="src/js/theme.js"></script>
+    <script src="src/js/sidebar.js"></script>
+    <script src="src/js/index.js"></script>
+    <script>
+        // Initialize charts
+        document.addEventListener('DOMContentLoaded', () => {
+            // Revenue Chart
+            const revenueCtx = document.getElementById('revenueChart');
+            if (revenueCtx) {
+                new Chart(revenueCtx, {
+                    type: 'line',
+                    data: {
+                        labels: ['Oct', 'Nov', 'Dec'],
+                        datasets: [{
+                            label: 'Revenue ($)',
+                            data: [19420, 21850, 24580],
+                            borderColor: '#4CAF50',
+                            backgroundColor: 'rgba(76, 175, 80, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: false,
+                                grid: {
+                                    color: 'rgba(0, 0, 0, 0.05)'
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Yield Chart
+            const yieldCtx = document.getElementById('yieldChart');
+            if (yieldCtx) {
+                new Chart(yieldCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Wheat', 'Corn', 'Tomato', 'Rice', 'Others'],
+                        datasets: [{
+                            data: [8.5, 5.2, 2.8, 1.5, 0.5],
+                            backgroundColor: [
+                                '#4CAF50',
+                                '#FFC107',
+                                '#FF5722',
+                                '#2196F3',
+                                '#9E9E9E'
+                            ]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            }
+                        }
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>
+

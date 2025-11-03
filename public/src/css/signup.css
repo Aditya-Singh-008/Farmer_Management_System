@@ -286,22 +286,43 @@ body {
     font-size: 0.9rem;
     color: var(--text-secondary);
     line-height: 1.4;
+    user-select: none;
 }
 
 .checkbox-container input {
-    display: none;
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
 }
 
 .checkmark {
     flex-shrink: 0;
-    width: 1.125rem;
-    height: 1.125rem;
+    width: 1.25rem;
+    height: 1.25rem;
+    min-width: 1.25rem;
+    min-height: 1.25rem;
     border: 2px solid var(--border-color);
     border-radius: 0.25rem;
-    margin-right: 0.5rem;
+    margin-right: 0.75rem;
     margin-top: 0.125rem;
     position: relative;
     transition: all 0.2s ease;
+    background-color: var(--bg-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.checkbox-container:hover .checkmark {
+    border-color: var(--primary-color);
 }
 
 .checkbox-container input:checked + .checkmark {
@@ -313,19 +334,33 @@ body {
     content: '✓';
     position: absolute;
     color: white;
-    font-size: 0.75rem;
+    font-size: 0.875rem;
+    font-weight: bold;
+    line-height: 1;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
+    display: block;
+}
+
+.checkbox-text {
+    flex: 1;
 }
 
 .checkbox-container a {
     color: var(--primary-color);
     text-decoration: none;
+    font-weight: 500;
 }
 
 .checkbox-container a:hover {
     text-decoration: underline;
+}
+
+.checkbox-container a:focus {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+    border-radius: 2px;
 }
 
 /* Submit Button */
@@ -414,12 +449,16 @@ body {
 .error-message {
     color: var(--error-color);
     font-size: 0.8rem;
-    margin-top: 0.25rem;
+    margin-top: 0.5rem;
     display: none;
 }
 
-.input-group.error + .error-message {
+.form-group.error .error-message {
     display: block;
+}
+
+.form-group.error .checkbox-container .checkmark {
+    border-color: var(--error-color);
 }
 
 /* Success Message */

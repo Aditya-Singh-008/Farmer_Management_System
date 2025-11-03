@@ -427,10 +427,10 @@ class ThemeManager {
     }
 }
 
-// Initialize theme manager when DOM is loaded
-document.addEventListener('DOMContentLoaded', () => {
-    window.themeManager = new ThemeManager();
-});
+// Theme manager initialization disabled - using theme.js instead
+// document.addEventListener('DOMContentLoaded', () => {
+//     window.themeManager = new ThemeManager();
+// });
 
 // Export for use in other modules
 if (typeof module !== 'undefined' && module.exports) {

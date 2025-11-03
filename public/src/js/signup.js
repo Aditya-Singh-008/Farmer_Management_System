@@ -17,6 +17,15 @@ document.addEventListener('DOMContentLoaded', function () {
   passwordToggle.addEventListener('click', () => togglePassword(passwordInput, passwordToggle));
   confirmPasswordToggle.addEventListener('click', () => togglePassword(confirmPasswordInput, confirmPasswordToggle));
 
+  // Terms checkbox change handler - clear error when checked
+  if (agreeTerms) {
+    agreeTerms.addEventListener('change', function() {
+      if (this.checked) {
+        clearError(this);
+      }
+    });
+  }
+
   function togglePassword(input, toggleBtn) {
     const type = input.type === 'password' ? 'text' : 'password';
     input.type = type;
@@ -140,8 +149,30 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   function validateTerms() {
-    if (!agreeTerms.checked) return showError(agreeTerms, 'You must agree to terms'), false;
-    clearError(agreeTerms);
+    if (!agreeTerms || !agreeTerms.checked) {
+      const formGroup = agreeTerms.closest('.form-group');
+      if (formGroup) {
+        let error = formGroup.querySelector('.error-message');
+        if (!error) {
+          error = document.createElement('div');
+          error.className = 'error-message';
+          formGroup.appendChild(error);
+        }
+        formGroup.classList.add('error');
+        error.textContent = 'You must agree to the terms and conditions';
+        error.style.display = 'block';
+      }
+      return false;
+    }
+    const formGroup = agreeTerms.closest('.form-group');
+    if (formGroup) {
+      const error = formGroup.querySelector('.error-message');
+      if (error) {
+        error.style.display = 'none';
+        error.textContent = '';
+      }
+      formGroup.classList.remove('error');
+    }
     return true;
   }
 
@@ -168,13 +199,17 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     formGroup.classList.add('error');
     error.textContent = message;
+    error.style.display = 'block';
   }
 
   function clearError(input) {
     const formGroup = input.closest('.form-group');
     if (!formGroup) return;
     const error = formGroup.querySelector('.error-message');
-    if (error) error.textContent = '';
+    if (error) {
+      error.textContent = '';
+      error.style.display = 'none';
+    }
     formGroup.classList.remove('error');
   }
 

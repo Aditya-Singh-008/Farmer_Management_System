@@ -5,183 +5,23 @@
     box-sizing: border-box;
 }
 
+/* CSS Variables are now handled by theme.css */
+/* Fields-specific variable overrides if needed */
 :root {
-    --primary-color: #4CAF50;
     --primary-dark: #45a049;
-    --primary-light: #E8F5E8;
-    --secondary-color: #FFC107;
-    --accent-color: #2196F3;
-    --text-primary: #1F2937;
-    --text-secondary: #6B7280;
-    --bg-primary: #FFFFFF;
-    --bg-secondary: #F9FAFB;
-    --bg-card: #FFFFFF;
-    --border-color: #E5E7EB;
-    --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
-    --shadow-hover: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-}
-
-.dark-mode {
-    --primary-color: #68D391;
-    --primary-light: #2D3748;
-    --secondary-color: #ECC94B;
-    --accent-color: #63B3ED;
-    --text-primary: #E2E8F0;
-    --text-secondary: #A0AEC0;
-    --bg-primary: #1A202C;
-    --bg-secondary: #2D3748;
-    --bg-card: #2D3748;
-    --border-color: #4A5568;
-    --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3), 0 1px 2px 0 rgba(0, 0, 0, 0.2);
-    --shadow-hover: 0 10px 25px -5px rgba(0, 0, 0, 0.4), 0 10px 10px -5px rgba(0, 0, 0, 0.3);
 }
 
 body {
     font-family: 'Inter', sans-serif;
     background-color: var(--bg-secondary);
     color: var(--text-primary);
-    transition: all 0.3s ease;
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-.container {
-    display: flex;
-    min-height: 100vh;
-}
+/* Container removed - using main-content from sidebar.css */
 
-/* Sidebar Styles */
-.sidebar {
-    width: 80px;
-    background-color: var(--bg-primary);
-    box-shadow: var(--shadow);
-    transition: width 0.3s ease;
-    position: fixed;
-    height: 100vh;
-    z-index: 1000;
-    overflow: hidden;
-    border-right: 1px solid var(--border-color);
-}
-
-.sidebar:hover {
-    width: 240px;
-}
-
-.sidebar-content {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    padding: 1.5rem 0;
-}
-
-.logo-section {
-    padding: 0 1.5rem 2rem 1.5rem;
-    border-bottom: 1px solid var(--border-color);
-    margin-bottom: 1.5rem;
-}
-
-.logo {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background-color: var(--primary-color);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-size: 1.25rem;
-}
-
-.sidebar-nav ul {
-    list-style: none;
-    padding: 0 1rem;
-}
-
-.sidebar-nav li {
-    margin-bottom: 0.5rem;
-}
-
-.nav-item {
-    display: flex;
-    align-items: center;
-    padding: 0.75rem 1rem;
-    border-radius: 0.5rem;
-    color: var(--text-secondary);
-    text-decoration: none;
-    transition: all 0.2s ease;
-    white-space: nowrap;
-}
-
-.nav-item:hover {
-    background-color: var(--primary-light);
-    color: var(--primary-color);
-}
-
-.nav-item.active {
-    background-color: var(--primary-light);
-    color: var(--primary-color);
-}
-
-.nav-item i {
-    font-size: 1.25rem;
-    width: 24px;
-    text-align: center;
-    margin-right: 1rem;
-}
-
-.nav-text {
-    opacity: 0;
-    transition: opacity 0.2s ease;
-}
-
-.sidebar:hover .nav-text {
-    opacity: 1;
-}
-
-.sidebar-footer {
-    padding: 0 1rem;
-    border-top: 1px solid var(--border-color);
-    padding-top: 1rem;
-}
-
-.theme-toggle {
-    margin-bottom: 0.5rem;
-}
-
-.theme-btn {
-    display: flex;
-    align-items: center;
-    padding: 0.75rem 1rem;
-    border-radius: 0.5rem;
-    background: none;
-    border: none;
-    color: var(--text-secondary);
-    cursor: pointer;
-    transition: all 0.2s ease;
-    width: 100%;
-    white-space: nowrap;
-}
-
-.theme-btn:hover {
-    background-color: var(--primary-light);
-    color: var(--primary-color);
-}
-
-.theme-btn i {
-    font-size: 1.25rem;
-    width: 24px;
-    text-align: center;
-    margin-right: 1rem;
-}
-
-/* Main Content */
-.main-content {
-    flex: 1;
-    margin-left: 80px;
-    transition: margin-left 0.3s ease;
-}
-
-.sidebar:hover ~ .main-content {
-    margin-left: 240px;
-}
+/* Sidebar Styles - Now handled by sidebar.css */
+/* Removed old sidebar styles to prevent conflicts */
 
 /* Navbar */
 .navbar {

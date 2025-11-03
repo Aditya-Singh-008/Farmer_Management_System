@@ -30,7 +30,8 @@ class SmartFarmerApp {
     // 🚫 Skip sidebar and navbar (no component fetching)
     console.log('Skipping sidebar and navbar loading for signup/login.');
 
-    this.initTheme();
+    // Theme initialization now handled by theme.js
+    // this.initTheme();
     this.initNavigation();
     this.initEventListeners();
     this.setCurrentPage();
