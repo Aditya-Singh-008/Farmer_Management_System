@@ -13,6 +13,9 @@ document.addEventListener('DOMContentLoaded', function () {
   const strengthFill = document.querySelector('.strength-fill');
   const strengthText = document.querySelector('.strength-text');
 
+  // Configuration: Set to true to auto-login after signup, false to require email confirmation
+  const AUTO_LOGIN_AFTER_SIGNUP = true;
+
   // Password toggle logic
   passwordToggle.addEventListener('click', () => togglePassword(passwordInput, passwordToggle));
   confirmPasswordToggle.addEventListener('click', () => togglePassword(confirmPasswordInput, confirmPasswordToggle));
@@ -65,8 +68,9 @@ document.addEventListener('DOMContentLoaded', function () {
     console.log("🚀 Sending signup request:", userData);
 
     try {
+      // Call create-user Edge Function
       const response = await fetch(
-        'https://bmdypirsqwhghrvbhqoy.functions.supabase.co/create-user',
+        'https://bmdypirsqwhghrvbhqoy.supabase.co/functions/v1/create-user',
         {
           method: 'POST',
           headers: {
@@ -79,27 +83,67 @@ document.addEventListener('DOMContentLoaded', function () {
 
       console.log("📡 Raw response:", response);
 
-      const data = await response.json();
+      const data = await response.json().catch(() => ({ success: false, error: 'Invalid response' }));
       console.log("📦 Parsed response:", data);
 
       if (response.ok && data.success) {
-        showMessage('✅ Account created successfully! Redirecting...', 'success');
-        sessionStorage.setItem('userEmail', userData.email);
-        sessionStorage.setItem('userName', `${userData.first_name} ${userData.last_name}`);
-        sessionStorage.setItem('userRole', userData.role);
-        console.log("✅ Account created:", data.user);
-
-        setTimeout(() => {
-          window.location.href = '../public/index.html';
-        }, 2000);
+        // Option A: Auto-login after signup (recommended)
+        if (AUTO_LOGIN_AFTER_SIGNUP) {
+          showMessage('✅ Account created successfully! Signing you in...', 'success');
+          
+          // Auto-login using FarmerAPI
+          if (window.FarmerAPI && window.FarmerAPI.login) {
+            try {
+              const loginResponse = await window.FarmerAPI.login(userData.email, userData.password);
+              
+              if (loginResponse.success) {
+                sessionStorage.setItem('isLoggedIn', 'true');
+                console.log("✅ Auto-login success:", loginResponse.user);
+                
+                setTimeout(() => {
+                  window.location.href = 'index.html';
+                }, 1000);
+              } else {
+                // Login failed, but account was created
+                showMessage('✅ Account created! Please sign in with your credentials.', 'success');
+                setTimeout(() => {
+                  window.location.href = 'login.html';
+                }, 2000);
+              }
+            } catch (loginError) {
+              console.error('Auto-login error:', loginError);
+              showMessage('✅ Account created! Please sign in with your credentials.', 'success');
+              setTimeout(() => {
+                window.location.href = 'login.html';
+              }, 2000);
+            }
+          } else {
+            // API not available, redirect to login
+            showMessage('✅ Account created! Please sign in with your credentials.', 'success');
+            setTimeout(() => {
+              window.location.href = 'login.html';
+            }, 2000);
+          }
+        } else {
+          // Option B: Require email confirmation
+          showMessage('✅ Account created! Please check your email to confirm your account.', 'success');
+          sessionStorage.setItem('userEmail', userData.email);
+          sessionStorage.setItem('userName', `${userData.first_name} ${userData.last_name}`);
+          sessionStorage.setItem('userRole', userData.role);
+          
+          setTimeout(() => {
+            window.location.href = 'login.html';
+          }, 3000);
+        }
       } else {
         console.error("❌ Signup failed:", data.error);
         showMessage(`❌ Signup failed: ${data.error || 'Unknown error'}`, 'error');
+        submitBtn.classList.remove('loading');
+        submitBtn.disabled = false;
       }
     } catch (error) {
       console.error('❌ Network or fetch error:', error);
       showMessage('❌ Something went wrong. Please try again.', 'error');
-    } finally {
       submitBtn.classList.remove('loading');
       submitBtn.disabled = false;
     }

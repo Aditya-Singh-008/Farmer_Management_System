@@ -1,173 +1,252 @@
+// login.js — Login page script (calls Edge Function /login)
 document.addEventListener('DOMContentLoaded', function() {
-    const loginForm = document.getElementById('loginForm');
-    const emailInput = document.getElementById('email');
-    const passwordInput = document.getElementById('password');
-    const passwordToggle = document.getElementById('passwordToggle');
-    const rememberMe = document.getElementById('rememberMe');
-    const submitBtn = document.querySelector('.submit-btn');
-    const demoButtons = document.querySelectorAll('.demo-btn');
+  const loginForm = document.getElementById('loginForm');
+  const emailInput = document.getElementById('email');
+  const passwordInput = document.getElementById('password');
+  const passwordToggle = document.getElementById('passwordToggle');
+  const rememberMe = document.getElementById('rememberMe');
+  const submitBtn = document.querySelector('.submit-btn');
+  const demoButtons = document.querySelectorAll('.demo-btn');
 
-    // Password toggle functionality
+  // Password toggle functionality
+  if (passwordToggle && passwordInput) {
     passwordToggle.addEventListener('click', function() {
-        const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-        passwordInput.setAttribute('type', type);
-        this.innerHTML = type === 'password' ? '<i class="fas fa-eye"></i>' : '<i class="fas fa-eye-slash"></i>';
+      const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+      passwordInput.setAttribute('type', type);
+      this.innerHTML = type === 'password' ? '<i class="fas fa-eye"></i>' : '<i class="fas fa-eye-slash"></i>';
     });
+  }
 
-    // Demo account buttons
-    demoButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            const email = this.getAttribute('data-email');
-            const password = this.getAttribute('data-password');
-            
-            emailInput.value = email;
-            passwordInput.value = password;
-            
-            // Show success message
-            showMessage('Demo credentials filled! Click Sign In to continue.', 'success');
-        });
+  // Demo account buttons (fill credentials)
+  demoButtons.forEach(button => {
+    button.addEventListener('click', function() {
+      const email = this.getAttribute('data-email');
+      const password = this.getAttribute('data-password');
+      emailInput.value = email;
+      passwordInput.value = password;
+      showMessage('Demo credentials filled! Click Sign In to continue.', 'success');
     });
+  });
 
-    // Form submission
-    loginForm.addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        if (validateForm()) {
-            submitForm();
-        }
-    });
+  // Restore remembered email
+  const rememberedEmail = localStorage.getItem('rememberedEmail');
+  if (rememberedEmail) {
+    emailInput.value = rememberedEmail;
+    rememberMe.checked = true;
+  }
 
-    // Real-time validation
-    emailInput.addEventListener('blur', validateEmail);
-    passwordInput.addEventListener('blur', validatePassword);
-
-    function validateForm() {
-        const isEmailValid = validateEmail();
-        const isPasswordValid = validatePassword();
-        
-        return isEmailValid && isPasswordValid;
+  // Form submission
+  loginForm.addEventListener('submit', function(e) {
+    e.preventDefault();
+    if (validateForm()) {
+      submitForm();
     }
+  });
 
-    function validateEmail() {
-        const email = emailInput.value.trim();
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        
-        if (!email) {
-            showError(emailInput, 'Email is required');
-            return false;
-        } else if (!emailRegex.test(email)) {
-            showError(emailInput, 'Please enter a valid email address');
-            return false;
+  // Real-time validation hooks
+  emailInput.addEventListener('blur', validateEmail);
+  passwordInput.addEventListener('blur', validatePassword);
+
+  // ---------------- Core submit flow (calls Edge Function) ----------------
+  async function submitForm() {
+    submitBtn.classList.add('loading');
+    submitBtn.disabled = true;
+
+    const email = emailInput.value.trim();
+    const password = passwordInput.value.trim();
+
+    console.log('🚀 Login attempt:', email);
+
+    try {
+      // Use FarmerAPI.login() from api.js
+      if (!window.FarmerAPI || !window.FarmerAPI.login) {
+        showMessage('API not loaded. Please refresh the page.', 'error');
+        submitBtn.classList.remove('loading');
+        submitBtn.disabled = false;
+        return;
+      }
+
+      const response = await window.FarmerAPI.login(email, password);
+
+      if (response.success) {
+        // Persist remember-me
+        if (rememberMe && rememberMe.checked) {
+          localStorage.setItem('rememberedEmail', email);
         } else {
-            clearError(emailInput);
-            return true;
+          localStorage.removeItem('rememberedEmail');
         }
-    }
 
-    function validatePassword() {
-        const password = passwordInput.value.trim();
+        console.log('✅ Login success:', response.user);
+        showMessage('Login successful! Redirecting...', 'success');
+
+        // Set isLoggedIn flag
+        sessionStorage.setItem('isLoggedIn', 'true');
+
+        setTimeout(() => {
+          window.location.href = 'index.html';
+        }, 900);
+      } else {
+        // Handle error
+        const errorMsg = response.error || 'Invalid credentials';
         
-        if (!password) {
-            showError(passwordInput, 'Password is required');
-            return false;
-        } else if (password.length < 6) {
-            showError(passwordInput, 'Password must be at least 6 characters');
-            return false;
+        // Check for email not confirmed
+        if (errorMsg.toLowerCase().includes('not confirmed') || 
+            errorMsg.toLowerCase().includes('email not confirmed') ||
+            errorMsg.toLowerCase().includes('confirm')) {
+          showMessage('Your email is not confirmed. Check your inbox or send a magic link to sign in.', 'warning');
+          showResendMagicLinkUI(email);
         } else {
-            clearError(passwordInput);
-            return true;
+          showMessage(errorMsg, 'error');
         }
-    }
-
-    function showError(input, message) {
-        const formGroup = input.closest('.form-group');
-        const errorElement = formGroup.querySelector('.error-message') || createErrorElement(formGroup);
         
-        input.closest('.input-group').classList.add('error');
-        errorElement.textContent = message;
-        errorElement.style.display = 'block';
+        submitBtn.classList.remove('loading');
+        submitBtn.disabled = false;
+      }
+    } catch (err) {
+      console.error('Network/login error:', err);
+      showMessage('Network error — check your connection and try again.', 'error');
+      submitBtn.classList.remove('loading');
+      submitBtn.disabled = false;
     }
+  }
 
-    function clearError(input) {
-        const formGroup = input.closest('.form-group');
-        const errorElement = formGroup.querySelector('.error-message');
-        
-        input.closest('.input-group').classList.remove('error');
-        if (errorElement) {
-            errorElement.style.display = 'none';
+  // ---------------- Resend / Magic-link UI and logic ----------------
+  function showResendMagicLinkUI(email) {
+    let container = document.getElementById('magic-link-container');
+    if (!container) {
+      container = document.createElement('div');
+      container.id = 'magic-link-container';
+      container.style.marginTop = '12px';
+      loginForm.appendChild(container);
+    }
+    container.innerHTML = `
+      <div style="display:flex;gap:8px;align-items:center;">
+        <button id="sendMagicBtn" class="btn-small">Send magic link</button>
+        <button id="resendConfirmBtn" class="btn-small secondary">Resend confirmation</button>
+        <span id="magicStatus" style="margin-left:8px;color:#666;font-size:0.95rem"></span>
+      </div>
+    `;
+
+    const sendMagicBtn = document.getElementById('sendMagicBtn');
+    const resendConfirmBtn = document.getElementById('resendConfirmBtn');
+    const magicStatus = document.getElementById('magicStatus');
+
+    // Magic link via client-side supabase
+    sendMagicBtn.addEventListener('click', async () => {
+      magicStatus.textContent = 'Sending magic link…';
+      if (window.supabase && typeof window.supabase.auth?.signInWithOtp === 'function') {
+        try {
+          const { data, error } = await window.supabase.auth.signInWithOtp({ email });
+          if (error) {
+            magicStatus.textContent = `Failed: ${error.message}`;
+            console.error('Magic link error:', error);
+          } else {
+            magicStatus.textContent = 'Magic link sent — check your email.';
+          }
+        } catch (err) {
+          console.error('Magic link exception:', err);
+          magicStatus.textContent = 'Failed to send magic link.';
         }
-    }
+      } else {
+        magicStatus.textContent = 'Magic link not available (client supabase not loaded).';
+      }
+    });
 
-    function createErrorElement(formGroup) {
-        const errorElement = document.createElement('div');
-        errorElement.className = 'error-message';
-        formGroup.appendChild(errorElement);
-        return errorElement;
-    }
-
-    function showMessage(message, type) {
-        // Remove existing messages
-        const existingMessage = document.querySelector('.success-message');
-        if (existingMessage) {
-            existingMessage.remove();
+    resendConfirmBtn.addEventListener('click', async () => {
+      magicStatus.textContent = 'Requesting resend…';
+      try {
+        if (window.supabase && typeof window.supabase.auth?.signInWithOtp === 'function') {
+          const { data, error } = await window.supabase.auth.signInWithOtp({ email });
+          if (error) {
+            magicStatus.textContent = `Failed: ${error.message}`;
+            console.error('Resend confirmation (magic link) error:', error);
+          } else {
+            magicStatus.textContent = 'Magic link sent — check your inbox.';
+          }
+        } else {
+          magicStatus.textContent = 'No server endpoint configured for resending confirmation.';
         }
+      } catch (err) {
+        console.error('Resend confirmation error:', err);
+        magicStatus.textContent = 'Failed to resend confirmation.';
+      }
+    });
+  }
 
-        const messageElement = document.createElement('div');
-        messageElement.className = `success-message ${type === 'success' ? 'show' : ''}`;
-        messageElement.textContent = message;
-        
-        loginForm.insertBefore(messageElement, loginForm.firstChild);
-        
-        // Auto-remove after 5 seconds
-        setTimeout(() => {
-            messageElement.remove();
-        }, 5000);
+  // ---------------- Validation helpers ----------------
+  function validateForm() {
+    const isEmailValid = validateEmail();
+    const isPasswordValid = validatePassword();
+    return isEmailValid && isPasswordValid;
+  }
+
+  function validateEmail() {
+    const email = emailInput.value.trim();
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email) {
+      showError(emailInput, 'Email is required');
+      return false;
+    } else if (!emailRegex.test(email)) {
+      showError(emailInput, 'Please enter a valid email address');
+      return false;
+    } else {
+      clearError(emailInput);
+      return true;
     }
+  }
 
-    function submitForm() {
-        // Show loading state
-        submitBtn.classList.add('loading');
-        submitBtn.disabled = true;
-
-        // Simulate API call
-        setTimeout(() => {
-            const email = emailInput.value.trim();
-            const password = passwordInput.value.trim();
-            
-            // Check if it's a demo account
-            if ((email === 'farmer@demo.com' && password === 'demo123') || 
-                (email === 'admin@demo.com' && password === 'admin123')) {
-                
-                // Save to localStorage if remember me is checked
-                if (rememberMe.checked) {
-                    localStorage.setItem('rememberedEmail', email);
-                } else {
-                    localStorage.removeItem('rememberedEmail');
-                }
-                
-                // Save user session
-                sessionStorage.setItem('isLoggedIn', 'true');
-                sessionStorage.setItem('userEmail', email);
-                sessionStorage.setItem('userRole', email === 'admin@demo.com' ? 'admin' : 'farmer');
-                
-                // Redirect to dashboard
-                showMessage('Login successful! Redirecting...', 'success');
-                setTimeout(() => {
-                    window.location.href = 'index.html';
-                }, 1500);
-                
-            } else {
-                showMessage('Invalid credentials. Please try again.', 'error');
-                submitBtn.classList.remove('loading');
-                submitBtn.disabled = false;
-            }
-        }, 1500);
+  function validatePassword() {
+    const password = passwordInput.value.trim();
+    if (!password) {
+      showError(passwordInput, 'Password is required');
+      return false;
+    } else if (password.length < 6) {
+      showError(passwordInput, 'Password must be at least 6 characters');
+      return false;
+    } else {
+      clearError(passwordInput);
+      return true;
     }
+  }
 
-    // Check for remembered email
-    const rememberedEmail = localStorage.getItem('rememberedEmail');
-    if (rememberedEmail) {
-        emailInput.value = rememberedEmail;
-        rememberMe.checked = true;
+  function showError(input, message) {
+    const formGroup = input.closest('.form-group');
+    const errorElement = formGroup.querySelector('.error-message') || createErrorElement(formGroup);
+    input.closest('.input-group').classList.add('error');
+    errorElement.textContent = message;
+    errorElement.style.display = 'block';
+  }
+
+  function clearError(input) {
+    const formGroup = input.closest('.form-group');
+    const errorElement = formGroup.querySelector('.error-message');
+    input.closest('.input-group').classList.remove('error');
+    if (errorElement) errorElement.style.display = 'none';
+  }
+
+  function createErrorElement(formGroup) {
+    const errorElement = document.createElement('div');
+    errorElement.className = 'error-message';
+    formGroup.appendChild(errorElement);
+    return errorElement;
+  }
+
+  function showMessage(message, type) {
+    // Remove any existing message
+    const existing = loginForm.querySelector('.success-message');
+    if (existing) existing.remove();
+
+    const el = document.createElement('div');
+    el.className = `success-message ${type === 'success' ? 'show' : ''}`;
+    if (type === 'error' || type === 'warning') {
+      el.style.color = type === 'error' ? '#721c24' : '#856404';
+      el.style.background = type === 'error' ? '#f8d7da' : '#fff3cd';
     }
+    el.textContent = message;
+    loginForm.insertBefore(el, loginForm.firstChild);
+
+    setTimeout(() => {
+      if (el) el.remove();
+    }, 5000);
+  }
 });

@@ -284,9 +284,25 @@
                 <h1>Farm Reports</h1>
                 <div class="report-controls">
                     <div class="date-range-selector">
-                        <input type="date" class="date-input" id="startDate">
+                        <label for="startDate" class="sr-only">Start date</label>
+                        <input 
+                            type="date" 
+                            class="date-input" 
+                            id="startDate" 
+                            name="startDate"
+                            title="Start date"
+                            placeholder="Start date"
+                        >
                         <span>to</span>
-                        <input type="date" class="date-input" id="endDate">
+                        <label for="endDate" class="sr-only">End date</label>
+                        <input 
+                            type="date" 
+                            class="date-input" 
+                            id="endDate" 
+                            name="endDate"
+                            title="End date"
+                            placeholder="End date"
+                        >
                     </div>
                     <button class="export-btn">
                         <i class="fas fa-file-pdf"></i>
@@ -443,6 +459,7 @@
     <script src="src/js/theme.js"></script>
     <script src="src/js/sidebar.js"></script>
     <script src="src/js/index.js"></script>
+    <script src="src/js/user-ui.js"></script>
     <script>
         // Initialize charts
         document.addEventListener('DOMContentLoaded', () => {

@@ -1,11 +1,9 @@
-// main.js — Core initialization for Smart Farmer Dashboard (Signup/Login edition)
-
+// main.js — Core initialization for Smart Farmer Dashboard
 class SmartFarmerApp {
   constructor() {
     this.currentUser = null;
     this.currentPage = null;
     this.isInitialized = false;
-
     this.init();
   }
 
@@ -41,32 +39,134 @@ class SmartFarmerApp {
     console.log('%c🌱 Smart Farmer App initialized (no sidebar/navbar)!', 'color: #4CAF50; font-weight: bold;');
   }
 
-  // 🔐 Authentication check (for future use)
+  // 🔐 Authentication check and profile loading
   async checkAuthentication() {
     try {
-      if (window.SupabaseService && window.SupabaseService.auth) {
-        const { isAuthenticated, user } = await window.SupabaseService.auth.isAuthenticated();
+      const currentPage = window.location.pathname.split('/').pop();
+      const isAuthPage = currentPage === 'login.html' || currentPage === 'signup.html';
+      
+      // Check for session token
+      const sessionToken = sessionStorage.getItem('sessionToken');
+      
+      if (!sessionToken) {
+        // No token - redirect to login if on protected page
+        if (!isAuthPage) {
+          console.log('No session token found, redirecting to login...');
+          window.location.href = 'login.html';
+          return;
+        }
+        // On auth page, do nothing
+        return;
+      }
 
-        if (isAuthenticated) {
-          this.currentUser = user;
-          console.log('User authenticated:', user.email);
-        } else {
-          const currentPage = window.location.pathname.split('/').pop();
-          if (currentPage !== 'login.html' && currentPage !== 'signup.html') {
+      // Token exists - verify and load profile
+      if (window.FarmerAPI && window.FarmerAPI.getProfile) {
+        try {
+          const profileResponse = await window.FarmerAPI.getProfile();
+          
+          if (profileResponse.success && profileResponse.data) {
+            // Profile loaded successfully
+            this.currentUser = profileResponse.data;
+            sessionStorage.setItem('currentUser', JSON.stringify(profileResponse.data));
+            
+            // Update UI with profile data
+            this.updateProfileUI(profileResponse.data);
+            
+            console.log('User authenticated:', profileResponse.data.email);
+          } else if (profileResponse.error === 'Unauthorized' || profileResponse.success === false) {
+            // 401 or other auth error - clear token and redirect
+            console.log('Authentication failed, clearing session...');
+            if (window.FarmerAPI.clearAuthToken) {
+              window.FarmerAPI.clearAuthToken();
+            } else {
+              sessionStorage.clear();
+            }
+            
+            if (!isAuthPage) {
+              window.location.href = 'login.html';
+            }
+          }
+        } catch (error) {
+          console.error('Error loading profile:', error);
+          // On error, if not on auth page, redirect to login
+          if (!isAuthPage) {
+            if (window.FarmerAPI && window.FarmerAPI.clearAuthToken) {
+              window.FarmerAPI.clearAuthToken();
+            }
             window.location.href = 'login.html';
-            return;
           }
         }
       } else {
-        // LocalStorage fallback
-        const demoUser = localStorage.getItem('currentUser');
-        if (demoUser) {
-          this.currentUser = JSON.parse(demoUser);
+        // API not loaded - try to use stored user data
+        const storedUser = sessionStorage.getItem('currentUser');
+        if (storedUser) {
+          try {
+            this.currentUser = JSON.parse(storedUser);
+            this.updateProfileUI(this.currentUser);
+          } catch (parseError) {
+            console.error('Error parsing stored user:', parseError);
+          }
         }
       }
     } catch (error) {
       console.error('Auth check failed:', error);
+      const currentPage = window.location.pathname.split('/').pop();
+      if (currentPage !== 'login.html' && currentPage !== 'signup.html') {
+        window.location.href = 'login.html';
+      }
     }
+  }
+
+  // 🎨 Update UI with profile data
+  updateProfileUI(profile) {
+    try {
+      // Update greeting name
+      const greetingName = document.querySelector('.greeting h1');
+      if (greetingName && profile.first_name) {
+        const firstName = profile.first_name;
+        const timeOfDay = this.getTimeOfDay();
+        greetingName.textContent = `Good ${timeOfDay}, ${firstName}`;
+      }
+
+      // Update user name in navbar
+      const userNameElements = document.querySelectorAll('.user-name');
+      if (userNameElements.length > 0 && profile.first_name && profile.last_name) {
+        const fullName = `${profile.first_name} ${profile.last_name}`;
+        userNameElements.forEach(el => {
+          el.textContent = fullName;
+        });
+      }
+
+      // Update avatar initials
+      const avatarElements = document.querySelectorAll('.avatar');
+      if (avatarElements.length > 0 && profile.first_name && profile.last_name) {
+        const initials = `${profile.first_name.charAt(0)}${profile.last_name.charAt(0)}`.toUpperCase();
+        avatarElements.forEach(el => {
+          el.textContent = initials;
+        });
+      }
+
+      // Update profile picture if available
+      if (profile.profile_picture) {
+        const avatarImg = document.querySelector('.avatar img');
+        if (avatarImg) {
+          avatarImg.src = profile.profile_picture;
+          avatarImg.style.display = 'block';
+        }
+      }
+
+      console.log('Profile UI updated:', profile);
+    } catch (error) {
+      console.error('Error updating profile UI:', error);
+    }
+  }
+
+  // Get time of day for greeting
+  getTimeOfDay() {
+    const hour = new Date().getHours();
+    if (hour < 12) return 'Morning';
+    if (hour < 17) return 'Afternoon';
+    return 'Evening';
   }
 
   // 🎨 Theme system
@@ -210,7 +310,7 @@ class SmartFarmerApp {
 
   // Utility
   isAuthenticated() {
-    return !!this.currentUser;
+    return !!this.currentUser && !!sessionStorage.getItem('sessionToken');
   }
 
   getCurrentUser() {
