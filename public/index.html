@@ -13,6 +13,19 @@
     <link rel="stylesheet" href="src/css/theme.css">
 </head>
 <body class="light-mode">
+    <script>
+        window.__SUPABASE_CONFIG__ = {
+            url: 'https://bmdypirsqwhghrvbhqoy.supabase.co',
+            anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJtZHlwaXJzcXdoZ2hydmJocW95Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk4MjE5NzcsImV4cCI6MjA3NTM5Nzk3N30.2Mea6l7pn1l-qw28Nxk_m2weMajWlbca0M-ZybMs2xg'
+        };
+        window.__ENV = {
+            EDGE_FUNCTION_BASE_URL: 'https://bmdypirsqwhghrvbhqoy.functions.supabase.co',
+            SERVICE_ROLE_TOKEN: '<eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJtZHlwaXJzcXdoZ2hydmJocW95Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1OTgyMTk3NywiZXhwIjoyMDc1Mzk3OTc3fQ.NpfC1SI0-N6g68KoPt9hNhCSK8pCytamQ6khJ7qCYcc>'
+        };
+    </script>
+    <script>
+        window.OPENWEATHER_API_KEY = 'fc309c7b44cc13aeedc0d03709c7c28d';
+    </script>
     <!-- Sidebar Overlay for Mobile -->
     <div class="sidebar-overlay"></div>
 
@@ -27,38 +40,53 @@
         <header class="navbar">
             <div class="navbar-content">
                 <div class="greeting">
-                    <h1>Good Morning, Farmer John</h1>
-                    <p>Here's your farm overview for today</p>
+                    <!-- dynamic greeting -->
+                    <h1 id="greeting">Good Morning, Farmer</h1>
+                    <p id="greeting-sub">Here's your farm overview for today</p>
                 </div>
                 
                 <div class="navbar-actions">
                     <!-- Quick Actions -->
                     <div class="quick-actions">
-                        <button class="action-btn">
-                            <i class="fas fa-plus"></i> Add Farm
+                        <button class="action-btn" id="navigateFieldsBtn" aria-label="Add Farm">
+                            <i class="fas fa-plus" aria-hidden="true"></i> Add Farm
                         </button>
-                        <button class="action-btn">
-                            <i class="fas fa-seedling"></i> Add Crop
+                        <button class="action-btn" id="navigateCropsBtn" aria-label="Add Crop">
+                            <i class="fas fa-seedling" aria-hidden="true"></i> Add Crop
                         </button>
-                        <button class="action-btn">
-                            <i class="fas fa-tasks"></i> Add Task
+                        <button class="action-btn" id="quickAddTaskBtn" data-open-task="true" aria-label="Add Task">
+                            <i class="fas fa-tasks" aria-hidden="true"></i> Add Task
                         </button>
                     </div>
                     
                     <!-- Notification & Profile -->
                     <div class="user-actions">
-                        <button class="notification-btn" title="Notifications">
-                            <i class="fas fa-bell"></i>
-                            <span class="notification-dot"></span>
+                        <button class="notification-btn" title="Notifications" aria-label="Notifications">
+                            <i class="fas fa-bell" aria-hidden="true"></i>
+                            <span class="notification-dot" aria-hidden="true"></span>
                         </button>
-                        <div class="user-profile">
-                            <div class="avatar">FJ</div>
-                            <span class="user-name">Farmer John</span>
+
+                        <!-- user menu: button toggles dropdown -->
+                        <div class="user-profile" id="user-profile-wrapper">
+                            <button id="userMenuBtn" class="user-button" aria-haspopup="true" aria-expanded="false" aria-controls="userMenu" title="User menu">
+                                <div class="avatar" id="avatar" aria-hidden="true">FJ</div>
+                                <span class="user-name" id="user-name">Farmer</span>
+                                <i class="fas fa-caret-down" aria-hidden="true"></i>
+                            </button>
+
+                            <div id="userMenu" class="user-menu hidden" role="menu" aria-labelledby="userMenuBtn">
+                                <button id="openProfileBtn" class="menu-item" role="menuitem">Profile</button>
+                                <button id="logoutBtn" class="menu-item" role="menuitem">Log out</button>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </header>
+
+        <div id="demoNotice" class="demo-notice hidden" role="status" aria-live="polite">
+            Demo data is currently displayed. Connect your Supabase project to see live stats.
+        </div>
 
         <!-- Main Dashboard Content -->
         <div class="dashboard">
@@ -69,14 +97,14 @@
                     <div class="card-header">
                         <div>
                             <p class="card-label">Soil Moisture</p>
-                            <h3 class="card-value">42%</h3>
+                            <h3 class="card-value" id="soilMoistureValue">--</h3>
                         </div>
                         <div class="card-icon soil-icon">
-                            <i class="fas fa-tint"></i>
+                            <i class="fas fa-tint" aria-hidden="true"></i>
                         </div>
                     </div>
                     <div class="card-status">
-                        <span class="status-badge normal">Normal</span>
+                        <span class="status-badge normal" id="soilStatus">--</span>
                     </div>
                 </div>
 
@@ -85,14 +113,14 @@
                     <div class="card-header">
                         <div>
                             <p class="card-label">Air Temperature</p>
-                            <h3 class="card-value">24°C</h3>
+                            <h3 class="card-value" id="airTempValue">--</h3>
                         </div>
                         <div class="card-icon temp-icon">
-                            <i class="fas fa-thermometer-half"></i>
+                            <i class="fas fa-thermometer-half" aria-hidden="true"></i>
                         </div>
                     </div>
                     <div class="card-status">
-                        <span class="status-badge optimal">Optimal</span>
+                        <span class="status-badge optimal" id="tempStatus">--</span>
                     </div>
                 </div>
 
@@ -101,14 +129,14 @@
                     <div class="card-header">
                         <div>
                             <p class="card-label">Wind Speed</p>
-                            <h3 class="card-value">12 km/h</h3>
+                            <h3 class="card-value" id="windSpeedValue">--</h3>
                         </div>
                         <div class="card-icon wind-icon">
-                            <i class="fas fa-wind"></i>
+                            <i class="fas fa-wind" aria-hidden="true"></i>
                         </div>
                     </div>
                     <div class="card-status">
-                        <span class="status-badge moderate">Moderate</span>
+                        <span class="status-badge moderate" id="windStatus">--</span>
                     </div>
                 </div>
 
@@ -117,206 +145,452 @@
                     <div class="card-header">
                         <div>
                             <p class="card-label">Rainfall Probability</p>
-                            <h3 class="card-value">30%</h3>
+                            <h3 class="card-value" id="rainfallValue">--</h3>
                         </div>
                         <div class="card-icon rain-icon">
-                            <i class="fas fa-cloud-rain"></i>
+                            <i class="fas fa-cloud-rain" aria-hidden="true"></i>
                         </div>
                     </div>
                     <div class="card-status">
-                        <span class="status-badge low">Low</span>
+                        <span class="status-badge low" id="rainStatus">--</span>
                     </div>
                 </div>
             </div>
 
             <!-- Charts Section -->
-            <div class="charts-grid">
-                <!-- Crop Growth Chart -->
-                <div class="chart-card">
-                    <div class="chart-header">
-                        <h2>Crop Growth Progress</h2>
-                        <div class="chart-controls">
-                            <button class="control-btn active">Weekly</button>
-                            <button class="control-btn">Monthly</button>
-                        </div>
-                    </div>
-                    <div class="chart-container">
-                        <canvas id="cropGrowthChart"></canvas>
-                    </div>
-                </div>
-
-                <!-- Monthly Yield Analysis -->
-                <div class="chart-card">
-                    <div class="chart-header">
-                        <h2>Monthly Yield Analysis</h2>
-                        <div class="chart-controls">
-                            <button class="control-btn active">2023</button>
-                            <button class="control-btn">2024</button>
-                        </div>
-                    </div>
-                    <div class="chart-container">
-                        <canvas id="yieldAnalysisChart"></canvas>
-                    </div>
-                </div>
-            </div>
-
             <!-- Tasks & Crop Production -->
             <div class="content-grid">
                 <!-- Upcoming Tasks -->
                 <div class="tasks-card">
                     <div class="card-header">
                         <h2>Upcoming Tasks</h2>
-                        <button class="add-btn">
-                            <i class="fas fa-plus"></i> Add New
+                        <button class="add-btn" id="addTaskBtn" data-open-task="true" aria-label="Add New Task">
+                            <i class="fas fa-plus" aria-hidden="true"></i> Add New
                         </button>
                     </div>
-                    <div class="tasks-list">
-                        <!-- Task 1 -->
-                        <div class="task-item">
-                            <div class="task-info">
-                                <div class="task-icon watering">
-                                    <i class="fas fa-tint"></i>
-                                </div>
-                                <div>
-                                    <h3 class="task-title">Watering</h3>
-                                    <p class="task-location">North Field</p>
-                                </div>
-                            </div>
-                            <div class="task-meta">
-                                <p class="task-due">Due: Tomorrow</p>
-                                <span class="status-badge scheduled">Scheduled</span>
-                            </div>
-                        </div>
-
-                        <!-- Task 2 -->
-                        <div class="task-item">
-                            <div class="task-info">
-                                <div class="task-icon fertilizer">
-                                    <i class="fas fa-spray-can"></i>
-                                </div>
-                                <div>
-                                    <h3 class="task-title">Fertilizer Application</h3>
-                                    <p class="task-location">South Field</p>
-                                </div>
-                            </div>
-                            <div class="task-meta">
-                                <p class="task-due">Due: In 2 days</p>
-                                <span class="status-badge due-soon">2d due</span>
-                            </div>
-                        </div>
-
-                        <!-- Task 3 -->
-                        <div class="task-item">
-                            <div class="task-info">
-                                <div class="task-icon harvesting">
-                                    <i class="fas fa-cut"></i>
-                                </div>
-                                <div>
-                                    <h3 class="task-title">Harvesting</h3>
-                                    <p class="task-location">West Field</p>
-                                </div>
-                            </div>
-                            <div class="task-meta">
-                                <p class="task-due">Due: In 5 days</p>
-                                <span class="status-badge planned">Planned</span>
-                            </div>
-                        </div>
-
-                        <!-- Task 4 -->
-                        <div class="task-item">
-                            <div class="task-info">
-                                <div class="task-icon plowing">
-                                    <i class="fas fa-tractor"></i>
-                                </div>
-                                <div>
-                                    <h3 class="task-title">Plowing</h3>
-                                    <p class="task-location">East Field</p>
-                                </div>
-                            </div>
-                            <div class="task-meta">
-                                <p class="task-due">Completed</p>
-                                <span class="status-badge completed">Done</span>
-                            </div>
-                        </div>
+                    <div class="tasks-list" id="tasks-list">
+                        <!-- tasks will be rendered here -->
                     </div>
                 </div>
 
                 <!-- Current Crop Production -->
                 <div class="crops-card">
                     <h2>Current Crop Production</h2>
-                    <div class="crops-grid">
-                        <!-- Wheat -->
-                        <div class="crop-item wheat">
-                            <div class="crop-icon">
-                                <i class="fas fa-wheat-alt"></i>
-                            </div>
-                            <h3 class="crop-name">Wheat</h3>
-                            <p class="crop-yield">2.4 tons</p>
-                            <div class="crop-trend">
-                                <span class="trend-badge positive">
-                                    <i class="fas fa-arrow-up"></i> 12%
-                                </span>
-                            </div>
-                        </div>
-
-                        <!-- Corn -->
-                        <div class="crop-item corn">
-                            <div class="crop-icon">
-                                <i class="fas fa-corn"></i>
-                            </div>
-                            <h3 class="crop-name">Corn</h3>
-                            <p class="crop-yield">1.8 tons</p>
-                            <div class="crop-trend">
-                                <span class="trend-badge neutral">
-                                    <i class="fas fa-minus"></i> 3%
-                                </span>
-                            </div>
-                        </div>
-
-                        <!-- Apple -->
-                        <div class="crop-item apple">
-                            <div class="crop-icon">
-                                <i class="fas fa-apple-alt"></i>
-                            </div>
-                            <h3 class="crop-name">Apple</h3>
-                            <p class="crop-yield">0.9 tons</p>
-                            <div class="crop-trend">
-                                <span class="trend-badge positive">
-                                    <i class="fas fa-arrow-up"></i> 8%
-                                </span>
-                            </div>
-                        </div>
-
-                        <!-- Tomato -->
-                        <div class="crop-item tomato">
-                            <div class="crop-icon">
-                                <i class="fas fa-pepper-hot"></i>
-                            </div>
-                            <h3 class="crop-name">Tomato</h3>
-                            <p class="crop-yield">1.2 tons</p>
-                            <div class="crop-trend">
-                                <span class="trend-badge positive">
-                                    <i class="fas fa-arrow-up"></i> 15%
-                                </span>
-                            </div>
-                        </div>
+                    <div class="crops-grid" id="crops-grid">
+                        <!-- crops will be rendered here -->
                     </div>
                 </div>
             </div>
         </div>
     </main>
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Profile modal (hidden) -->
+    <div id="profileModal" class="modal hidden profile-modal" role="dialog" aria-modal="true" aria-labelledby="profileModalTitle">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 id="profileModalTitle">Profile Details</h2>
+                    <button type="button" id="closeProfileModal" class="modal-close" aria-label="Close profile modal">&times;</button>
+                </div>
+                <p id="profileMessage" class="modal-message" aria-live="polite"></p>
+
+                <div id="profileSummary" class="profile-summary">
+                    <div class="summary-grid" id="profileSummaryGrid"></div>
+                    <p id="profileMissing" class="summary-missing" aria-live="polite"></p>
+                    <button type="button" id="profileEditBtn" class="action-btn secondary">Update profile details</button>
+                </div>
+
+                <div id="profileEditPanel" class="profile-edit-panel hidden">
+                    <form id="profileForm" class="profile-form-grid">
+                        <!-- fields from screenshot -->
+                <input type="hidden" id="profile_id" name="profile_id">
+                <input type="hidden" id="user_id" name="user_id">
+                <input type="hidden" id="auth_user_id" name="auth_user_id">
+                <input type="hidden" id="app_user_id" name="app_user_id">
+
+                <label>First name
+                    <input type="text" id="first_name" name="first_name" required>
+                </label>
+                <label>Last name
+                    <input type="text" id="last_name" name="last_name" required>
+                </label>
+                <label>Phone number
+                    <input type="tel" id="phone_number" name="phone_number" maxlength="15">
+                </label>
+                <label>Address line 1
+                    <input type="text" id="address_line1" name="address_line1">
+                </label>
+                <label>Address line 2
+                    <input type="text" id="address_line2" name="address_line2">
+                </label>
+                <label>City
+                    <input type="text" id="city" name="city">
+                </label>
+                <label>State
+                    <input type="text" id="state" name="state">
+                </label>
+                <label>Postal code
+                    <input type="text" id="postal_code" name="postal_code" maxlength="15">
+                </label>
+                <label>Country
+                    <input type="text" id="country" name="country">
+                </label>
+                <label>Date of birth
+                    <input type="date" id="dob" name="dob">
+                </label>
+                <label>Gender
+                    <select id="gender" name="gender">
+                        <option value="">Select</option>
+                        <option value="male">Male</option>
+                        <option value="female">Female</option>
+                        <option value="other">Other</option>
+                    </select>
+                </label>
+                <label>Profile picture (URL)
+                    <input type="url" id="profile_picture" name="profile_picture" placeholder="https://...">
+                </label>
+
+                <div class="modal-actions">
+                    <button type="button" id="cancelProfileBtn">Cancel</button>
+                    <button type="submit" id="saveProfileBtn">Save profile</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="addTaskModal" class="modal task-modal hidden" role="dialog" aria-modal="true" aria-labelledby="taskModalTitle">
+        <div class="task-modal-content">
+            <div class="modal-header">
+                <div>
+                    <h2 id="taskModalTitle">Add a task</h2>
+                    <p class="modal-subtitle">Assign chores to specific fields so you always know what needs attention.</p>
+                </div>
+                <button type="button" id="closeTaskModal" class="modal-close" aria-label="Close task modal">&times;</button>
+            </div>
+            <form id="taskForm" class="task-modal-form">
+                <label>
+                    Task title
+                    <input type="text" name="title" id="taskTitleInput" required placeholder="e.g., Irrigation check">
+                </label>
+                <div class="task-form-grid">
+                    <label>
+                        Field / location
+                        <div class="task-field-select">
+                            <select name="field" id="taskFieldSelect" required aria-label="Choose field for the task"></select>
+                            <div id="taskFieldCustomWrap" class="task-field-custom hidden">
+                                <input type="text" id="taskCustomField" name="customField" placeholder="Enter field name">
+                            </div>
+                        </div>
+                        <small class="form-hint">Pick an existing field or add a new one.</small>
+                    </label>
+                    <label>
+                        Due date
+                        <input type="date" name="due" id="taskDueInput">
+                    </label>
+                </div>
+                <label>
+                    Notes (optional)
+                    <textarea name="notes" id="taskNotesInput" rows="3" placeholder="Add instructions or reminders"></textarea>
+                </label>
+                <div class="modal-actions">
+                    <button type="button" class="secondary" id="cancelTaskBtn">Cancel</button>
+                    <button type="submit" class="primary">Save task</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- scripts: load Supabase client first, then app API helpers -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="src/js/fontawesome-fallback.js"></script>
+    <script src="src/js/supabase.js"></script>
     <script src="src/js/api.js"></script>
+    <script src="src/js/fontawesome-fallback.js"></script>
     <script src="src/js/index.js"></script>
     <script src="src/js/user-ui.js"></script>
-    <script src="src/js/supabase.js"></script>
     <script src="src/js/utils.js"></script>
     <script src="src/js/main.js"></script>
     <script src="src/js/load-sidebar.js"></script>
     <script src="src/js/theme.js"></script>
     <script src="src/js/sidebar.js"></script>
+    <script src="src/js/profile-modal.js"></script>
+
+    <!-- minimal dynamic wiring: populate greeting, stats, tasks, crops from getDashboard() -->
+    <script>
+    (async function loadDashboardUI() {
+        try {
+            setWeatherPlaceholders();
+            // [`getDashboard`](public/src/js/api.js) is defined in src/js/api.js
+            const res = await getDashboard(5);
+            if (!res || !res.success) {
+                console.warn('getDashboard failed', res);
+                return;
+            }
+            const data = res.data || {};
+            // store for later profile editing
+            window.currentProfile = data.profile || {};
+
+            // pull freshest profile (ensures profile modal + city data stay in sync)
+            try {
+                const profileResponse = await getProfile();
+                if (profileResponse?.success && profileResponse?.data) {
+                    window.currentProfile = { ...(window.currentProfile || {}), ...profileResponse.data };
+                }
+            } catch (profileErr) {
+                console.warn('Unable to fetch profile from edge function', profileErr);
+            }
+
+            // Profile / greeting
+            const profile = window.currentProfile || {};
+            if (profile.user_id) {
+                sessionStorage.setItem('appUserId', profile.user_id);
+            }
+            if (profile.auth_user_id) {
+                sessionStorage.setItem('authUserId', profile.auth_user_id);
+            }
+            const firstName = profile.first_name || profile?.firstName || profile?.name || 'Farmer';
+            document.getElementById('greeting').textContent = `Good Morning, ${firstName}`;
+            document.getElementById('user-name').textContent = `${firstName}`;
+
+            // avatar: if profile_picture exists show image initial otherwise initials
+            const avatarEl = document.getElementById('avatar');
+            if (profile.profile_picture) {
+                avatarEl.style.backgroundImage = `url('${profile.profile_picture}')`;
+                avatarEl.textContent = '';
+            } else {
+                avatarEl.style.backgroundImage = '';
+                const initials = ((profile.first_name || '').charAt(0) + (profile.last_name || '').charAt(0)).toUpperCase() || 'FJ';
+                avatarEl.textContent = initials;
+            }
+
+            // Weather: prefer OpenWeather using saved city, fallback to dashboard payload/demo
+            setWeatherPlaceholders();
+            const fallbackWeather = data.weather || data.demo?.weather || null;
+            const profileCity =
+                profile.city ||
+                profile.address_city ||
+                profile.location_city ||
+                (profile.address && profile.address.split(',')[1]?.trim()) ||
+                data.profile?.city ||
+                '';
+
+            if (profileCity) {
+                await updateWeatherFromCity(profileCity, fallbackWeather);
+            } else if (fallbackWeather) {
+                applyWeatherFromDataset(fallbackWeather);
+            } else {
+                setWeatherErrorState();
+            }
+
+            // Tasks
+            const tasksContainer = document.getElementById('tasks-list');
+            tasksContainer.innerHTML = '';
+            const tasks = data.recent_tasks || data.tasks || data.demo?.tasks || [];
+            if (tasks.length === 0) {
+                tasksContainer.innerHTML = `<div class="empty-state">No upcoming tasks. Add your first task.</div>`;
+            } else {
+                for (const t of tasks) {
+                    const due = t.due || t.due_date || t.dueDate || 'TBD';
+                    const status = t.status || 'scheduled';
+                    const location = t.field || t.location || t.task_location || 'Field';
+                    const title = t.title || t.name || 'Task';
+                    const item = document.createElement('div');
+                    item.className = 'task-item';
+                    item.innerHTML = `
+                        <div class="task-info">
+                            <div class="task-icon watering" aria-hidden="true"><i class="fas fa-tint" aria-hidden="true"></i></div>
+                            <div>
+                                <h3 class="task-title">${title}</h3>
+                                <p class="task-location">${location}</p>
+                            </div>
+                        </div>
+                        <div class="task-meta">
+                            <p class="task-due">Due: ${due}</p>
+                            <span class="status-badge ${status}">${status}</span>
+                        </div>
+                    `;
+                    tasksContainer.appendChild(item);
+                }
+            }
+
+            // Crops
+            const cropsContainer = document.getElementById('crops-grid');
+            cropsContainer.innerHTML = '';
+            const crops = data.recent_crops || data.crops || data.demo?.crop ? (Array.isArray(data.demo?.crop) ? data.demo.crop : (data.recent_crops || data.crops || [data.demo.crop])) : [];
+            if (crops.length === 0) {
+                cropsContainer.innerHTML = `<div class="empty-state">No crop data available.</div>`;
+            } else {
+                for (const c of crops) {
+                    const name = c.crop_name || c.name || 'Crop';
+                    const yieldVal = (c.yield || c.crop_yield || c.expected_yield) ? `${c.yield || c.crop_yield || c.expected_yield}` : '—';
+                    const trendClass = (c.trend === 'down' ? 'neutral' : 'positive');
+                    const cropNode = document.createElement('div');
+                    cropNode.className = `crop-item ${(c.type || name).toLowerCase()}`;
+                    cropNode.innerHTML = `
+                        <div class="crop-icon" aria-hidden="true"><i class="${c.icon || 'fas fa-seedling'}" aria-hidden="true"></i></div>
+                        <h3 class="crop-name">${name}</h3>
+                        <p class="crop-yield">${yieldVal}</p>
+                        <div class="crop-trend">
+                            <span class="trend-badge ${trendClass}">${c.change ? (c.change+'%') : ''}</span>
+                        </div>
+                    `;
+                    cropsContainer.appendChild(cropNode);
+                }
+            }
+
+        } catch (err) {
+            console.error('Error loading dashboard UI', err);
+        }
+    })();
+
+    function setWeatherPlaceholders() {
+        const valueTargets = ['soilMoistureValue', 'airTempValue', 'windSpeedValue', 'rainfallValue'];
+        valueTargets.forEach((id) => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = '--';
+        });
+        const statusTargets = ['soilStatus', 'tempStatus', 'windStatus', 'rainStatus'];
+        statusTargets.forEach((id) => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = 'Loading';
+        });
+    }
+
+    function setWeatherErrorState() {
+        const valueTargets = ['soilMoistureValue', 'airTempValue', 'windSpeedValue', 'rainfallValue'];
+        valueTargets.forEach((id) => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = '--';
+        });
+        const statusTargets = ['soilStatus', 'tempStatus', 'windStatus', 'rainStatus'];
+        statusTargets.forEach((id) => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = 'Unavailable';
+        });
+    }
+
+    function renderWeatherReadings({ humidity, temperature, windSpeed, rainChance }) {
+        const normalize = (value) => {
+            if (value === null || typeof value === 'undefined') return null;
+            if (typeof value === 'string') {
+                const parsedString = parseFloat(value);
+                if (!Number.isNaN(parsedString)) {
+                    value = parsedString;
+                }
+            }
+            const parsed = Number(value);
+            return Number.isFinite(parsed) ? Math.round(parsed) : null;
+        };
+
+        const soilValue = normalize(humidity);
+        const tempValue = normalize(temperature);
+        const windValue = normalize(windSpeed);
+        const rainValue = normalize(rainChance);
+
+        const soilEl = document.getElementById('soilMoistureValue');
+        if (soilEl) soilEl.textContent = soilValue !== null ? `${soilValue}%` : '--';
+
+        const airEl = document.getElementById('airTempValue');
+        if (airEl) airEl.textContent = tempValue !== null ? `${tempValue}\u00B0C` : '--';
+
+        const windEl = document.getElementById('windSpeedValue');
+        if (windEl) windEl.textContent = windValue !== null ? `${windValue} km/h` : '--';
+
+        const rainEl = document.getElementById('rainfallValue');
+        if (rainEl) rainEl.textContent = rainValue !== null ? `${rainValue}%` : '--';
+
+        const soilStatus = document.getElementById('soilStatus');
+        if (soilStatus) {
+            soilStatus.textContent =
+                soilValue === null ? 'Unknown' : soilValue > 75 ? 'Saturated' : soilValue < 35 ? 'Dry' : 'Normal';
+        }
+
+        const tempStatus = document.getElementById('tempStatus');
+        if (tempStatus) {
+            tempStatus.textContent =
+                tempValue === null ? 'Unknown' : tempValue > 32 ? 'Hot' : tempValue < 15 ? 'Cool' : 'Optimal';
+        }
+
+        const windStatus = document.getElementById('windStatus');
+        if (windStatus) {
+            windStatus.textContent =
+                windValue === null ? 'Unknown' : windValue > 25 ? 'Breezy' : windValue > 10 ? 'Moderate' : 'Calm';
+        }
+
+        const rainStatus = document.getElementById('rainStatus');
+        if (rainStatus) {
+            rainStatus.textContent =
+                rainValue === null ? 'Unknown' : rainValue > 50 ? 'High' : rainValue > 20 ? 'Moderate' : 'Low';
+        }
+    }
+
+    function applyWeatherFromDataset(dataset = {}) {
+        if (!dataset) {
+            setWeatherErrorState();
+            return;
+        }
+
+        renderWeatherReadings({
+            humidity: dataset.soil_moisture ?? dataset.humidity ?? null,
+            temperature: dataset.temperature ?? dataset.temp ?? null,
+            windSpeed: dataset.wind_speed ?? dataset.windSpeed ?? null,
+            rainChance:
+                dataset.rainfall_probability ??
+                dataset.rain_probability ??
+                dataset.rain_chance ??
+                dataset.precip_probability ??
+                null
+        });
+    }
+
+    async function updateWeatherFromCity(city, fallbackWeather = null) {
+        if (!city) {
+            if (fallbackWeather) {
+                applyWeatherFromDataset(fallbackWeather);
+            }
+            return;
+        }
+
+        const apiKey = window.OPENWEATHER_API_KEY;
+        if (!apiKey || apiKey.includes('YOUR_')) {
+            console.warn('OpenWeather API key missing or placeholder, using fallback weather.');
+            if (fallbackWeather) {
+                applyWeatherFromDataset(fallbackWeather);
+            } else {
+                setWeatherErrorState();
+            }
+            return;
+        }
+
+        try {
+            const response = await fetch(
+                `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)}&units=metric&appid=${apiKey}`
+            );
+            if (!response.ok) {
+                throw new Error(`OpenWeather responded ${response.status}`);
+            }
+
+            const weather = await response.json();
+            renderWeatherReadings({
+                humidity: weather.main?.humidity ?? null,
+                temperature: weather.main?.temp ?? null,
+                windSpeed: weather.wind?.speed != null ? weather.wind.speed * 3.6 : null,
+                rainChance:
+                    typeof weather.clouds?.all === 'number'
+                        ? weather.clouds.all
+                        : weather.rain?.['1h'] != null
+                        ? Math.min(100, Math.round(weather.rain['1h'] * 100))
+                        : null
+            });
+        } catch (error) {
+            console.warn('Unable to fetch OpenWeather data', error);
+            if (fallbackWeather) {
+                applyWeatherFromDataset(fallbackWeather);
+            } else {
+                setWeatherErrorState();
+            }
+        }
+    }
+    </script>
+
 </body>
 </html>
+

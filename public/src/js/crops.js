@@ -1,476 +1,468 @@
-// Crops Management JavaScript
-document.addEventListener('DOMContentLoaded', function() {
-    // Initialize charts
-    initializeCharts();
-    
-    // Set up event listeners
-    setupEventListeners();
-    
-    // Set active crop
-    setActiveCrop('wheat');
-});
+// Dynamic crop management page
+(function initCropsPage() {
+  const state = {
+    crops: [],
+    farms: [],
+    selectedCropId: null,
+    loading: false
+  };
 
-// Initialize all charts
-function initializeCharts() {
-    // Yield Estimate Chart
-    const yieldCtx = document.getElementById('yieldChart');
-    if (yieldCtx) {
-        new Chart(yieldCtx.getContext('2d'), {
-            type: 'line',
-            data: {
-                labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Week 5', 'Week 6', 'Week 7', 'Week 8'],
-                datasets: [{
-                    label: 'Expected Yield (tons)',
-                    data: [2, 3.5, 5, 6.5, 7.8, 8.5, 9.2, 9.8],
-                    borderColor: '#4caf50',
-                    backgroundColor: 'rgba(76, 175, 80, 0.1)',
-                    borderWidth: 2,
-                    tension: 0.3,
-                    fill: true
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        display: false
-                    }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        title: {
-                            display: true,
-                            text: 'Tons'
-                        }
-                    }
-                }
-            }
-        });
-    }
+  const DAY_MS = 1000 * 60 * 60 * 24;
+  const SOIL_YIELD_FACTORS = {
+    loamy: 3.8,
+    clay: 2.7,
+    sandy: 2.1,
+    silt: 3.3,
+    peat: 2.5,
+    chalky: 1.9,
+    black: 4.0,
+    laterite: 2.2
+  };
+  const DEFAULT_YIELD_FACTOR = 2.5;
+  const MIN_AREA_FOR_YIELD = 0.1;
 
-    // Input Usage Chart
-    const inputCtx = document.getElementById('inputChart');
-    if (inputCtx) {
-        new Chart(inputCtx.getContext('2d'), {
-            type: 'bar',
-            data: {
-                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-                datasets: [
-                    {
-                        label: 'Fertilizer (kg)',
-                        data: [120, 190, 150, 200, 180, 170],
-                        backgroundColor: 'rgba(79, 70, 229, 0.7)',
-                    },
-                    {
-                        label: 'Pesticides (L)',
-                        data: [80, 100, 120, 90, 110, 95],
-                        backgroundColor: 'rgba(220, 38, 38, 0.7)',
-                    }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'top',
-                    }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        title: {
-                            display: true,
-                            text: 'Quantity'
-                        }
-                    }
-                }
-            }
-        });
-    }
-}
+  const normalizeSoilType = (value) => (value ? value.toString().trim().toLowerCase() : '');
 
-// Set up all event listeners
-function setupEventListeners() {
-    // Crop icon click events
-    const cropIcons = document.querySelectorAll('.crop-icon');
-    cropIcons.forEach(icon => {
-        icon.addEventListener('click', function() {
-            const cropType = this.getAttribute('data-crop');
-            setActiveCrop(cropType);
-        });
-    });
+  const formatSoilLabel = (value) => {
+    if (!value) return '—';
+    return value
+      .split(/\s+/)
+      .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+      .join(' ');
+  };
 
-    // Chart control buttons
-    const controlButtons = document.querySelectorAll('.control-btn');
-    controlButtons.forEach(btn => {
-        btn.addEventListener('click', function() {
-            const parent = this.parentElement;
-            parent.querySelectorAll('.control-btn').forEach(b => b.classList.remove('active'));
-            this.classList.add('active');
-            // In a real app, you would update the chart data here
-        });
-    });
+  const getYieldFactorForSoil = (soil) => {
+    const key = normalizeSoilType(soil);
+    return key && SOIL_YIELD_FACTORS[key] ? SOIL_YIELD_FACTORS[key] : DEFAULT_YIELD_FACTOR;
+  };
 
-    // Add crop modal
-    const addCropBtn = document.getElementById('addCropBtn');
-    const addCropModal = document.getElementById('addCropModal');
-    const closeModalBtns = document.querySelectorAll('.close-modal');
-    const addCropForm = document.getElementById('addCropForm');
+  const calculateExpectedYield = (area, soil) => {
+    const numericArea = Number(area);
+    if (Number.isNaN(numericArea) || numericArea < MIN_AREA_FOR_YIELD) return null;
+    const factor = getYieldFactorForSoil(soil);
+    return Number((numericArea * factor).toFixed(1));
+  };
 
-    if (addCropBtn && addCropModal) {
-        addCropBtn.addEventListener('click', () => {
-            addCropModal.classList.add('active');
-        });
-
-        closeModalBtns.forEach(btn => {
-            btn.addEventListener('click', () => {
-                addCropModal.classList.remove('active');
-            });
-        });
-
-        // Close modal when clicking outside
-        addCropModal.addEventListener('click', (e) => {
-            if (e.target === addCropModal) {
-                addCropModal.classList.remove('active');
-            }
-        });
-    }
-
-    if (addCropForm) {
-        addCropForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            // Handle form submission
-            const formData = new FormData(this);
-            const cropData = Object.fromEntries(formData);
-            
-            // In a real app, you would send this data to your backend
-            console.log('Adding new crop:', cropData);
-            
-            // Show success message and close modal
-            alert('Crop added successfully!');
-            addCropModal.classList.remove('active');
-            this.reset();
-        });
-    }
-
-    // Edit and delete buttons
-    const editBtn = document.querySelector('.edit-btn');
-    const deleteBtn = document.querySelector('.delete-btn');
-
-    if (editBtn) {
-        editBtn.addEventListener('click', function() {
-            // In a real app, this would open an edit form
-            alert('Edit crop functionality would open here');
-        });
-    }
-
-    if (deleteBtn) {
-        deleteBtn.addEventListener('click', function() {
-            if (confirm('Are you sure you want to delete this crop?')) {
-                // In a real app, this would send a delete request
-                alert('Crop deleted successfully!');
-                // Refresh the page or update UI
-                location.reload();
-            }
-        });
-    }
-}
-
-// Set active crop and update display
-function setActiveCrop(cropType) {
-    // Remove active class from all crop icons
-    document.querySelectorAll('.crop-icon').forEach(icon => {
-        icon.classList.remove('active');
-    });
-
-    // Add active class to selected crop icon
-    const selectedIcon = document.querySelector(`.crop-icon[data-crop="${cropType}"]`);
-    if (selectedIcon) {
-        selectedIcon.classList.add('active');
-    }
-
-    // Update crop details based on selected crop
-    updateCropDetails(cropType);
-}
-
-// Update crop details based on selected crop type
-function updateCropDetails(cropType) {
-    const cropData = getCropData(cropType);
-    
-    // Update crop title and basic info
-    const cropTitle = document.querySelector('.crop-title h2');
-    const cropSubtitle = document.querySelector('.crop-title p');
-    const cropImage = document.querySelector('.crop-image .image-placeholder');
-    
-    if (cropTitle) cropTitle.textContent = `${cropData.name} - ${cropData.field}`;
-    if (cropSubtitle) cropSubtitle.textContent = `Planted on ${cropData.plantedDate} • ${cropData.area}`;
-    
-    // Update crop image
-    if (cropImage) {
-        cropImage.className = `image-placeholder ${cropType}-bg`;
-        cropImage.innerHTML = `<i class="${cropData.icon}"></i>`;
-    }
-    
-    // Update basic info
-    updateBasicInfo(cropData);
-    
-    // Update growth stages
-    updateGrowthStages(cropData.growthStages);
-    
-    // Update input usage
-    updateInputUsage(cropData.inputs);
-}
-
-// Get crop data based on type
-function getCropData(cropType) {
-    const cropData = {
-        wheat: {
-            name: 'Wheat',
-            field: 'Field A',
-            plantedDate: 'March 15, 2023',
-            area: '5.2 acres',
-            icon: 'fas fa-wheat-alt',
-            soilType: 'Loamy',
-            health: 'Good',
-            expectedYield: '9.8 tons',
-            marketPrice: '$210/ton',
-            growthStages: [
-                { name: 'Sowing', progress: 100, status: 'completed' },
-                { name: 'Germination', progress: 100, status: 'completed' },
-                { name: 'Vegetative', progress: 100, status: 'completed' },
-                { name: 'Flowering', progress: 70, status: 'in-progress' },
-                { name: 'Harvest', progress: 0, status: 'pending' }
-            ],
-            inputs: [
-                { name: 'Fertilizer', usage: 65 },
-                { name: 'Pesticides', usage: 40 },
-                { name: 'Water', usage: 75 }
-            ]
-        },
-        corn: {
-            name: 'Corn',
-            field: 'Field B',
-            plantedDate: 'April 1, 2023',
-            area: '3.8 acres',
-            icon: 'fas fa-corn',
-            soilType: 'Sandy Loam',
-            health: 'Good',
-            expectedYield: '12.5 tons',
-            marketPrice: '$180/ton',
-            growthStages: [
-                { name: 'Sowing', progress: 100, status: 'completed' },
-                { name: 'Germination', progress: 100, status: 'completed' },
-                { name: 'Vegetative', progress: 80, status: 'in-progress' },
-                { name: 'Reproductive', progress: 20, status: 'in-progress' },
-                { name: 'Harvest', progress: 0, status: 'pending' }
-            ],
-            inputs: [
-                { name: 'Fertilizer', usage: 45 },
-                { name: 'Pesticides', usage: 60 },
-                { name: 'Water', usage: 65 }
-            ]
-        },
-        tomato: {
-            name: 'Tomato',
-            field: 'Greenhouse 1',
-            plantedDate: 'February 20, 2023',
-            area: '1.5 acres',
-            icon: 'fas fa-pepper-hot',
-            soilType: 'Potting Mix',
-            health: 'Excellent',
-            expectedYield: '8.2 tons',
-            marketPrice: '$1.2/kg',
-            growthStages: [
-                { name: 'Sowing', progress: 100, status: 'completed' },
-                { name: 'Germination', progress: 100, status: 'completed' },
-                { name: 'Vegetative', progress: 100, status: 'completed' },
-                { name: 'Flowering', progress: 100, status: 'completed' },
-                { name: 'Fruiting', progress: 85, status: 'in-progress' }
-            ],
-            inputs: [
-                { name: 'Fertilizer', usage: 75 },
-                { name: 'Pesticides', usage: 35 },
-                { name: 'Water', usage: 80 }
-            ]
-        },
-        rice: {
-            name: 'Rice',
-            field: 'Paddy Field',
-            plantedDate: 'January 10, 2023',
-            area: '8.5 acres',
-            icon: 'fas fa-seedling',
-            soilType: 'Clay',
-            health: 'Good',
-            expectedYield: '11.3 tons',
-            marketPrice: '$320/ton',
-            growthStages: [
-                { name: 'Sowing', progress: 100, status: 'completed' },
-                { name: 'Germination', progress: 100, status: 'completed' },
-                { name: 'Tillering', progress: 90, status: 'in-progress' },
-                { name: 'Stem Elongation', progress: 40, status: 'in-progress' },
-                { name: 'Harvest', progress: 0, status: 'pending' }
-            ],
-            inputs: [
-                { name: 'Fertilizer', usage: 55 },
-                { name: 'Pesticides', usage: 25 },
-                { name: 'Water', usage: 95 }
-            ]
-        },
-        potato: {
-            name: 'Potato',
-            field: 'Field C',
-            plantedDate: 'March 25, 2023',
-            area: '4.2 acres',
-            icon: 'fas fa-potato',
-            soilType: 'Sandy',
-            health: 'Needs Attention',
-            expectedYield: '6.7 tons',
-            marketPrice: '$0.8/kg',
-            growthStages: [
-                { name: 'Sowing', progress: 100, status: 'completed' },
-                { name: 'Sprouting', progress: 100, status: 'completed' },
-                { name: 'Vegetative', progress: 100, status: 'completed' },
-                { name: 'Tuber Initiation', progress: 60, status: 'in-progress' },
-                { name: 'Harvest', progress: 0, status: 'pending' }
-            ],
-            inputs: [
-                { name: 'Fertilizer', usage: 70 },
-                { name: 'Pesticides', usage: 50 },
-                { name: 'Water', usage: 60 }
-            ]
-        },
-        apple: {
-            name: 'Apple',
-            field: 'Orchard North',
-            plantedDate: 'January 5, 2020',
-            area: '12.0 acres',
-            icon: 'fas fa-apple-alt',
-            soilType: 'Loamy',
-            health: 'Excellent',
-            expectedYield: '15.2 tons',
-            marketPrice: '$1.5/kg',
-            growthStages: [
-                { name: 'Dormant', progress: 100, status: 'completed' },
-                { name: 'Bud Development', progress: 100, status: 'completed' },
-                { name: 'Flowering', progress: 100, status: 'completed' },
-                { name: 'Fruit Development', progress: 70, status: 'in-progress' },
-                { name: 'Harvest', progress: 0, status: 'pending' }
-            ],
-            inputs: [
-                { name: 'Fertilizer', usage: 40 },
-                { name: 'Pesticides', usage: 65 },
-                { name: 'Water', usage: 55 }
-            ]
+  const deriveStatusFromTimeline = (sowingDate, harvestDate) => {
+    if (!sowingDate) return '';
+    const sow = new Date(sowingDate);
+    if (Number.isNaN(sow.getTime())) return '';
+    const today = new Date();
+    const now = today.getTime();
+    const sowTime = sow.getTime();
+    if (harvestDate) {
+      const harvest = new Date(harvestDate);
+      if (!Number.isNaN(harvest.getTime())) {
+        const harvestTime = harvest.getTime();
+        if (now > harvestTime) return 'completed';
+        const totalWindow = harvestTime - sowTime;
+        const elapsed = now - sowTime;
+        if (totalWindow > 0 && elapsed >= 0) {
+          const progress = elapsed / totalWindow;
+          if (progress < 0.2) return 'planted';
+          if (progress < 0.65) return 'growing';
+          if (progress < 0.9) return 'flowering';
+          return 'harvest';
         }
+      }
+    }
+    const daysSinceSow = Math.floor((now - sowTime) / DAY_MS);
+    if (daysSinceSow < 0) return 'scheduled';
+    if (daysSinceSow < 30) return 'planted';
+    if (daysSinceSow < 80) return 'growing';
+    if (daysSinceSow < 120) return 'flowering';
+    return 'monitor';
+  };
+
+  const summaryEls = {
+    total: document.getElementById('summaryTotal'),
+    totalStatus: document.getElementById('summaryTotalStatus'),
+    ready: document.getElementById('summaryReady'),
+    readyStatus: document.getElementById('summaryReadyStatus'),
+    attention: document.getElementById('summaryAttention'),
+    attentionStatus: document.getElementById('summaryAttentionStatus')
+  };
+
+  const listEl = document.getElementById('cropsList');
+  const listMetaEl = document.getElementById('cropListMeta');
+  const detailEl = document.getElementById('cropDetail');
+  const detailEmptyEl = document.getElementById('cropDetailEmpty');
+
+  const addModal = document.getElementById('addCropModal');
+  const addForm = document.getElementById('addCropForm');
+  const farmSelect = document.getElementById('cropFarmSelect');
+  const cancelAddBtn = document.getElementById('cancelAddCropBtn');
+  const closeAddBtn = document.getElementById('closeAddCropModal');
+  const openAddBtn = document.getElementById('openAddCropBtn');
+  const refreshBtn = document.getElementById('refreshCropsBtn');
+  const manageFieldsBtn = document.getElementById('manageFieldsBtn');
+
+  const showNotification = (msg, type = 'error') => {
+    if (type === 'success' && window.FarmerAPI?.showSuccessMessage) {
+      window.FarmerAPI.showSuccessMessage(msg);
+      return;
+    }
+    if (type !== 'success' && window.FarmerAPI?.showErrorMessage) {
+      window.FarmerAPI.showErrorMessage(msg);
+      return;
+    }
+    alert(msg);
+  };
+
+  const formatDate = (value) => {
+    if (!value) return '—';
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? value : date.toLocaleDateString();
+  };
+
+  const normalizeCrop = (raw) => {
+    if (!raw) return null;
+    const farmId = raw.farm_id || raw.farms?.farm_id || raw.farm?.farm_id || null;
+    const farmContext = farmId ? getFarmById(farmId) : null;
+    const areaValue =
+      raw.area != null
+        ? Number(raw.area)
+        : raw.field_area != null
+        ? Number(raw.field_area)
+        : farmContext?.area != null
+        ? Number(farmContext.area)
+        : null;
+    const resolvedSoil = normalizeSoilType(raw.soil_type || raw.soilType || farmContext?.soil_type);
+    const soilDisplay = resolvedSoil ? formatSoilLabel(resolvedSoil) : null;
+    const derivedStatus = deriveStatusFromTimeline(raw.sowing_date || raw.planting_date, raw.expected_harvest || raw.harvest_date);
+    const fallbackStatus = raw.status || 'planted';
+    const finalStatus = derivedStatus || fallbackStatus;
+    const estimatedYield = calculateExpectedYield(areaValue, resolvedSoil);
+
+    return {
+      id: raw.crop_id || raw.id,
+      farm_id: farmId,
+      farm_name:
+        raw.farm_name ||
+        raw.farm?.farm_name ||
+        (raw.farms ? raw.farms.farm_name : null) ||
+        (farmContext ? farmContext.farm_name : raw.farm_id ? getFarmName(raw.farm_id) : 'Field'),
+      crop_name: raw.crop_name || raw.name || 'Unnamed crop',
+      crop_type: raw.crop_type || raw.type || '—',
+      sowing_date: raw.sowing_date || raw.planting_date || null,
+      expected_harvest: raw.expected_harvest || raw.harvest_date || null,
+      area: areaValue,
+      soil_type: resolvedSoil || null,
+      soil_display: soilDisplay,
+      status: finalStatus,
+      status_source: derivedStatus ? 'timeline' : 'stored',
+      estimated_yield: estimatedYield,
+      created_at: raw.created_at || null,
+      updated_at: raw.updated_at || null,
+      notes: raw.notes || raw.description || '',
+      report: raw.report || raw.crop_reports || null
+    };
+  };
+
+  const getFarmById = (farmId) => state.farms.find((farm) => String(farm.farm_id) === String(farmId));
+
+  const getFarmName = (farmId) => {
+    const match = getFarmById(farmId);
+    return match ? match.farm_name || `Field ${match.farm_id}` : 'Field';
+  };
+
+  const getSoilTypeForCrop = (crop) => {
+    if (!crop) return '—';
+    if (crop.soil_display) return crop.soil_display;
+    if (crop.soil_type) return formatSoilLabel(crop.soil_type);
+    const farm = getFarmById(crop.farm_id);
+    return formatSoilLabel(farm?.soil_type || '');
+  };
+
+  const setLoading = (isLoading) => {
+    state.loading = isLoading;
+    if (listMetaEl) {
+      listMetaEl.textContent = isLoading ? 'Loading crops...' : `${state.crops.length} crop(s) loaded`;
+    }
+    if (isLoading && listEl) {
+      listEl.innerHTML = `
+        <div class="loading-state">
+          <div class="spinner"></div>
+          <h3>Loading Crops</h3>
+          <p>Fetching your crop information...</p>
+        </div>
+      `;
+    }
+  };
+
+  const renderSummary = () => {
+    const total = state.crops.length;
+    const today = new Date();
+    const ready = state.crops.filter((crop) => {
+      if (!crop.expected_harvest) return false;
+      const harvest = new Date(crop.expected_harvest);
+      if (Number.isNaN(harvest.getTime())) return false;
+      const diffDays = Math.round((harvest - today) / (1000 * 60 * 60 * 24));
+      return diffDays <= 7 && diffDays >= -7;
+    }).length;
+    const attention = state.crops.filter((crop) => {
+      const status = String(crop.status || '').toLowerCase();
+      return status.includes('issue') || status.includes('disease') || status.includes('pest');
+    }).length;
+
+    const applyBadge = (el, iconClass, text) => {
+      if (!el) return;
+      el.innerHTML = `<i class="${iconClass}"></i> ${text}`;
     };
 
-    return cropData[cropType] || cropData.wheat;
-}
+    if (summaryEls.total) summaryEls.total.textContent = total;
+    applyBadge(summaryEls.totalStatus, 'fas fa-seedling', total ? 'Tracked' : 'No data');
+    if (summaryEls.ready) summaryEls.ready.textContent = ready;
+    applyBadge(summaryEls.readyStatus, 'fas fa-clock', ready ? 'Within a week' : 'None');
+    if (summaryEls.attention) summaryEls.attention.textContent = attention;
+    applyBadge(summaryEls.attentionStatus, 'fas fa-exclamation-triangle', attention ? 'Check fields' : 'All good');
+  };
 
-// Update basic information in the UI
-function updateBasicInfo(cropData) {
-    const infoItems = {
-        'Planted Date': cropData.plantedDate,
-        'Area': cropData.area,
-        'Soil Type': cropData.soilType,
-        'Health Status': cropData.health,
-        'Expected Yield': cropData.expectedYield,
-        'Market Price': cropData.marketPrice
+  const renderCropsList = () => {
+    if (!listEl) return;
+    if (!state.crops.length) {
+      listEl.innerHTML = `
+        <div class="empty-state">
+          <i class="fas fa-leaf"></i>
+          <h3>No crops found</h3>
+          <p>Use the Add Crop button to register your plantings.</p>
+        </div>
+      `;
+      return;
+    }
+
+    listEl.innerHTML = state.crops
+      .map((crop) => {
+        const active = crop.id === state.selectedCropId ? 'active' : '';
+        const status = (crop.status || 'planted').toString();
+        const metaParts = [crop.farm_name || 'Field', crop.crop_type || '—'];
+        if (crop.estimated_yield) {
+          metaParts.push(`Est. ${crop.estimated_yield} t`);
+        }
+        return `
+            <button class="crop-row ${active}" data-crop-id="${crop.id}">
+                <div>
+                    <p class="crop-name">${crop.crop_name}</p>
+                    <p class="crop-meta">${metaParts.join(' • ')}</p>
+                </div>
+                <div class="crop-row-right">
+                    <span class="status-badge ${status.toLowerCase()}">${status}</span>
+                    <span class="crop-date">${formatDate(crop.sowing_date)}</span>
+                </div>
+            </button>
+        `;
+      })
+      .join('');
+
+    listEl.querySelectorAll('[data-crop-id]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const id = btn.getAttribute('data-crop-id');
+        selectCrop(id);
+      });
+    });
+  };
+
+  const renderCropDetails = () => {
+    if (!detailEl || !detailEmptyEl) return;
+    const crop = state.crops.find((c) => String(c.id) === String(state.selectedCropId));
+    if (!crop) {
+      detailEl.classList.add('hidden');
+      detailEmptyEl.classList.remove('hidden');
+      return;
+    }
+
+    detailEmptyEl.classList.add('hidden');
+    detailEl.classList.remove('hidden');
+
+    const detailHtml = `
+        <div class="detail-header">
+            <div>
+                <p class="detail-kicker">${crop.crop_type || 'Crop'}</p>
+                <h2>${crop.crop_name}</h2>
+                <p class="detail-field">${crop.farm_name || 'Field'} • ${formatDate(crop.sowing_date)}</p>
+            </div>
+            <span class="status-badge ${crop.status?.toLowerCase() || 'planted'}">${crop.status || 'planted'}</span>
+        </div>
+        <div class="detail-grid">
+            ${detailItem('Sowing date', formatDate(crop.sowing_date))}
+            ${detailItem('Expected harvest', formatDate(crop.expected_harvest))}
+            ${detailItem('Field area', crop.area ? `${crop.area} ha` : '—')}
+            ${detailItem('Estimated yield', crop.estimated_yield ? `${crop.estimated_yield} tons` : '—')}
+            ${detailItem('Soil type', getSoilTypeForCrop(crop))}
+            ${detailItem('Created', formatDate(crop.created_at))}
+            ${detailItem('Last updated', formatDate(crop.updated_at))}
+        </div>
+        <div class="detail-notes">
+            <h3>Notes & observations</h3>
+            <p>${crop.notes ? crop.notes : 'No notes recorded yet.'}</p>
+        </div>
+    `;
+    detailEl.innerHTML = detailHtml;
+  };
+
+  const detailItem = (label, value) => `
+        <div class="detail-item">
+            <span class="detail-label">${label}</span>
+            <span class="detail-value">${value}</span>
+        </div>
+    `;
+
+  const selectCrop = (cropId) => {
+    state.selectedCropId = cropId;
+    renderCropsList();
+    renderCropDetails();
+  };
+
+  const populateFarmSelect = () => {
+    if (!farmSelect) return;
+    if (!state.farms.length) {
+      farmSelect.innerHTML = '<option value="">No fields found</option>';
+      farmSelect.disabled = true;
+      return;
+    }
+    farmSelect.disabled = false;
+    farmSelect.innerHTML = [
+      '<option value="">Select a field</option>',
+      ...state.farms.map((farm) => `<option value="${farm.farm_id}">${farm.farm_name || `Field ${farm.farm_id}`}</option>`)
+    ].join('');
+  };
+
+  const openAddModal = () => {
+    populateFarmSelect();
+    addModal?.classList.remove('hidden');
+  };
+
+  const closeAddModal = () => {
+    addModal?.classList.add('hidden');
+    addForm?.reset();
+  };
+
+  const handleAddCropSubmit = async (event) => {
+    event.preventDefault();
+    if (!addForm) return;
+    const formData = new FormData(addForm);
+
+    const farmId = Number(formData.get('farm_id'));
+    if (!farmId) {
+      showNotification('Please select a field for this crop.');
+      return;
+    }
+
+    const payload = {
+      farm_id: farmId,
+      crop_name: String(formData.get('crop_name')).trim(),
+      crop_type: String(formData.get('crop_type')).trim(),
+      sowing_date: formData.get('sowing_date') || null,
+      expected_harvest: formData.get('expected_harvest') || null,
+      area: formData.get('area') ? Number(formData.get('area')) : null,
+      soil_type: String(formData.get('soil_type') || '').trim() || null,
+      status: String(formData.get('status') || 'planted').trim() || 'planted',
+      notes: String(formData.get('notes') || '').trim() || null
     };
 
-    const infoGrid = document.querySelector('.basic-info-grid');
-    if (infoGrid) {
-        const infoElements = infoGrid.querySelectorAll('.info-item');
-        let index = 0;
-        
-        for (const [key, value] of Object.entries(infoItems)) {
-            if (infoElements[index]) {
-                const label = infoElements[index].querySelector('label');
-                const valueEl = infoElements[index].querySelector('p');
-                
-                if (label) label.textContent = key;
-                if (valueEl) {
-                    valueEl.textContent = value;
-                    // Add status class for health
-                    if (key === 'Health Status') {
-                        valueEl.className = '';
-                        if (value.toLowerCase().includes('excellent') || value.toLowerCase().includes('good')) {
-                            valueEl.classList.add('status-good');
-                        } else if (value.toLowerCase().includes('attention')) {
-                            valueEl.classList.add('status-warning');
-                        }
-                    }
-                }
-            }
-            index++;
-        }
+    if (!payload.crop_name || !payload.crop_type) {
+      showNotification('Crop name and type are required.');
+      return;
     }
-}
 
-// Update growth stages in the UI
-function updateGrowthStages(growthStages) {
-    const growthTimeline = document.querySelector('.growth-timeline');
-    if (growthTimeline) {
-        growthTimeline.innerHTML = '';
-        
-        growthStages.forEach(stage => {
-            const stageElement = document.createElement('div');
-            stageElement.className = 'growth-stage';
-            
-            stageElement.innerHTML = `
-                <div class="stage-info">
-                    <span class="stage-name">${stage.name}</span>
-                    <span class="stage-status ${stage.status}">
-                        ${stage.status === 'completed' ? 'Completed' : 
-                          stage.status === 'in-progress' ? `In Progress (${stage.progress}%)` : 'Not Started'}
-                    </span>
-                </div>
-                <div class="progress-bar">
-                    <div class="progress-fill" style="width: ${stage.progress}%"></div>
-                </div>
-            `;
-            
-            growthTimeline.appendChild(stageElement);
-        });
+    const reportSupplement = {
+      expected_yield: formData.get('expected_yield') ? Number(formData.get('expected_yield')) : null
+    };
+
+    try {
+      addForm.classList.add('loading');
+      const newCrop = await insertCrop(payload, reportSupplement);
+      state.crops = [normalizeCrop(newCrop), ...state.crops];
+      renderSummary();
+      renderCropsList();
+      selectCrop(newCrop.crop_id || newCrop.id);
+      closeAddModal();
+      showNotification('Crop added successfully!', 'success');
+    } catch (error) {
+      console.error('Failed to add crop', error);
+      showNotification(error.message || 'Unable to save crop right now.');
+    } finally {
+      addForm.classList.remove('loading');
     }
-}
+  };
 
-// Update input usage in the UI
-function updateInputUsage(inputs) {
-    const inputsGrid = document.querySelector('.inputs-grid');
-    if (inputsGrid) {
-        inputsGrid.innerHTML = '';
-        
-        inputs.forEach(input => {
-            const inputElement = document.createElement('div');
-            inputElement.className = 'input-item';
-            
-            inputElement.innerHTML = `
-                <div class="input-header">
-                    <span class="input-name">${input.name}</span>
-                    <span class="input-usage">${input.usage}% used</span>
-                </div>
-                <div class="progress-bar">
-                    <div class="progress-fill ${input.name.toLowerCase()}" style="width: ${input.usage}%"></div>
-                </div>
-            `;
-            
-            inputsGrid.appendChild(inputElement);
-        });
+  const insertCrop = async (payload, reportSupplement) => {
+    if (!window.supabase?.from) {
+      throw new Error('Supabase client not available.');
     }
-}
+    const { data, error } = await window.supabase.from('crops').insert(payload).select().single();
+    if (error) throw error;
 
-// Export functionality for crop data
-function exportCropData() {
-    // In a real app, this would generate and download a CSV or PDF
-    alert('Export functionality would generate a report here');
-}
+    if ((reportSupplement.expected_yield ?? null) !== null) {
+      await window.supabase.from('crop_reports').insert({
+        farm_id: payload.farm_id,
+        crop_id: data.crop_id,
+        expected_yield: reportSupplement.expected_yield,
+        notes: payload.notes || null
+      });
+    }
+    return data;
+  };
 
-// Filter crops functionality
-function filterCrops(filterType) {
-    // In a real app, this would filter the displayed crops
-    console.log(`Filtering crops by: ${filterType}`);
-}
+  const normalizeCropsResponse = (response) => {
+    if (response?.success && Array.isArray(response.data) && response.data.length) {
+      return response.data.map(normalizeCrop).filter(Boolean);
+    }
+    if (response?.demo?.crop) {
+      return [normalizeCrop({ ...response.demo.crop, farm_name: response.demo.crop.farm_name })];
+    }
+    return [];
+  };
+
+  const loadCrops = async () => {
+    setLoading(true);
+    try {
+      const cropsPromise = typeof window.FarmerAPI?.getCrops === 'function' ? window.FarmerAPI.getCrops(100) : null;
+      const farmsPromise = typeof window.FarmerAPI?.getFarms === 'function' ? window.FarmerAPI.getFarms(100) : null;
+      const [cropsResponse, farmsResponse] = await Promise.all([cropsPromise, farmsPromise]);
+
+      state.farms = Array.isArray(farmsResponse?.data) ? farmsResponse.data : [];
+      state.crops = normalizeCropsResponse(cropsResponse || {});
+      if (!state.crops.length && !state.farms.length && !cropsResponse?.success) {
+        document.getElementById('demoNotice')?.classList.remove('hidden');
+      } else {
+        document.getElementById('demoNotice')?.classList.add('hidden');
+      }
+
+      renderSummary();
+      renderCropsList();
+      setLoading(false);
+      populateFarmSelect();
+
+      if (state.crops.length) {
+        selectCrop(state.crops[0].id);
+      } else {
+        renderCropDetails();
+      }
+    } catch (error) {
+      console.error('Failed to load crops', error);
+      setLoading(false);
+      showNotification('Unable to load crops right now.');
+    }
+  };
+
+  if (openAddBtn) openAddBtn.addEventListener('click', openAddModal);
+  if (cancelAddBtn) cancelAddBtn.addEventListener('click', closeAddModal);
+  if (closeAddBtn) closeAddBtn.addEventListener('click', closeAddModal);
+  if (addModal) {
+    addModal.addEventListener('click', (event) => {
+      if (event.target === addModal) {
+        closeAddModal();
+      }
+    });
+  }
+  if (addForm) addForm.addEventListener('submit', handleAddCropSubmit);
+  if (refreshBtn) refreshBtn.addEventListener('click', loadCrops);
+  if (manageFieldsBtn) {
+    manageFieldsBtn.addEventListener('click', () => {
+      window.location.href = 'fields.html';
+    });
+  }
+
+  loadCrops();
+})();

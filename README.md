@@ -1,64 +1,74 @@
-#🌾 Smart Farmer Management System (SFMS)
+# Smart Farmer Management System (SFMS)
 
-### 🚀 Overview
-**Smart Farmer Management System (SFMS)** is a cloud-based DBMS project designed to help farmers efficiently manage farm data, crop cycles, resources, and sales — all from one unified platform.
+Modern, Supabase-backed dashboard that helps farmers monitor crops, fields, inventory, marketplace listings, and analytics from one responsive web interface.
 
-Built using **Supabase (PostgreSQL + Auth + REST APIs)** and a modern **HTML/CSS/JavaScript** frontend, the system connects **Farmers**, **Buyers**, and **Admins** to streamline crop management and marketplace interactions.
+## Features
 
----
+- **Dashboard** – at-a-glance weather signals, crop growth charts, upcoming tasks, and crop cards.
+- **Auth Flows** – responsive login, signup, and password reset pages with Supabase integration and demo credentials.
+- **Modules** – dedicated pages for crops, fields, inventory, marketplace, and reports; each mirrors the dashboard layout and supports demo data.
+- **Edge Functions** – documented Supabase functions (`get-dashboard`, `get-crops`, etc.) for secure data access via JWT.
+- **Demo Mode** – localStorage toggle plus automatic fallback alerts whenever live data is unavailable.
 
-## 🧭 Table of Contents
-- [Features](#-features)
-- [Tech Stack](#-tech-stack)
-- [System Architecture](#-system-architecture)
-- [Database Schema](#-database-schema)
-- [Module Distribution](#-module-distribution)
-- [Setup Guide](#-setup-guide)
-- [Screenshots](#-screenshots)
-- [Future Upgrades](#-future-upgrades)
-- [Team Members](#-team-members)
+## Tech Stack
 
----
+| Layer        | Technology                                     |
+|--------------|------------------------------------------------|
+| Frontend     | HTML5, CSS (custom + theme.css), vanilla JS    |
+| Data Layer   | Supabase (PostgreSQL + Auth + Edge Functions)  |
+| Charts       | Chart.js                                       |
+| Deployment   | Static hosting (e.g., Vercel via `vercel.json`)|
 
-## 🌟 Features
+## Project Structure
 
-### 👨‍🌾 Farmer Module
-- Register & manage farm and crop details
-- Automatic **harvest date prediction** based on crop type and sow date
-- Track fertilizer, irrigation, and pesticide usage
-- Get **reminders and alerts** for farming activities
+```
+public/
+  index.html, crops.html, fields.html, inventory.html, marketplace.html, report.html
+  src/
+    css/      # page-level styles, shared theme + sidebar styles
+    js/       # app bootstrap, API client, modules, utilities, Supabase client, etc.
+docs/
+  EDGE_FUNCTIONS_*.md, FRONTEND_INTEGRATION_PLAN.md, TESTING_AND_DEPLOYMENT.md
+```
 
-### 🛒 Marketplace Module
-- Farmers can **list crops for sale**
-- Buyers can browse and **place orders**
-- Sales and purchase history dashboard
+See `docs/tree.txt` for an annotated breakdown of intended subdirectories.
 
-### 🧰 Inventory Module
-- Track fertilizer, pesticide, seed, and tool stock
-- Auto-deduct usage logs from inventory
-- Low-stock alerts and restock recommendations
+## Environment Configuration
 
-### 📊 Reporting Module
-- Crop yield and performance analytics
-- Sales trends and profit tracking
-- Labor and cost summaries
+The frontend no longer ships hard-coded Supabase credentials. Inject runtime values *before* loading `public/src/js/supabase.js`, for example:
 
----
+```html
+<script>
+  window.__SUPABASE_CONFIG__ = {
+    url: 'https://YOUR_PROJECT.supabase.co',
+    anonKey: 'YOUR_PUBLIC_ANON_KEY'
+  };
+  window.__ENV = {
+    EDGE_FUNCTION_BASE_URL: 'https://YOUR_PROJECT.functions.supabase.co',
+    SERVICE_ROLE_TOKEN: 'OPTIONAL_SERVICE_ROLE_JWT_FOR_EDGE_FUNCTIONS'
+  };
+</script>
+```
 
-## 🛠️ Tech Stack
+> **Note:** Edge Functions like `/login` require a bearer token even before the user authenticates. Provide a restricted service-role token (or other gateway token) via `window.__ENV.SERVICE_ROLE_TOKEN` or `window.__SUPABASE_SERVICE_TOKEN__` so the client can call those endpoints securely.
 
-| Layer | Technology |
-|-------|-------------|
-| **Frontend** | HTML, CSS, JavaScript |
-| **Backend / DB** | Supabase (PostgreSQL + REST API + Auth) |
-| **Data Storage** | Supabase Cloud Database |
-| **Charts / Reports** | Chart.js |
-| **Version Control** | Git / GitHub |
-| **Hosting (optional)** | Netlify / Vercel for frontend |
+Authentication tokens are expected to be stored in `sessionStorage.sessionToken` (set during login). When no token is available, the UI automatically enters demo mode and shows a banner explaining that only sample data is visible.
 
----
+## Running Locally
 
-## 🧱 System Architecture
-<img width="3840" height="2800" alt="architecture_dbms" src="https://github.com/user-attachments/assets/f77a3a0d-43d0-499d-9e6b-2ed0c7a72d45" />
+1. Serve the `public/` folder with any static server (VS Code Live Server, `npx serve`, etc.).
+2. Configure Supabase credentials as described above.
+3. Sign up/login via the hosted forms to populate `sessionStorage`, or toggle demo mode from the browser console:
+   ```js
+   FarmerAPI.toggleDemoMode();
+   ```
 
+## Testing & Deployment
 
+- Refer to `docs/TESTING_AND_DEPLOYMENT.md` for Postman scripts, browser QA checklists, and Vercel instructions.
+- `vercel.json` routes `/` to `public/login.html` and exposes the rest of the static bundle without a build step.
+
+## Security Notes
+
+- Never embed service-role keys or JWTs in the client bundle. Instead, rely on Supabase auth tokens stored per session.
+- All Edge Functions require Authorization headers; the helper in `public/src/js/api.js` now refuses to call them without a token and emits demo-mode fallback events for the UI.

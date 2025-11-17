@@ -464,6 +464,30 @@
 }
 
 /* Modal Styles */
+.modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.45);
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    z-index: 1200;
+    overflow-y: auto;
+}
+.modal.active {
+    display: flex;
+}
+.modal-content {
+    background: var(--bg-primary);
+    border-radius: 18px;
+    padding: 28px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+    width: 100%;
+    max-width: 880px;
+    border: 1px solid var(--border-color);
+}
+
 .current-stock-info {
     background: var(--bg-secondary);
     padding: 15px;
@@ -494,6 +518,69 @@
 .category-machinery { background: rgba(6, 182, 212, 0.1); color: #06b6d4; }
 .category-packaging { background: rgba(236, 72, 153, 0.1); color: #ec4899; }
 .category-other { background: rgba(156, 163, 175, 0.1); color: #9ca3af; }
+
+/* Modal polish */
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 10px;
+}
+.modal-header h2 {
+    margin: 0;
+    font-size: 1.3rem;
+}
+.modal .close-modal {
+    background: transparent;
+    border: none;
+    font-size: 1.4rem;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 4px 8px;
+}
+.modal-body {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+.modal-body .form-row {
+    gap: 16px;
+}
+.modal-body .form-group label {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+.modal-body input,
+.modal-body select,
+.modal-body textarea {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 12px 14px;
+    color: var(--text-primary);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.modal-body input::placeholder,
+.modal-body textarea::placeholder {
+    color: var(--text-secondary);
+}
+.modal-body select option {
+    background: var(--bg-primary);
+    color: var(--text-primary);
+}
+.modal-body textarea {
+    resize: vertical;
+}
+.modal-body input:focus,
+.modal-body select:focus,
+.modal-body textarea:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.15);
+}
 
 /* Responsive Design */
 @media (max-width: 1200px) {

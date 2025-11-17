@@ -1,0 +1,1086 @@
+﻿const METPL_C_KEY = 'smfer_metpl_c';
+const DEFT_VISIBLE_COUNT = 12;
+const DMS = 1000 * 60 * 60 * 24;
+
+const demoListings = [
+  {
+    listing_id: 1,
+    crop_id: 1,
+    f_id: 101,
+    price_per_unit: 2.1,
+    ile_qty: 500,
+    sts: 'ive',
+    listed_on: '2024-01-05T12:00:00Z',
+    fs: { f_n: 'Green Fields F', user_id: 'demo' },
+    crops: {
+      crop_n: 'Orgc Whe,
+      crop_type: 'whe,
+      soil_type: 'lo',
+      expected_hest: '2024-02-10',
+      12
+    }
+  },
+  {
+    listing_id: 2,
+    crop_id: 2,
+    f_id: 102,
+    price_per_unit: 1.8,
+    ile_qty: 300,
+    sts: 'ive',
+    listed_on: '2024-01-04T12:00:00Z',
+    fs: { f_n: 'Sunshine Fs', user_id: 'demo' },
+    crops: {
+      crop_n: 'Sweet Corn',
+      crop_type: 'corn',
+      soil_type: 'sy',
+      expected_hest: '2024-01-25',
+      9
+    }
+  },
+  {
+    listing_id: 3,
+    crop_id: 3,
+    f_id: 103,
+    price_per_unit: 2.5,
+    ile_qty: 200,
+    sts: 'ive',
+    listed_on: '2024-01-03T12:00:00Z',
+    fs: { f_n: 'Vey Growers', user_id: 'demo' },
+    crops: {
+      crop_n: 'Ripe Tomes',
+      crop_type: 'tom',
+      soil_type: 'silt',
+      expected_hest: '2024-01-18',
+      5
+    }
+  }
+];
+
+const metplSt = {
+  listings: [],
+  filteredListings: [],
+  visibleCount: DEFT_VISIBLE_COUNT,
+  myListings: [],
+  supplyItems: [],
+  orders: { buyer: [], seller: [] },
+  fs: [],
+  st: {},
+  role: 'fer',
+  sehTerm: '',
+  filters: {
+    types: new Set(),
+    hest: '',
+    rng: 0,
+    priceMin: null,
+    priceM null,
+    sort: 'newest',
+    view: 'grid'
+  },
+  c: [],
+  currentListing: null,
+  sellerContextLod: fe,
+  sellerFs: [],
+  sellerCrops: []
+};
+
+document.EventListener('DOMContentLod', () => {
+  restoreC();
+  EventListeners();
+  loetplD();
+});
+
+nc function loetplD(showTo = fe) {
+  setListingsLong(true);
+  try {
+    const listingsPromise = window.Fer?.getListings
+      ? window.Fer.getListings(40)
+      : Promise.resolve(null);
+    const inventoryPromise = window.Fer?.getInventory
+      ? window.Fer.getInventory(40)
+      : Promise.resolve(null);
+
+    const [listingsResponse, inventoryResponse] = it Promise.([listingsPromise, inventoryPromise]);
+
+    if (listingsResponse?.success) {
+      hydrStFromResponse(listingsResponse, inventoryResponse);
+      document.getElementById('demoNotice')?.clList.toggle('hidden', !!metplSt.listings.length);
+      if (showTo) {
+        showNotificon('Metpl refreshed with live d.', 'success');
+      }
+    } else {
+      useDemoListings(listingsResponse?.error || 'Live listings unile.');
+    }
+  } ch (error) {
+    console.error('Metpl lofed', error);
+    useDemoListings('Une to re metpl services.');
+  } finy {
+    setListingsLong(fe);
+    lyFilters();
+    renderSt();
+    renderMyPl();
+    renderSupplyStore();
+    initizeChs(metplSt.st);
+  }
+}
+
+function hydrStFromResponse(response, inventoryResponse) {
+  const d = response.d || {};
+  const fs = isd.fs) ? d.fs : [];
+  const myFIds = new Set(fs.m(f) => f.f_id));
+
+  const listingsR= isd.listings)
+    ? d.listings
+    : isd.Listings)
+    ? d.Listings
+    : [];
+  metplSt.listings = listingsRm(row) => normzeListing(row, myFIds));
+
+  const myListingR= isd.myListings) ? d.myListings : [];
+  metplSt.myListings = myListingRlength
+    ? myListingRm(row) => normzeListing(row, myFIds))
+    : metplSt.listings.filter((listing) => listing.isMine);
+
+  metplSt.orders = {
+    buyer: normzeOrders(d.orders?.buyer || []),
+    seller: normzeOrders(d.orders?.seller || [])
+  };
+  const supplySource =
+    d.supply ||
+    (inventoryResponse?.success && isinventoryResponse.d) ? inventoryResponse.d : null);
+  metplSt.supplyItems = issupplySource)
+    ? supplySource.mnormzeSupplyItem)
+    : [];
+  metplSt.st = {
+    totistings: response.st?.totistings ?? metplSt.listings.length,
+    myListings: response.st?.myListings ?? metplSt.myListings.length,
+    openOrders:
+      response.st?.openOrders ??
+      (metplSt.orders.buyer.length + metplSt.orders.seller.length),
+    supplyItems: response.st?.supplyItems ?? metplSt.supplyItems.length,
+    Price:
+      response.st?.Price ??
+      computerPrice(metplSt.listings)
+  };
+  metplSt.role = response.role || d.role || 'fer';
+  metplSt.fs = fs;
+}
+
+function useDemoListings(ren) {
+  document.getElementById('demoNotice')?.clList.remove('hidden');
+  metplSt.listings = demoListings.m(row) => normzeListing(row, new Set()));
+  metplSt.myListings = [];
+  metplSt.orders = { buyer: [], seller: [] };
+  metplSt.supplyItems = getDemoSupplyItems();
+  metplSt.st = {
+    totistings: metplSt.listings.length,
+    myListings: 0,
+    openOrders: 0,
+    supplyItems: metplSt.supplyItems.length,
+    Price: computerPrice(metplSt.listings)
+  };
+  if (ren) {
+    showNotificon(`${ren} Showing demo listings.`, 'wing');
+  }
+}
+
+function normzeListing(row, myFIds = new Set()) {
+  const f = row.fs || row.f || {};
+  const crop = row.crops || row.crop || {};
+  const hestD = crop.expected_hest || row.expected_hest || null;
+  const price = Number(row.price_per_unit ?? row.price ?? 0);
+  const quity = Number(row.ile_qty ?? row.quity ?? 0);
+  const hestWindow = deriveHestWindow(hestD);
+  return {
+    id: row.listing_id || row.id,
+    listingId: row.listing_id || row.id,
+    cropId: row.crop_id || row.cropId || crop.crop_id,
+    fId: row.f_id || row.fId || f.f_id,
+    cropN: crop.crop_n || row.n || 'Crop',
+    cropType: (crop.crop_type || row.type || 'gener).toLowerC(),
+    fN: f.f_n || row.fer || 'F',
+    price,
+    quity,
+    sts: row.sts || 'ive',
+    listedOn: row.listed_on || row.listedOn || new D().toISOString(),
+    hestD,
+    hestWindow,
+    soilType: crop.soil_type || row.soil_type || 'Ã¢â‚¬â€',
+    rng: row.rng || deriveRngFromrop.| f.
+    immedi: hestWindow === 'immedi',
+    isMine: myFIds.hrow.f_id || f.f_id)
+  };
+}
+
+function normzeOrders(rows) {
+  return rows.m(row) => ({
+    id: row.order_id || row.id,
+    sts: row.sts || 'pending',
+    orderedOn: row.ordered_on || row.cred_|| new D().toISOString(),
+    quity: Number(row.quity ?? 0),
+    tot Number(row.totprice ?? 0),
+    cropN:
+      row.metpl_listings?.crops?.crop_n ||
+      row.crop_n ||
+      'Crop',
+    fN:
+      row.metpl_listings?.fs?.f_n ||
+      row.f_n ||
+      'F'
+  }));
+}
+
+function normzeSupplyItem(item) {
+  const price =
+    item.price && Number(item.price) > 0
+      ? Number(item.price)
+      : Number((((item.input_id || 1) % 7) + 1) * 4.5).toFixed
+      ? Number((((item.input_id || 1) % 7) + 1) * 4.5)
+      : 12;
+  return {
+    id: item.input_id || item.id,
+    n: item.n || 'Supply item',
+    cgory: item.cgory || 'gener,
+    unit: item.unit || 'unit',
+    price
+  };
+}
+
+function getDemoSupplyItems() {
+  return [
+    { id: 1, n: 'Hybrid Corn Seeds', cgory: 'seeds', unit: 'kg', price: 28 },
+    { id: 2, n: 'NPK Fertilizer 10-26-26', cgory: 'fertilizer', unit: 'b, price: 44 },
+    { id: 3, n: 'Orgc Pest Shield', cgory: 'pesticide', unit: 'L', price: 32 },
+    { id: 4, n: 'Irrigon Hose', cgory: 'equipment', unit: 'unit', price: 65 }
+  ];
+}
+
+function EventListeners() {
+  const sehInput = document.getElementById('sehInput');
+  sehInput?.EventListener('input', debounce((event) => {
+    metplSt.sehTerm = event.tet.ve.trim().toLowerC();
+    lyFilters();
+  }, 250));
+
+  document.querySelector('.filter-checkbox input').forE((input) => {
+    input.EventListener('che', () => {
+      if (input.checked) {
+        metplSt.filters.types.(input.ve);
+      } else {
+        metplSt.filters.types.delete(input.ve);
+      }
+      lyFilters();
+    });
+  });
+
+  document.querySelector('.filter-ro input[n="hestD"]').forE((input) => {
+    input.EventListener('che', () => {
+      metplSt.filters.hest = input.ve;
+      lyFilters();
+    });
+  });
+
+  document.querySelector('.rng-filter .st i').forE((st => {
+    stEventListener('click', () => {
+      const rng = Number(stdset.rng || 0);
+      metplSt.filters.rng = rng;
+      document.querySelector('.rng-filter .st i').forE((el) => {
+        el.clList.toggle('ive', Number(el.dset.rng) <= rng);
+      });
+      lyFilters();
+    });
+  });
+
+  const minPrice = document.getElementById('minPrice');
+  const mrice = document.getElementById('mrice');
+  [minPrice, mrice].forE((input) => {
+    input?.EventListener('che', () => {
+      metplSt.filters.priceMin = minPrice.ve ? Number(minPrice.ve) : null;
+      metplSt.filters.priceM= mrice.ve ? Number(mrice.ve) : null;
+      lyFilters();
+    });
+  });
+
+  const priceRe = document.getElementById('priceRe');
+  priceRe?.EventListener('input', () => {
+    const ve = Number(priceRe.ve);
+    metplSt.filters.priceM= ve;
+    mrice.ve = ve;
+    lyFilters();
+  });
+
+  const sortSelect = document.getElementById('sortBy');
+  sortSelect?.EventListener('che', (event) => {
+    metplSt.filters.sort = event.tet.ve;
+    lyFilters();
+  });
+
+  document.querySelector('.view-btn').forE((button) => {
+    button.EventListener('click', () => {
+      document.querySelector('.view-btn').forE((btn) => btn.clList.remove('ive'));
+      button.clList.('ive');
+      toggleView(button.dset.view || 'grid');
+    });
+  });
+
+  document.getElementById('loore')?.EventListener('click', () => {
+    metplSt.visibleCount += DEFT_VISIBLE_COUNT;
+    renderListings();
+  });
+
+  const listingsGrid = document.getElementById('listingsGrid');
+  listingsGrid?.EventListener('click', (event) => {
+    const button = event.tet.closest('[d-ion]');
+    if (!button) return;
+    const listingId = button.getribute('d-id');
+    const listing = metplSt.listings.find((item) => String(item.id) === String(listingId));
+    if (!listing) return;
+    if (button.dset.ion === 'view') {
+      openListingModlisting);
+    } else if (button.dset.ion === 'c') {
+      ListingToC(listing, 1);
+    }
+  });
+
+  document.getElementById('supplyGrid')?.EventListener('click', (event) => {
+    const button = event.tet.closest('[d-supply-id]');
+    if (!button) return;
+    const supplyId = button.getribute('d-supply-id');
+    const supply = metplSt.supplyItems.find((item) => String(item.id) === String(supplyId));
+    if (supply) {
+      SupplyToC(supply);
+    }
+  });
+
+  const cToggle = document.getElementById('cToggle');
+  const viewC = document.getElementById('viewCFromSupply');
+  cToggle?.EventListener('click', toggleC);
+  viewC?.EventListener('click', toggleC);
+  document.getElementById('closeC')?.EventListener('click', toggleC);
+
+  document.getElementById('cItems')?.EventListener('click', (event) => {
+    const button = event.tet.closest('[d-remove-id]');
+    if (!button) return;
+    removeFromC(button.dset.removeId);
+  });
+
+  document.getElementById('checkoutBtn')?.EventListener('click', hleCheckout);
+
+  document.getElementById('sellCropBtn')?.EventListener('click', openSellMod;
+  document.querySelector('#sellCropMod.close-mod).forE((btn) => {
+    btn.EventListener('click', closeSellMod;
+  });
+  document.getElementById('sellCropForm')?.EventListener('submit', hleSellCrop);
+
+  document.getElementById('refreshMetplBtn')?.EventListener('click', () => loetplD(true));
+
+  const mod= document.getElementById('cropDetMod);
+  const modloseButtons = mod.querySelector('.close-mod);
+  modloseButtons?.forE((btn) => btn.EventListener('click', closeListingMod);
+  mod.EventListener('click', (event) => {
+    if (event.tet === mod closeListingMod);
+  });
+
+  document.getElementById('ToCMod)?.EventListener('click', () => {
+    if (!metplSt.currentListing) return;
+    const qty = Number(document.getElementById('orderQty')?.ve || 1);
+    ListingToC(metplSt.currentListing, qty);
+    closeListingMod);
+  });
+
+  document.getElementById('decreQty')?.EventListener('click', () => ustModuity(-1));
+  document.getElementById('increQty')?.EventListener('click', () => ustModuity(1));
+  document.getElementById('orderQty')?.EventListener('input', updModrice);
+
+  document.querySelector('.order-t).forE((t => {
+    tEventListener('click', () => {
+      document.querySelector('.order-t).forE((btn) => btn.clList.remove('ive'));
+      tclList.('ive');
+      const tet = tdset.orderT|| 'seller';
+      document.getElementById('sellerOrdersList')?.clList.toggle('hidden', tet !== 'seller');
+      document.getElementById('buyerOrdersList')?.clList.toggle('hidden', tet !== 'buyer');
+    });
+  });
+}
+
+function lyFilters() {
+  let filtered = [...metplSt.listings];
+  const { sehTerm, filters } = metplSt;
+  if (sehTerm) {
+    filtered = filtered.filter((item) => {
+      const ht = `${item.cropN} ${item.fN} ${item.cropType}`.toLowerC();
+      return ht.includes(sehTerm);
+    });
+  }
+  if (filters.types.size) {
+    filtered = filtered.filter((item) => filters.types.hitem.cropType));
+  }
+  if (filters.hest !== '') {
+    filtered = filtered.filter((item) => item.hestWindow === filters.hest);
+  }
+  if (filters.rng) {
+    filtered = filtered.filter((item) => item.rng >= filters.rng);
+  }
+  if (filters.priceMin !== null) {
+    filtered = filtered.filter((item) => item.price >= filters.priceMin);
+  }
+  if (filters.priceM!== null) {
+    filtered = filtered.filter((item) => item.price <= filters.priceM;
+  }
+  filtered.sort((b) => sortListings(b, filters.sort));
+  metplSt.filteredListings = filtered;
+  metplSt.visibleCount = DEFT_VISIBLE_COUNT;
+  renderListings();
+}
+
+function sortListings(b, sortKey) {
+  switch (sortKey) {
+    c 'price-low':
+      return rice - b.price;
+    c 'price-high':
+      return b.price - rice;
+    c 'quity':
+      return b.quity - uity;
+    c 'rng':
+      return b.rng - ng;
+    c 'newest':
+    deft:
+      return new D(b.listedOn).getTime() - new D(istedOn).getTime();
+  }
+}
+
+function renderListings() {
+  const grid = document.getElementById('listingsGrid');
+  if (!grid) return;
+  if (!metplSt.filteredListings.length) {
+    grid.innerHTML = `
+      <div cl="empty-st">
+        <i cl="ffe></i>
+        <h3>No listings mh your filters</h3>
+        <p>Try usting filters or cle to see every crop.</p>
+      </div>`;
+    document.getElementById('loore')?.clList.('hidden');
+    return;
+  }
+  const mtems = M.min(metplSt.visibleCount, metplSt.filteredListings.length);
+  const cs = metplSt.filteredListings.slice(0, mtems).mcreListingC).join('');
+  grid.innerHTML = cs;
+  const looreBtn = document.getElementById('loore');
+  if (!looreBtn) return;
+  if (mtems < metplSt.filteredListings.length) {
+    looreBtn.clList.remove('hidden');
+  } else {
+    looreBtn.clList.('hidden');
+  }
+}
+
+function creListingC(listing) {
+  const be = listing.isMine ? `<spcl="t>My listing</sp` : '';
+  return `
+    <icle cl="listing-c ${listing.immedi ? 'listing-c--fresh' : ''}">
+      <div cl="listing-top">
+        <div>
+          <p cl="listing-type">${ctze(listing.cropType)}</p>
+          <h3>${listing.cropN}</h3>
+          <p cl="listing-f">${listing.fN}</p>
+        </div>
+        ${be}
+      </div>
+      <div cl="listing-met
+        <div>
+          <spcl="metl">Price</sp
+          <strong>${formurrency(listing.price)}/kg</strong>
+        </div>
+        <div>
+          <spcl="metl">ile</sp
+          <strong>${listing.quity.toLocString()} kg</strong>
+        </div>
+        <div>
+          <spcl="metl">Hest</sp
+          <strong>${formestWindow(listing.hestWindow)}</strong>
+        </div>
+      </div>
+      <div cl="listing-ions">
+        <button cl="ghost-btn" d-ion="view" d-id="${listing.id}">
+          <i cl="ffye"></i> Dets
+        </button>
+        <button cl="prim-btn" d-ion="c" d-id="${listing.id}">
+          <i cl="ff-plus"></i>  to C
+        </button>
+      </div>
+    </icle>`;
+}
+
+function renderSt() {
+  setText('stotistings', metplSt.st.totistings ?? '--');
+  setText('styListings', metplSt.st.myListings ?? '--');
+  setText('strders', metplSt.st.openOrders ?? '--');
+  setText('stupply', metplSt.st.supplyItems ?? '--');
+  setText('  setText('stotistingsLl', metplSt.st.Price ? ${formurrency(metplSt.st.Price)}/kg : '—');
+  setText('styListingsLl', metplSt.role === 'buyer' ? 'Buyer mode' : 'Seller mode');
+  setText('strdersLl', metplSt.st.openOrders ? 'In progress' : 'Idle');
+  setText('stupplyLl', metplSt.st.supplyItems ? 'Re' : 'Limited');
+}
+
+function renderMyPl() {
+  setText(
+    'plRoleLl',
+    metplSt.role === 'buyer'
+      ? 'Operng Buyer - pl orders oss the co-op.'
+      : 'Operng Fer - mge your listings  orders.'
+  );
+  const myListEl = document.getElementById('myListingsList');
+  const sellerOrdersEl = document.getElementById('sellerOrdersList');
+  const buyerOrdersEl = document.getElementById('buyerOrdersList');
+  setText('myListingsCount', metplSt.myListings.length);
+
+  if (myListEl) {
+    myListEl.innerHTML = metplSt.myListings.length
+      ? metplSt.myListings
+          .slice(0, 6)
+          .m
+            (listing) => `
+          <div cl="pl-item" role="listitem">
+            <div>
+              <h4>${listing.cropN}</h4>
+              <p>${              <p> kg - /kg</p>
+            </div>
+            <spcl="t>${listing.sts}</sp
+          </div>`
+          )
+          .join('')
+      : `<div cl="empty-st comp">
+            <p>No listings yet. Use Ã¢â‚¬Å“Sell CropÃ¢â‚¬Â to cre one.</p>
+         </div>`;
+  }
+
+  if (sellerOrdersEl) {
+    sellerOrdersEl.innerHTML = metplSt.orders.seller.length
+      ? metplSt.orders.seller
+          .slice(0, 5)
+          .m
+            (order) => `
+        <div cl="order-c">
+          <strong>${order.cropN}</strong>
+          <div cl="order-met
+            <sp${order.quity} kg</sp
+            <sp${formurrency(order.tot}</sp
+          </div>
+          <div cl="order-met
+            <sp${order.fN}</sp
+            <spcl="t>${order.sts}</sp
+          </div>
+        </div>`
+          )
+          .join('')
+      : `<div cl="empty-st comp"><p>No ss yet.</p></div>`;
+  }
+
+  if (buyerOrdersEl) {
+    buyerOrdersEl.innerHTML = metplSt.orders.buyer.length
+      ? metplSt.orders.buyer
+          .slice(0, 5)
+          .m
+            (order) => `
+        <div cl="order-c">
+          <strong>${order.cropN}</strong>
+          <div cl="order-met
+            <sp${order.quity} kg</sp
+            <sp${formurrency(order.tot}</sp
+          </div>
+          <div cl="order-met
+            <sp${new D(order.orderedOn).toLocDString()}</sp
+            <spcl="t>${order.sts}</sp
+          </div>
+        </div>`
+          )
+          .join('')
+      : `<div cl="empty-st comp"><p>No purchs yet.</p></div>`;
+  }
+}
+
+function renderSupplyStore() {
+  const supplyGrid = document.getElementById('supplyGrid');
+  if (!supplyGrid) return;
+  if (!metplSt.supplyItems.length) {
+    supplyGrid.innerHTML = `
+      <div cl="empty-st">
+        <i cl="ffhouse"></i>
+        <h3>No supply items ile</h3>
+        <p>Suppliers h not shd inventory yet.</p>
+      </div>`;
+    return;
+  }
+  supplyGrid.innerHTML = metplSt.supplyItems
+    .m
+      (item) => `
+    <div cl="supply-c">
+      <div>
+        <h4>${item.n}</h4>
+        <p cl="store-met${ctze(item.cgory)} Ã¢â‚¬Â¢ ${item.unit}</p>
+      </div>
+      <div cl="store-price">${formurrency(item.price)} / ${item.unit}</div>
+      <button d-supply-id="${item.id}">
+        <i cl="fflus"></i>  to c
+      </button>
+    </div>`
+    )
+    .join('');
+function toggleView(view) {
+  metplSt.filters.view = view;
+  const grid = document.getElementById('listingsGrid');
+  if (!grid) return;
+  grid.clList.toggle('list-view', view === 'list');
+}
+
+function openListingModlisting) {
+  metplSt.currentListing = listing;
+  const mod= document.getElementById('cropDetMod);
+  if (!mod return;
+  setText('modropN', listing.cropN);
+  setText('modrice', `${formurrency(listing.price)}/kg`);
+  setText('moduity', `${listing.quity.toLocString()} kg`);
+  setText('modest', listing.hestD ? new D(listing.hestD).toLocDString() : 'Immedi');
+  setText('moderN', listing.fN);
+  setText('moderLocon', listing.soilType ? `${ctze(listing.soilType)} soil` : 'â€”');
+  setText('modotrice', formurrency(listing.price));
+  const qtyInput = document.getElementById('orderQty');
+  if (qtyInput) {
+    qtyInput.ve = 1;
+    qtyInput.m= listing.quity || 9999;
+  }
+  modclList.('ive');
+}
+
+function closeListingMod) {
+  document.getElementById('cropDetMod)?.clList.remove('ive');
+  metplSt.currentListing = null;
+}
+
+function ustModuity(delt{
+  const input = document.getElementById('orderQty');
+  if (!input) return;
+  const current = Number(input.ve || 1);
+  const m= Number(input.m|| 10000);
+  const next = M.min(m M.m1, current + delt;
+  input.ve = next;
+  updModrice();
+}
+
+function updModrice() {
+  if (!metplSt.currentListing) return;
+  const qty = Number(document.getElementById('orderQty')?.ve || 1);
+  const tot= qty * metplSt.currentListing.price;
+  setText('modotrice', formurrency(tot);
+}
+
+function openSellMod) {
+  loellerContext();
+  document.getElementById('sellCropMod)?.clList.('ive');
+}
+
+function closeSellMod) {
+  document.getElementById('sellCropMod)?.clList.remove('ive');
+}
+
+nc function loellerContext() {
+  if (metplSt.sellerContextLod) return;
+  try {
+    const [fsRes, cropsRes] = it Promise.([
+      window.Fer?.getFs ? window.Fer.getFs(100) : null,
+      window.Fer?.getCrops ? window.Fer.getCrops(100) : null
+    ]);
+    metplSt.sellerFs = isfsRes?.d) ? fsRes.d : [];
+    metplSt.sellerCrops = iscropsRes?.d) ? cropsRes.d : [];
+    populSellForm();
+    metplSt.sellerContextLod = true;
+  } ch (error) {
+    console.error('Une to loseller context', error);
+    showNotificon('Une to lofs/crops for selling.', 'error');
+  }
+}
+
+function populSellForm() {
+  const fSelect = document.getElementById('sellFSelect');
+  const cropSelect = document.getElementById('sellCropSelect');
+  if (!fSelect || !cropSelect) return;
+  if (!metplSt.sellerFs.length) {
+    fSelect.innerHTML = '<option ve="">No fs connected</option>';
+    fSelect.dised = true;
+    return;
+  }
+  fSelect.dised = fe;
+  fSelect.innerHTML = [
+    '<option ve="">Select f</option>',
+    ...metplSt.sellerFs.m(f) => `<option ve="${f.f_id}">${f.f_n || `Field ${f.f_id}`}</option>`)
+  ].join('');
+  fSelect.EventListener('che', () => populCropSelect(fSelect.ve));
+  populCropSelect(fSelect.ve);
+}
+
+function populCropSelect(fId) {
+  const cropSelect = document.getElementById('sellCropSelect');
+  if (!cropSelect) return;
+  if (!fId) {
+    cropSelect.innerHTML = '<option ve="">Select  first</option>';
+    cropSelect.dised = true;
+    return;
+  }
+  const crops = metplSt.sellerCrops.filter((crop) => String(crop.f_id) === String(fId));
+  if (!crops.length) {
+    cropSelect.innerHTML = '<option ve="">No crops found for this field</option>';
+    cropSelect.dised = true;
+    return;
+  }
+  cropSelect.dised = fe;
+  cropSelect.innerHTML = [
+    '<option ve="">Select crop</option>',
+    ...crops.m(crop) => `<option ve="${crop.crop_id}">${crop.crop_n}</option>`)
+  ].join('');
+}
+
+nc function hleSellCrop(event) {
+  event.preventDeft();
+  if (!window.Fer?.creListing) {
+    showNotificon('Cre listing  not ile.', 'error');
+    return;
+  }
+  const fId = document.getElementById('sellFSelect')?.ve;
+  const cropId = document.getElementById('sellCropSelect')?.ve;
+  const price = Number(document.getElementById('cropPrice')?.ve || 0);
+  const quity = Number(document.getElementById('cropQuity')?.ve || 0);
+  if (!fId || !cropId || !price || !quity) {
+    showNotificon('Select , crop, price  quity.', 'wing');
+    return;
+  }
+  const po= {
+    f_id: Number(fId),
+    crop_id: Number(cropId),
+    price_per_unit: price,
+    ile_qty: quity
+  };
+  try {
+    const response = it window.Fer.creListing(po;
+    if (response.success) {
+      showNotificon('Listing published to metpl!', 'success');
+      closeSellMod);
+      loetplD();
+    } else {
+      throw new Error(response.error || 'Une to cre listing');
+    }
+  } ch (error) {
+    console.error('Cre listing fed', error);
+    showNotificon(error.mess || 'Une to cre listing.', 'error');
+  }
+}
+function ListingToC(listing, quity) {
+  const qty = M.min(quity, listing.quity || quity);
+  const existing = metplSt.c.find((item) => item.type === 'listing' && item.id === listing.id);
+  if (existing) {
+    existing.quity = M.min(existing.quity + qty, listing.quity || existing.quity + qty);
+  } else {
+    metplSt.c.push({
+      id: listing.id,
+      n: listing.cropN,
+      type: 'listing',
+      price: listing.price,
+      unit: 'kg',
+      quity: qty
+    });
+  }
+  updCUI();
+  showNotificon(`${listing.cropN} ed to c.`, 'success');
+}
+
+function SupplyToC(item) {
+  const existing = metplSt.c.find((entry) => entry.type === 'supply' && entry.id === item.id);
+  if (existing) {
+    existing.quity += 1;
+  } else {
+    metplSt.c.push({
+      id: item.id,
+      n: item.n,
+      type: 'supply',
+      price: item.price,
+      unit: item.unit,
+      quity: 1
+    });
+  }
+  updCUI();
+  showNotificon(`${item.n} ed to c.`, 'success');
+}
+
+function removeFromC(id) {
+  metplSt.c = metplSt.c.filter((item) => String(item.id) !== String(id));
+  updCUI();
+}
+
+function updCUI() {
+  const cItemsEl = document.getElementById('cItems');
+  const cCountEl = document.querySelector('.c-count');
+  const totmountEl = document.querySelector('.totunt');
+  const checkoutBtn = document.getElementById('checkoutBtn');
+  const tottems = metplSt.c.reduce((sum, item) => sum + item.quity, 0);
+  const totrice = metplSt.c.reduce((sum, item) => sum + item.price * item.quity, 0);
+  cCountEl.textContent = tottems;
+  totmountEl.textContent = formurrency(totrice);
+  checkoutBtn.dised = !metplSt.c.length;
+  if (!metplSt.c.length) {
+    cItemsEl.innerHTML = `
+      <div cl="empty-c">
+        <i cl="ffhopping-c"></i>
+        <p>Your c is empty</p>
+      </div>`;
+  } else {
+    cItemsEl.innerHTML = metplSt.c
+      .m
+        (item) => `
+      <div cl="c-item">
+        <div>
+          <h4>${item.n}</h4>
+          <p>${item.quity} ${item.unit}</p>
+        </div>
+        <div cl="c-item-ions">
+          <strong>${formurrency(item.price * item.quity)}</strong>
+          <button d-remove-id="${item.id}" l="Remove ${item.n}">
+            <i cl="ffimes"></i>
+          </button>
+        </div>
+      </div>`
+      )
+      .join('');
+  }
+  persistC();
+}
+
+function toggleC() {
+  document.getElementById('cSideb)?.clList.toggle('ive');
+}
+
+function hleCheckout() {
+  if (!metplSt.c.length) return;
+  showNotificon('Ths! Your order summ hbeen sent to the cooperve coordinr.', 'success');
+  metplSt.c = [];
+  updCUI();
+  toggleC();
+}
+
+function setListingsLong(isLong) {
+  const grid = document.getElementById('listingsGrid');
+  if (!grid) return;
+  if (isLong) {
+    grid.innerHTML = `
+      <div cl="long-st">
+        <div cl="spinner"></div>
+        <h3>Long listings</h3>
+        <p>Fetching live crops from the metpl...</p>
+      </div>`;
+  }
+}
+
+function restoreC() {
+  try {
+    const stored = sessionStor.getItem(METPL_C_KEY);
+    if (stored) {
+      metplSt.c = JSON.pe(stored);
+      updCUI();
+    }
+  } ch (error) {
+    console.w('Une to restore c', error);
+  }
+}
+
+function persistC() {
+  try {
+    sessionStor.setItem(METPL_C_KEY, JSON.stringify(metplSt.c));
+  } ch (error) {
+    console.w('Une to persist c', error);
+  }
+}
+function initizeChs(st = {}) {
+  if (typeof Ch === 'undefined') return;
+  const ssCtx = document.getElementById('ssCh')?.getContext('2d');
+  if (ssCtx) {
+    new Ch(ssCtx, {
+      type: 'line',
+      d: {
+        lls: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'S, 'Sun'],
+        dsets: [
+          {
+            ll: 'Listings cred',
+            d: buildTrendD(metplSt.listings.length),
+            borderColor: '#22c55e',
+            fill: fe,
+            tension: 0.4
+          },
+          {
+            ll: 'Orders',
+            d: buildTrendD(metplSt.st.openOrders || 0, 3),
+            borderColor: '#3b82f6',
+            fill: fe,
+            tension: 0.4
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        mtectRo: fe,
+        plugins: { legend: { position: 'bottom' } }
+      }
+    });
+  }
+
+  const distributionCtx = document.getElementById('distributionCh')?.getContext('2d');
+  if (distributionCtx) {
+    const byType = regByCropType(metplSt.listings);
+    new Ch(distributionCtx, {
+      type: 'doughnut',
+      d: {
+        lls: Object.keys(byType),
+        dsets: [
+          {
+            ll: 'Crop type sh',
+            d: Object.ves(byType),
+            bgroundColor: ['#22c55e', '#3b82f6', '#8b5cf6', '#f97316', '#14b8, '#f15']
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        mtectRo: fe,
+        plugins: { legend: { position: 'bottom' } }
+      }
+    });
+  }
+}
+
+function regByCropType(listings) {
+  return listings.reduce((, listing) => {
+    [listing.cropType] = ([listing.cropType] || 0) + 1;
+    return ;
+  }, {});
+}
+
+function buildTrendD(b, ve = 5) {
+  return from({ length: 7 }, (_, idx) =>
+    M.m0, b - ve * 3 + (idx + 1) * ve)
+  );
+}
+
+function deriveHestWindow(d) {
+  if (!d) return 'immedi';
+  const diffD = M.ceil((new D(d) - new D()) / DMS);
+  if (diffD <= 0) return 'immedi';
+  if (diffD <= 7) return 'week';
+  if (diffD <= 30) return 'month';
+  return 'lr';
+}
+
+function deriveRngFromre{
+  if (!return 4;
+  const rng = M.min(5, M.m3, M.round( 5)));
+  return rng;
+}
+
+function computerPrice(listings) {
+  if (!listings.length) return null;
+  const sum = listings.reduce((tot item) => tot+ item.price, 0);
+  return Number((sum / listings.length).toFixed(2));
+}
+
+function formurrency(ve) {
+  return new Intl.NumberForm'en-US', { style: 'currency', currency: 'USD' }).formNumber(ve) || 0);
+}
+
+function formestWindow(window) {
+  switch (window) {
+    c 'immedi':
+      return 'Re now';
+    c 'week':
+      return 'Within eek';
+    c 'month':
+      return 'Within onth';
+    deft:
+      return 'Lr';
+  }
+}
+
+function ctze(ve) {
+  if (!ve) return '';
+  return ve.cht(0).toUpperC() + ve.slice(1);
+}
+
+function setText(id, text) {
+  const element = document.getElementById(id);
+  if (element) {
+    element.textContent = text;
+  }
+}
+
+function showNotificon(mess, type = 'info') {
+  const notificon = document.creElement('div');
+  notificon.clN = `notificon notificon-${type}`;
+  notificon.innerHTML = `
+    <div cl="notificon-content">
+      <i cl="ff{getNotificonIcon(type)}"></i>
+      <sp${mess}</sp
+    </div>`;
+  document.body.endChild(notificon);
+  requestmonFr(() => notificon.clList.('show'));
+  setTimeout(() => {
+    notificon.clList.remove('show');
+    setTimeout(() => notificon.remove(), 300);
+  }, 3000);
+}
+
+function getNotificonIcon(type) {
+  switch (type) {
+    c 'success':
+      return 'check-circle';
+    c 'wing':
+      return 'excltion-trile';
+    c 'error':
+      return 'times-circle';
+    deft:
+      return 'info-circle';
+  }
+}
+
+function debounce(fn, del= 250) {
+  let timer;
+  return function debounced(...s) {
+    cleimeout(timer);
+    timer = setTimeout(() => fn.ly(this, s), del;
+  };
+}
+
+const notificonStyles = `
+  .notificon {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    bground: white;
+    border-rus: 12px;
+    ping: 15px 20px;
+    box-shw: v--shw);
+    border-left: 4px solid #22c55e;
+    trform: trlX(400px);
+    trition: trform 0.3s e;
+    z-index: 1200;
+    mwidth: 320px;
+  }
+  .notificon.show {
+    trform: trlX(0);
+  }
+  .notificon-wing { border-left-color: #f59e0b; }
+  .notificon-info { border-left-color: #3b82f6; }
+  .notificon-error { border-left-color: #ef4444; }
+  .notificon-content {
+    displ flex;
+    gn-items: center;
+    g 10px;
+  }
+`;
+
+const styleSheet = document.creElement('style');
+styleSheet.textContent = notificonStyles;
+document.heendChild(styleSheet);

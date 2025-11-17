@@ -10,17 +10,27 @@
     <link rel="stylesheet" href="src/css/sidebar.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- Font Awesome with fallback CDN -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" 
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css"
           onerror="this.onerror=null;this.href='https://use.fontawesome.com/releases/v6.4.0/css/all.css'">
+    
 </head>
-<body>
+<body class="light-mode">
+    <script>
+        window.__SUPABASE_CONFIG__ = {
+            url: 'https://bmdypirsqwhghrvbhqoy.supabase.co',
+            anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJtZHlwaXJzcXdoZ2hydmJocW95Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk4MjE5NzcsImV4cCI6MjA3NTM5Nzk3N30.2Mea6l7pn1l-qw28Nxk_m2weMajWlbca0M-ZybMs2xg'
+        };
+        window.__ENV = {
+            EDGE_FUNCTION_BASE_URL: 'https://bmdypirsqwhghrvbhqoy.functions.supabase.co',
+            SERVICE_ROLE_TOKEN: '<eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJtZHlwaXJzcXdoZ2hydmJocW95Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1OTgyMTk3NywiZXhwIjoyMDc1Mzk3OTc3fQ.NpfC1SI0-N6g68KoPt9hNhCSK8pCytamQ6khJ7qCYcc>'
+        };
+    </script>
+
     <!-- Sidebar Overlay for Mobile -->
     <div class="sidebar-overlay"></div>
 
     <!-- Sidebar Container -->
-    <div id="sidebar-container">
-        <!-- Sidebar will be loaded here by JavaScript -->
-    </div>
+    <div id="sidebar-container"></div>
 
     <!-- Main Content Wrapper -->
     <main class="main-content">
@@ -29,429 +39,173 @@
             <div class="navbar-content">
                 <div class="greeting">
                     <h1>Crop Management</h1>
-                    <p>Monitor and manage all your crops in one place</p>
+                    <p>Monitor and manage every crop growing across your farms</p>
                 </div>
-                
+
                 <div class="navbar-actions">
-                    <!-- Quick Actions -->
                     <div class="quick-actions">
-                        <button class="action-btn" id="addCropBtn">
+                        <button class="action-btn" id="openAddCropBtn" data-open-crop-modal="true">
                             <i class="fas fa-plus"></i> Add Crop
                         </button>
-                        <button class="action-btn">
-                            <i class="fas fa-filter"></i> Filter
+                        <button class="action-btn" id="manageFieldsBtn">
+                            <i class="fas fa-map"></i> Manage Fields
                         </button>
-                        <button class="action-btn">
-                            <i class="fas fa-download"></i> Export
+                        <button class="action-btn" id="refreshCropsBtn">
+                            <i class="fas fa-rotate"></i> Refresh
                         </button>
                     </div>
-                    
-                    <!-- Notification & Profile -->
+
                     <div class="user-actions">
-                        <button class="notification-btn" title="Notifications">
+                        <button class="notification-btn" title="Notifications" aria-label="Notifications">
                             <i class="fas fa-bell"></i>
                             <span class="notification-dot"></span>
                         </button>
-                        <div class="user-profile">
-                            <div class="avatar">FJ</div>
-                            <span class="user-name">Farmer John</span>
+                        <div class="user-profile" id="user-profile-wrapper">
+                            <button id="userMenuBtn" class="user-button" aria-haspopup="true" aria-expanded="false" aria-controls="userMenu" title="User menu">
+                                <div class="avatar" id="avatar">FJ</div>
+                                <span class="user-name" id="user-name">Farmer</span>
+                                <i class="fas fa-caret-down"></i>
+                            </button>
+                            <div id="userMenu" class="user-menu hidden" role="menu" aria-labelledby="userMenuBtn">
+                                <button id="openProfileBtn" class="menu-item" role="menuitem">Profile</button>
+                                <button id="logoutBtn" class="menu-item" role="menuitem">Log out</button>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </header>
 
-        <!-- Main Crops Content -->
-        <div class="crops-dashboard">
-            <!-- Stats Overview -->
-            <div class="stats-grid">
-                <div class="stat-card card-hover">
-                    <div class="card-header">
-                        <div>
-                            <p class="card-label">Total Crops</p>
-                            <h3 class="card-value">8</h3>
-                        </div>
-                        <div class="card-icon crops-icon">
-                            <i class="fas fa-leaf"></i>
-                        </div>
-                    </div>
-                    <div class="card-status">
-                        <span class="status-badge optimal">Active</span>
-                    </div>
-                </div>
-
-                <div class="stat-card card-hover">
-                    <div class="card-header">
-                        <div>
-                            <p class="card-label">Ready for Harvest</p>
-                            <h3 class="card-value">3</h3>
-                        </div>
-                        <div class="card-icon harvest-icon">
-                            <i class="fas fa-cut"></i>
-                        </div>
-                    </div>
-                    <div class="card-status">
-                        <span class="status-badge due-soon">This Week</span>
-                    </div>
-                </div>
-
-                <div class="stat-card card-hover">
-                    <div class="card-header">
-                        <div>
-                            <p class="card-label">Needs Attention</p>
-                            <h3 class="card-value">2</h3>
-                        </div>
-                        <div class="card-icon alert-icon">
-                            <i class="fas fa-exclamation-triangle"></i>
-                        </div>
-                    </div>
-                    <div class="card-status">
-                        <span class="status-badge warning">Check Required</span>
-                    </div>
-                </div>
-
-                <div class="stat-card card-hover">
-                    <div class="card-header">
-                        <div>
-                            <p class="card-label">Total Area</p>
-                            <h3 class="card-value">45 acres</h3>
-                        </div>
-                        <div class="card-icon area-icon">
-                            <i class="fas fa-map"></i>
-                        </div>
-                    </div>
-                    <div class="card-status">
-                        <span class="status-badge normal">Planted</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Rest of your crops content remains the same -->
-            <!-- Crop Icons Panel -->
-            <div class="crop-panel-section">
-                <h2 class="section-title">My Crops</h2>
-                <div class="crop-icons-panel">
-                    <!-- Wheat -->
-                    <div class="crop-icon active" data-crop="wheat">
-                        <div class="crop-icon-image wheat-bg">
-                            <i class="fas fa-wheat-alt"></i>
-                        </div>
-                        <span class="crop-icon-name">Wheat</span>
-                        <div class="notification-dot"></div>
-                    </div>
-
-                    <!-- Corn -->
-                    <div class="crop-icon" data-crop="corn">
-                        <div class="crop-icon-image corn-bg">
-                            <i class="fas fa-corn"></i>
-                        </div>
-                        <span class="crop-icon-name">Corn</span>
-                    </div>
-
-                    <!-- Tomato -->
-                    <div class="crop-icon" data-crop="tomato">
-                        <div class="crop-icon-image tomato-bg">
-                            <i class="fas fa-pepper-hot"></i>
-                        </div>
-                        <span class="crop-icon-name">Tomato</span>
-                    </div>
-
-                    <!-- Rice -->
-                    <div class="crop-icon" data-crop="rice">
-                        <div class="crop-icon-image rice-bg">
-                            <i class="fas fa-seedling"></i>
-                        </div>
-                        <span class="crop-icon-name">Rice</span>
-                    </div>
-
-                    <!-- Potato -->
-                    <div class="crop-icon" data-crop="potato">
-                        <div class="crop-icon-image potato-bg">
-                            <i class="fas fa-potato"></i>
-                        </div>
-                        <span class="crop-icon-name">Potato</span>
-                    </div>
-
-                    <!-- Apple -->
-                    <div class="crop-icon" data-crop="apple">
-                        <div class="crop-icon-image apple-bg">
-                            <i class="fas fa-apple-alt"></i>
-                        </div>
-                        <span class="crop-icon-name">Apple</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Main Display Area -->
-            <div class="crop-details-section">
-                <!-- Selected Crop Details -->
-                <div class="crop-details-card">
-                    <div class="crop-header">
-                        <div class="crop-title">
-                            <h2>Wheat - Field A</h2>
-                            <p>Planted on March 15, 2023 • 5.2 acres</p>
-                        </div>
-                        <div class="crop-actions">
-                            <button class="action-btn edit-btn">
-                                <i class="fas fa-edit"></i> Edit
-                            </button>
-                            <button class="action-btn delete-btn">
-                                <i class="fas fa-trash"></i> Remove
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <div class="crop-content">
-                        <!-- Left Column: Image and Basic Info -->
-                        <div class="crop-info-column">
-                            <div class="crop-image">
-                                <div class="image-placeholder wheat-bg">
-                                    <i class="fas fa-wheat-alt"></i>
-                                </div>
-                            </div>
-                            
-                            <div class="basic-info-grid">
-                                <div class="info-item">
-                                    <label>Planted Date</label>
-                                    <p>March 15, 2023</p>
-                                </div>
-                                <div class="info-item">
-                                    <label>Area</label>
-                                    <p>5.2 acres</p>
-                                </div>
-                                <div class="info-item">
-                                    <label>Soil Type</label>
-                                    <p>Loamy</p>
-                                </div>
-                                <div class="info-item">
-                                    <label>Health Status</label>
-                                    <p class="status-good">Good</p>
-                                </div>
-                                <div class="info-item">
-                                    <label>Expected Yield</label>
-                                    <p>9.8 tons</p>
-                                </div>
-                                <div class="info-item">
-                                    <label>Market Price</label>
-                                    <p>$210/ton</p>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Right Column: Growth and Inputs -->
-                        <div class="crop-details-column">
-                            <!-- Growth Stage Timeline -->
-                            <div class="growth-section">
-                                <h3>Growth Stage</h3>
-                                <div class="growth-timeline">
-                                    <div class="growth-stage">
-                                        <div class="stage-info">
-                                            <span class="stage-name">Sowing</span>
-                                            <span class="stage-status completed">Completed</span>
-                                        </div>
-                                        <div class="progress-bar">
-                                            <div class="progress-fill" style="width: 100%"></div>
-                                        </div>
-                                    </div>
-                                    <div class="growth-stage">
-                                        <div class="stage-info">
-                                            <span class="stage-name">Germination</span>
-                                            <span class="stage-status completed">Completed</span>
-                                        </div>
-                                        <div class="progress-bar">
-                                            <div class="progress-fill" style="width: 100%"></div>
-                                        </div>
-                                    </div>
-                                    <div class="growth-stage">
-                                        <div class="stage-info">
-                                            <span class="stage-name">Vegetative</span>
-                                            <span class="stage-status completed">Completed</span>
-                                        </div>
-                                        <div class="progress-bar">
-                                            <div class="progress-fill" style="width: 100%"></div>
-                                        </div>
-                                    </div>
-                                    <div class="growth-stage">
-                                        <div class="stage-info">
-                                            <span class="stage-name">Flowering</span>
-                                            <span class="stage-status in-progress">In Progress (70%)</span>
-                                        </div>
-                                        <div class="progress-bar">
-                                            <div class="progress-fill" style="width: 70%"></div>
-                                        </div>
-                                    </div>
-                                    <div class="growth-stage">
-                                        <div class="stage-info">
-                                            <span class="stage-name">Harvest</span>
-                                            <span class="stage-status pending">Not Started</span>
-                                        </div>
-                                        <div class="progress-bar">
-                                            <div class="progress-fill" style="width: 0%"></div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <!-- Input Usage -->
-                            <div class="inputs-section">
-                                <h3>Input Usage</h3>
-                                <div class="inputs-grid">
-                                    <div class="input-item">
-                                        <div class="input-header">
-                                            <span class="input-name">Fertilizer</span>
-                                            <span class="input-usage">65% used</span>
-                                        </div>
-                                        <div class="progress-bar">
-                                            <div class="progress-fill fertilizer" style="width: 65%"></div>
-                                        </div>
-                                    </div>
-                                    <div class="input-item">
-                                        <div class="input-header">
-                                            <span class="input-name">Pesticides</span>
-                                            <span class="input-usage">40% used</span>
-                                        </div>
-                                        <div class="progress-bar">
-                                            <div class="progress-fill pesticide" style="width: 40%"></div>
-                                        </div>
-                                    </div>
-                                    <div class="input-item">
-                                        <div class="input-header">
-                                            <span class="input-name">Water</span>
-                                            <span class="input-usage">75% used</span>
-                                        </div>
-                                        <div class="progress-bar">
-                                            <div class="progress-fill water" style="width: 75%"></div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Charts Section -->
-                <div class="crop-charts-section">
-                    <div class="chart-row">
-                        <!-- Yield Estimate Chart -->
-                        <div class="chart-card">
-                            <div class="chart-header">
-                                <h3>Yield Estimate</h3>
-                                <div class="chart-controls">
-                                    <button class="control-btn active">Weekly</button>
-                                    <button class="control-btn">Monthly</button>
-                                </div>
-                            </div>
-                            <div class="chart-container">
-                                <canvas id="yieldChart"></canvas>
-                            </div>
-                        </div>
-                        
-                        <!-- Input Usage Chart -->
-                        <div class="chart-card">
-                            <div class="chart-header">
-                                <h3>Input Usage Over Time</h3>
-                                <div class="chart-controls">
-                                    <button class="control-btn active">Monthly</button>
-                                    <button class="control-btn">Quarterly</button>
-                                </div>
-                            </div>
-                            <div class="chart-container">
-                                <canvas id="inputChart"></canvas>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Notifications -->
-                <div class="notifications-section">
-                    <h3>Notifications & Reminders</h3>
-                    <div class="notifications-list">
-                        <div class="notification-item alert">
-                            <div class="notification-icon">
-                                <i class="fas fa-exclamation-triangle"></i>
-                            </div>
-                            <div class="notification-content">
-                                <p class="notification-title">Fertilization due in 5 days</p>
-                                <p class="notification-desc">Apply NPK fertilizer to Wheat field</p>
-                            </div>
-                            <span class="notification-time">2 hours ago</span>
-                        </div>
-                        
-                        <div class="notification-item info">
-                            <div class="notification-icon">
-                                <i class="fas fa-info-circle"></i>
-                            </div>
-                            <div class="notification-content">
-                                <p class="notification-title">Pest alert detected</p>
-                                <p class="notification-desc">Aphids detected in Corn field. Consider treatment.</p>
-                            </div>
-                            <span class="notification-time">1 day ago</span>
-                        </div>
-                        
-                        <div class="notification-item success">
-                            <div class="notification-icon">
-                                <i class="fas fa-check-circle"></i>
-                            </div>
-                            <div class="notification-content">
-                                <p class="notification-title">Irrigation completed</p>
-                                <p class="notification-desc">Tomato field irrigation was completed yesterday.</p>
-                            </div>
-                            <span class="notification-time">2 days ago</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <div id="demoNotice" class="demo-notice hidden" role="status" aria-live="polite">
+            <i class="fas fa-info-circle"></i>
+            <span>Demo data is currently displayed. Connect your Supabase project to see live crop information.</span>
         </div>
+
+        <section class="crops-summary" id="cropsSummary">
+            <div class="stat-card card-hover">
+                <div>
+                    <p class="card-label">Total Crops</p>
+                    <h3 class="card-value" id="summaryTotal">--</h3>
+                </div>
+                <span class="status-badge" id="summaryTotalStatus">
+                    <i class="fas fa-seedling"></i> Loading
+                </span>
+            </div>
+            <div class="stat-card card-hover">
+                <div>
+                    <p class="card-label">Ready for Harvest</p>
+                    <h3 class="card-value" id="summaryReady">--</h3>
+                </div>
+                <span class="status-badge due-soon" id="summaryReadyStatus">
+                    <i class="fas fa-clock"></i> Loading
+                </span>
+            </div>
+            <div class="stat-card card-hover">
+                <div>
+                    <p class="card-label">Needs Attention</p>
+                    <h3 class="card-value" id="summaryAttention">--</h3>
+                </div>
+                <span class="status-badge warning" id="summaryAttentionStatus">
+                    <i class="fas fa-exclamation-triangle"></i> Loading
+                </span>
+            </div>
+        </section>
+
+        <section class="crops-main">
+            <div class="crops-list-panel">
+                <div class="panel-header">
+                    <div>
+                        <h2>Your Crops</h2>
+                        <p id="cropListMeta">Loading crops...</p>
+                    </div>
+                </div>
+                <div id="cropsList" class="crops-list">
+                    <div class="loading-state">
+                        <div class="spinner"></div>
+                        <h3>Loading Crops</h3>
+                        <p>Fetching your crop information...</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="crop-detail-panel">
+                <div id="cropDetailEmpty" class="empty-state">
+                    <i class="fas fa-leaf"></i>
+                    <h3>No Crop Selected</h3>
+                    <p>Select a crop to see planting details, soil requirements, and harvest timeline.</p>
+                </div>
+                <div id="cropDetail" class="hidden"></div>
+            </div>
+        </section>
     </main>
 
-    <!-- Add Crop Modal -->
-    <div id="addCropModal" class="modal">
-        <div class="modal-content">
+    <div id="addCropModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="addCropModalTitle">
+        <div class="modal-content large">
             <div class="modal-header">
-                <h2>Add New Crop</h2>
-                <button class="close-modal">&times;</button>
+                <h2 id="addCropModalTitle">Add Crop</h2>
+                <p class="modal-subtitle">Capture planting details so we can track growth, inputs, and yields.</p>
+                <button type="button" class="modal-close" id="closeAddCropModal" aria-label="Close">&times;</button>
             </div>
-            <div class="modal-body">
-                <form id="addCropForm">
-                    <div class="form-group">
-                        <label for="cropName">Crop Name</label>
-                        <input type="text" id="cropName" placeholder="Enter crop name" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="cropType">Crop Type</label>
-                        <select id="cropType" required>
-                            <option value="">Select crop type</option>
-                            <option value="wheat">Wheat</option>
-                            <option value="corn">Corn</option>
-                            <option value="tomato">Tomato</option>
-                            <option value="rice">Rice</option>
-                            <option value="potato">Potato</option>
-                            <option value="apple">Apple</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="plantingDate">Planting Date</label>
-                        <input type="date" id="plantingDate" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="fieldArea">Field Area (acres)</label>
-                        <input type="number" id="fieldArea" placeholder="Enter area in acres" step="0.1" required>
-                    </div>
-                    <div class="form-actions">
-                        <button type="button" class="btn-secondary close-modal">Cancel</button>
-                        <button type="submit" class="btn-primary">Add Crop</button>
-                    </div>
-                </form>
-            </div>
+            <form id="addCropForm" class="modal-body form-grid">
+                <label>Field / Farm
+                    <select id="cropFarmSelect" name="farm_id" required>
+                        <option value="">Select a field</option>
+                    </select>
+                </label>
+                <label>Crop name
+                    <input type="text" id="cropNameInput" name="crop_name" placeholder="e.g., Maize" required>
+                </label>
+                <label>Crop type
+                    <input type="text" id="cropTypeInput" name="crop_type" placeholder="Cereal, vegetable..." required>
+                </label>
+                <label>Variety / notes
+                    <input type="text" id="cropVarietyInput" name="crop_variety" placeholder="Optional variety">
+                </label>
+                <label>Sowing date
+                    <input type="date" id="sowingDateInput" name="sowing_date" required>
+                </label>
+                <label>Expected harvest
+                    <input type="date" id="harvestDateInput" name="expected_harvest">
+                </label>
+                <label>Field area (acres)
+                    <input type="number" id="areaInput" name="area" step="0.01" placeholder="0.0" required>
+                </label>
+                <label>Soil type
+                    <input type="text" id="soilTypeInput" name="soil_type" placeholder="Loamy, clay, sandy...">
+                </label>
+                <label>Status
+                    <select id="statusInput" name="status">
+                        <option value="planted">Planted</option>
+                        <option value="growing">Growing</option>
+                        <option value="flowering">Flowering</option>
+                        <option value="harvest">Ready for harvest</option>
+                        <option value="completed">Completed</option>
+                        <option value="issue">Needs attention</option>
+                    </select>
+                </label>
+                <label>Expected yield (tons)
+                    <input type="number" id="expectedYieldInput" name="expected_yield" step="0.01" placeholder="Optional">
+                </label>
+                <label>Notes / observations
+                    <textarea id="cropNotesInput" name="notes" rows="3" placeholder="Pests observed, irrigation instructions..."></textarea>
+                </label>
+                <div class="modal-actions">
+                    <button type="button" class="secondary" id="cancelAddCropBtn">Cancel</button>
+                    <button type="submit" class="primary">Save crop</button>
+                </div>
+            </form>
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="src/js/supabase.js"></script>
+    <script src="src/js/api.js"></script>
     <script src="src/js/theme.js"></script>
     <script src="src/js/crops.js"></script>
     <script src="src/js/utils.js"></script>
     <script src="src/js/sidebar.js"></script>
     <script src="src/js/load-sidebar.js"></script>
     <script src="src/js/user-ui.js"></script>
+    <script src="src/js/profile-modal.js"></script>
 </body>
 </html>

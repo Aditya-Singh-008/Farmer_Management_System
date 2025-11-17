@@ -82,6 +82,34 @@ document.addEventListener('DOMContentLoaded', function() {
         // Set isLoggedIn flag
         sessionStorage.setItem('isLoggedIn', 'true');
 
+        const authUser = response.session?.user || response.user;
+        if (authUser) {
+          sessionStorage.setItem('currentUser', JSON.stringify(authUser));
+        } else if (response.user) {
+          sessionStorage.setItem('currentUser', JSON.stringify(response.user));
+        }
+
+        const authId = authUser?.id || response.user?.auth_user_id || null;
+        if (authId) {
+          sessionStorage.setItem('authUserId', authId);
+        }
+
+        const appUserId =
+          response.user?.user_id ||
+          (response.user?.auth_user_id && response.user?.id && response.user.id !== response.user.auth_user_id
+            ? response.user.id
+            : null);
+
+        if (appUserId) {
+          sessionStorage.setItem('appUserId', appUserId);
+        }
+
+        window.currentProfile = {
+          ...(window.currentProfile || {}),
+          ...(authId ? { auth_user_id: authId } : {}),
+          ...(appUserId ? { user_id: appUserId } : {})
+        };
+
         setTimeout(() => {
           window.location.href = 'index.html';
         }, 900);

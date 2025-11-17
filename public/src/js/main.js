@@ -4,6 +4,7 @@ class SmartFarmerApp {
     this.currentUser = null;
     this.currentPage = null;
     this.isInitialized = false;
+    this.demoNoticeEl = null;
     this.init();
   }
 
@@ -32,6 +33,7 @@ class SmartFarmerApp {
     // this.initTheme();
     this.initNavigation();
     this.initEventListeners();
+    this.initDemoNotice();
     this.setCurrentPage();
 
     this.isInitialized = true;
@@ -279,6 +281,55 @@ class SmartFarmerApp {
     window.addEventListener('offline', () => {
       this.showNotification('You are currently offline', 'warning');
     });
+  }
+
+  initDemoNotice() {
+    this.demoNoticeEl = document.getElementById('demoNotice');
+    if (!this.demoNoticeEl) return;
+
+    this.updateDemoNotice();
+
+    window.addEventListener('demoModeChange', (event) => {
+      this.updateDemoNotice(event.detail);
+    });
+
+    window.addEventListener('demoModeFallback', (event) => {
+      this.updateDemoNotice(event.detail);
+    });
+  }
+
+  updateDemoNotice(detail = {}) {
+    if (!this.demoNoticeEl) return;
+
+    const shouldShow = this.shouldShowDemoNotice(detail);
+    this.demoNoticeEl.classList.toggle('hidden', !shouldShow);
+
+    if (!shouldShow) {
+      return;
+    }
+
+    const fallbackMessage =
+      detail?.reason === 'missing-token'
+        ? 'No access token detected. Enable authentication to load live data.'
+        : 'Demo data is currently displayed. Connect Supabase for live information.';
+
+    this.demoNoticeEl.textContent = detail?.message || fallbackMessage;
+  }
+
+  shouldShowDemoNotice(detail = {}) {
+    if (typeof detail.force === 'boolean') {
+      return detail.force;
+    }
+
+    if (detail.reason) {
+      return true;
+    }
+
+    if (window.FarmerAPI && typeof window.FarmerAPI.isDemoModeOn === 'function') {
+      return window.FarmerAPI.isDemoModeOn();
+    }
+
+    return false;
   }
 
   focusSearch() {

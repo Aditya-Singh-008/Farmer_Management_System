@@ -619,14 +619,43 @@ body {
 
 .task-meta {
     display: flex;
-    justify-content: space-between;
     align-items: center;
     gap: 0.5rem;
+    flex-wrap: wrap;
+    justify-content: flex-start;
 }
 
 .task-due {
     font-size: 0.75rem;
     color: var(--text-secondary);
+}
+
+.task-priority {
+    padding: 0.125rem 0.5rem;
+    border-radius: 9999px;
+    font-size: 0.625rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border: 1px solid transparent;
+}
+
+.task-priority.low {
+    background-color: rgba(59, 130, 246, 0.1);
+    color: #1d4ed8;
+    border-color: rgba(59, 130, 246, 0.2);
+}
+
+.task-priority.medium {
+    background-color: rgba(249, 115, 22, 0.15);
+    color: #EA580C;
+    border-color: rgba(249, 115, 22, 0.2);
+}
+
+.task-priority.high {
+    background-color: rgba(220, 38, 38, 0.15);
+    color: #dc2626;
+    border-color: rgba(220, 38, 38, 0.2);
 }
 
 .task-status {

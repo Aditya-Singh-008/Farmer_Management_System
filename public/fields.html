@@ -8,20 +8,29 @@
     <link rel="stylesheet" href="src/css/sidebar.css">
     <link rel="stylesheet" href="src/css/theme.css">
     <link rel="stylesheet" href="src/css/fields.css">
-    <!-- Font Awesome with fallback CDN -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" 
-          onerror="this.onerror=null;this.href='https://use.fontawesome.com/releases/v6.4.0/css/all.css'">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome with fallback CDN -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css"
+          onerror="this.onerror=null;this.href='https://use.fontawesome.com/releases/v6.4.0/css/all.css'">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body class="light-mode">
+    <script>
+        window.__SUPABASE_CONFIG__ = {
+            url: 'https://bmdypirsqwhghrvbhqoy.supabase.co',
+            anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJtZHlwaXJzcXdoZ2hydmJocW95Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk4MjE5NzcsImV4cCI6MjA3NTM5Nzk3N30.2Mea6l7pn1l-qw28Nxk_m2weMajWlbca0M-ZybMs2xg'
+        };
+        window.__ENV = {
+            EDGE_FUNCTION_BASE_URL: 'https://bmdypirsqwhghrvbhqoy.functions.supabase.co',
+            SERVICE_ROLE_TOKEN: '<eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJtZHlwaXJzcXdoZ2hydmJocW95Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1OTgyMTk3NywiZXhwIjoyMDc1Mzk3OTc3fQ.NpfC1SI0-N6g68KoPt9hNhCSK8pCytamQ6khJ7qCYcc>'
+        };
+    </script>
+
     <!-- Sidebar Overlay for Mobile -->
     <div class="sidebar-overlay"></div>
 
     <!-- Sidebar Container -->
-    <div id="sidebar-container">
-        <!-- Sidebar will be loaded here by JavaScript -->
-    </div>
+    <div id="sidebar-container"></div>
 
     <!-- Main Content Wrapper -->
     <main class="main-content">
@@ -29,162 +38,173 @@
         <header class="navbar">
             <div class="navbar-content">
                 <div class="greeting">
-                    <h1>Hello, Farmer John! 👋</h1>
-                    <p>Welcome to your fields management dashboard</p>
+                    <h1 id="fieldsGreeting">Hello, Farmer</h1>
+                    <p id="fieldsSubheading">Here is the latest field activity across your farms</p>
                 </div>
-                
+
                 <div class="navbar-actions">
                     <div class="quick-actions">
-                        <button class="action-btn" onclick="window.location.href='fields.html?action=add'">
-                            <i class="fas fa-plus"></i> Add Farm
+                        <button class="action-btn" data-open-field-modal="true">
+                            <i class="fas fa-plus"></i> Add Field
                         </button>
-                        <button class="action-btn" onclick="window.location.href='crops.html'">
-                            <i class="fas fa-seedling"></i> Add Crop
+                        <button class="action-btn" id="viewCropsBtn">
+                            <i class="fas fa-seedling"></i> Go to Crops
+                        </button>
+                        <button class="action-btn" data-open-task-modal="true">
+                            <i class="fas fa-tasks"></i> Add Task
                         </button>
                     </div>
-                    
+
                     <div class="user-actions">
-                        <button class="notification-btn" title="Notifications">
-                            <i class="fas fa-bell"></i>
-                            <span class="notification-dot"></span>
+                        <button class="notification-btn" title="Notifications" aria-label="Notifications">
+                            <i class="fas fa-bell" aria-hidden="true"></i>
+                            <span class="notification-dot" aria-hidden="true"></span>
                         </button>
-                        <div class="user-profile">
-                            <div class="avatar">FJ</div>
-                            <span class="user-name">Farmer John</span>
+
+                        <div class="user-profile" id="user-profile-wrapper">
+                            <button id="userMenuBtn" class="user-button" aria-haspopup="true" aria-expanded="false" aria-controls="userMenu" title="User menu">
+                                <div class="avatar" id="avatar" aria-hidden="true">FJ</div>
+                                <span class="user-name" id="user-name">Farmer</span>
+                                <i class="fas fa-caret-down" aria-hidden="true"></i>
+                            </button>
+                            <div id="userMenu" class="user-menu hidden" role="menu" aria-labelledby="userMenuBtn">
+                                <button id="openProfileBtn" class="menu-item" role="menuitem">Profile</button>
+                                <button id="logoutBtn" class="menu-item" role="menuitem">Log out</button>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </header>
 
-            <!-- Fields Management Content -->
-            <div class="dashboard">
-                <!-- Page Header -->
-                <div class="page-header">
-                    <div class="header-content">
-                        <h1>Your Fields Overview <span class="emoji">🌾</span></h1>
-                        <p class="page-subtitle">Monitor weather, soil, and crop conditions in real time</p>
-                    </div>
-                    <button class="btn-primary" id="addFieldBtn">
-                        <i class="fas fa-plus"></i>
-                        Add New Field
-                    </button>
+        <div id="demoNotice" class="demo-notice hidden" role="status" aria-live="polite">
+            Demo data is currently displayed. Connect your Supabase project to manage live field information.
+        </div>
+
+        <div class="dashboard">
+            <div class="page-header">
+                <div class="header-content">
+                    <h1>Your Fields Overview</h1>
+                    <p class="page-subtitle">Monitor weather, soil, and crop conditions in real time.</p>
                 </div>
+                <button class="btn-primary" id="addFieldBtn">
+                    <i class="fas fa-plus"></i>
+                    Add New Field
+                </button>
+            </div>
 
-                <!-- Summary Cards -->
-                <div class="summary-cards">
-                    <div class="summary-card">
-                        <div class="card-content">
-                            <div class="card-text">
-                                <h3 id="totalFields">8</h3>
-                                <p>Active Fields</p>
-                            </div>
-                            <div class="card-icon fields-icon">
-                                <i class="fas fa-map"></i>
-                            </div>
+            <div class="summary-cards" role="region" aria-label="Field summary">
+                <div class="summary-card">
+                    <div class="card-content">
+                        <div class="card-text">
+                            <p class="card-label">Active Fields</p>
+                            <h3 class="card-value" id="totalFields">--</h3>
                         </div>
-                        <div class="card-status">
-                            <span class="status-badge normal">Normal</span>
+                        <div class="card-icon fields-icon">
+                            <i class="fas fa-map"></i>
                         </div>
                     </div>
-
-                    <div class="summary-card">
-                        <div class="card-content">
-                            <div class="card-text">
-                                <h3 id="avgTemperature">28°C</h3>
-                                <p>Average Temperature</p>
-                            </div>
-                            <div class="card-icon temp-icon">
-                                <i class="fas fa-thermometer-half"></i>
-                            </div>
-                        </div>
-                        <div class="card-status">
-                            <span class="status-badge optimal">Optimal</span>
-                        </div>
-                    </div>
-
-                    <div class="summary-card">
-                        <div class="card-content">
-                            <div class="card-text">
-                                <h3 id="avgHumidity">62%</h3>
-                                <p>Average Humidity</p>
-                            </div>
-                            <div class="card-icon humidity-icon">
-                                <i class="fas fa-tint"></i>
-                            </div>
-                        </div>
-                        <div class="card-status">
-                            <span class="status-badge normal">Normal</span>
-                        </div>
-                    </div>
-
-                    <div class="summary-card">
-                        <div class="card-content">
-                            <div class="card-text">
-                                <h3 id="totalArea">34.5</h3>
-                                <p>Total Area (hectares)</p>
-                            </div>
-                            <div class="card-icon area-icon">
-                                <i class="fas fa-ruler-combined"></i>
-                            </div>
-                        </div>
-                        <div class="card-status">
-                            <span class="status-badge optimal">Optimal</span>
-                        </div>
+                    <div class="card-status">
+                        <span class="status-badge" id="totalFieldsBadge">Loading</span>
                     </div>
                 </div>
 
-                <!-- Fields Content -->
-                <div class="fields-content">
-                    <!-- Fields Grid -->
-                    <div class="fields-grid-section">
-                        <div class="section-header">
-                            <h2>Your Fields</h2>
-                            <div class="filter-controls">
-                                <label for="cropFilter" class="visually-hidden">Filter by Crop</label>
-                                <select id="cropFilter" class="filter-select" title="Filter by Crop">
-                                    <option value="all">All Crops</option>
-                                    <option value="wheat">Wheat</option>
-                                    <option value="corn">Corn</option>
-                                    <option value="tomato">Tomato</option>
-                                    <option value="apple">Apple</option>
-                                </select>
-                                <select id="statusFilter" class="filter-select" title="Filter by Status">
-                                    <option value="all">All Status</option>
-                                    <option value="active">Active</option>
-                                    <option value="harvested">Harvested</option>
-                                    <option value="fallow">Fallow</option>
-                                </select>
-                            </div>
+                <div class="summary-card">
+                    <div class="card-content">
+                        <div class="card-text">
+                            <p class="card-label">Soil Profiles</p>
+                            <h3 class="card-value" id="soilTypes">--</h3>
                         </div>
-
-                        <div class="fields-grid" id="fieldsGrid">
-                            <!-- Field cards will be loaded here -->
+                        <div class="card-icon soil-icon">
+                            <i class="fas fa-mountain"></i>
                         </div>
                     </div>
+                    <div class="card-status">
+                        <span class="status-badge" id="soilTypesBadge">Loading</span>
+                    </div>
+                </div>
 
-                    <!-- Task Sidebar -->
-                    <div class="task-sidebar">
-                        <div class="section-header">
-                            <h2>Field Tasks</h2>
-                            <button class="add-btn" id="addTaskBtn">
-                                <i class="fas fa-plus"></i> Add
-                            </button>
+                <div class="summary-card">
+                    <div class="card-content">
+                        <div class="card-text">
+                            <p class="card-label">Crop Types</p>
+                            <h3 class="card-value" id="cropTypes">--</h3>
                         </div>
-                        <div class="tasks-list" id="tasksList">
-                            <!-- Tasks will be loaded here -->
+                        <div class="card-icon temp-icon">
+                            <i class="fas fa-seedling"></i>
                         </div>
+                    </div>
+                    <div class="card-status">
+                        <span class="status-badge" id="cropTypesBadge">Loading</span>
+                    </div>
+                </div>
+
+                <div class="summary-card">
+                    <div class="card-content">
+                        <div class="card-text">
+                            <p class="card-label">Total Area (ha)</p>
+                            <h3 class="card-value" id="totalArea">--</h3>
+                        </div>
+                        <div class="card-icon water-icon">
+                            <i class="fas fa-ruler-combined"></i>
+                        </div>
+                    </div>
+                    <div class="card-status">
+                        <span class="status-badge" id="totalAreaBadge">Loading</span>
                     </div>
                 </div>
             </div>
-        </main>
+
+            <div class="fields-content">
+                <div class="fields-grid-section">
+                    <div class="section-header">
+                        <div>
+                            <h2>Your Fields</h2>
+                            <p id="fieldsListMeta">Loading fields...</p>
+                        </div>
+                        <div class="filter-controls">
+                            <label for="cropFilter" class="visually-hidden">Filter by Crop</label>
+                            <select id="cropFilter" class="filter-select" title="Filter by crop type">
+                                <option value="all">All Crops</option>
+                            </select>
+                            <label for="statusFilter" class="visually-hidden">Filter by Status</label>
+                            <select id="statusFilter" class="filter-select" title="Filter by status">
+                                <option value="all">All Status</option>
+                                <option value="active">Active</option>
+                                <option value="harvested">Harvested</option>
+                                <option value="fallow">Fallow</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="fields-grid" id="fieldsGrid" role="list">
+                        <!-- Field cards rendered via JS -->
+                    </div>
+                </div>
+
+                <div class="task-sidebar">
+                    <div class="section-header">
+                        <div>
+                            <h2>Field Tasks</h2>
+                            <p id="tasksMeta">Log work against a specific field.</p>
+                        </div>
+                        <button class="add-btn" id="addTaskBtn">
+                            <i class="fas fa-plus"></i> Add
+                        </button>
+                    </div>
+                    <div class="tasks-list" id="tasksList">
+                        <!-- Tasks rendered via JS -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
 
     <!-- Add Field Modal -->
-    <div id="addFieldModal" class="modal">
+    <div id="addFieldModal" class="modal" aria-hidden="true">
         <div class="modal-content">
             <div class="modal-header">
                 <h3>Add New Field</h3>
-                <button class="modal-close" id="closeFieldModal">&times;</button>
+                <button class="modal-close" id="closeFieldModal" aria-label="Close field modal">&times;</button>
             </div>
             <form id="addFieldForm" class="modal-form">
                 <div class="form-group">
@@ -194,12 +214,12 @@
 
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="fieldLatitude">Latitude</label>
-                        <input type="number" id="fieldLatitude" name="fieldLatitude" step="0.000001" placeholder="40.7128">
+                        <label for="fieldLatitude">Latitude *</label>
+                        <input type="number" id="fieldLatitude" name="fieldLatitude" required step="0.000001" min="-90" max="90" placeholder="40.7128">
                     </div>
                     <div class="form-group">
-                        <label for="fieldLongitude">Longitude</label>
-                        <input type="number" id="fieldLongitude" name="fieldLongitude" step="0.000001" placeholder="-74.0060">
+                        <label for="fieldLongitude">Longitude *</label>
+                        <input type="number" id="fieldLongitude" name="fieldLongitude" required step="0.000001" min="-180" max="180" placeholder="-74.0060">
                     </div>
                 </div>
 
@@ -210,22 +230,27 @@
 
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="fieldSoilType">Soil Type</label>
-                        <select id="fieldSoilType" name="fieldSoilType">
+                        <label for="fieldSoilType">Soil Type *</label>
+                        <select id="fieldSoilType" name="fieldSoilType" required>
+                            <option value="">Select soil</option>
                             <option value="loamy">Loamy</option>
                             <option value="sandy">Sandy</option>
                             <option value="clay">Clay</option>
                             <option value="silt">Silt</option>
+                            <option value="peat">Peat</option>
+                            <option value="chalky">Chalky</option>
                         </select>
                     </div>
                     <div class="form-group">
-                        <label for="fieldCropType">Crop Type</label>
-                        <select id="fieldCropType" name="fieldCropType">
-                            <option value="">Select Crop</option>
+                        <label for="fieldCropType">Crop Type *</label>
+                        <select id="fieldCropType" name="fieldCropType" required>
+                            <option value="">Select crop</option>
                             <option value="wheat">Wheat</option>
                             <option value="corn">Corn</option>
-                            <option value="tomato">Tomato</option>
-                            <option value="apple">Apple</option>
+                            <option value="rice">Rice</option>
+                            <option value="soybean">Soybean</option>
+                            <option value="cotton">Cotton</option>
+                            <option value="vegetable">Vegetable</option>
                         </select>
                     </div>
                 </div>
@@ -239,24 +264,22 @@
     </div>
 
     <!-- Analytics Modal -->
-    <div id="analyticsModal" class="modal">
+    <div id="analyticsModal" class="modal" aria-hidden="true">
         <div class="modal-content large">
             <div class="modal-header">
                 <h3 id="analyticsTitle">Field Analytics</h3>
-                <button class="modal-close" id="closeAnalyticsModal">&times;</button>
+                <button class="modal-close" id="closeAnalyticsModal" aria-label="Close analytics modal">&times;</button>
             </div>
             <div class="analytics-content">
                 <div class="analytics-tabs">
                     <button class="tab-btn active" data-tab="weather">Weather Trends</button>
                     <button class="tab-btn" data-tab="growth">Crop Growth</button>
                 </div>
-                
                 <div class="tab-content active" id="weatherTab">
                     <div class="chart-container">
                         <canvas id="weatherChart"></canvas>
                     </div>
                 </div>
-                
                 <div class="tab-content" id="growthTab">
                     <div class="chart-container">
                         <canvas id="growthChart"></canvas>
@@ -267,40 +290,34 @@
     </div>
 
     <!-- Add Task Modal -->
-    <div id="addTaskModal" class="modal">
+    <div id="addTaskModal" class="modal" aria-hidden="true">
         <div class="modal-content">
             <div class="modal-header">
                 <h3>Add Field Task</h3>
-                <button class="modal-close" id="closeTaskModal">&times;</button>
+                <button class="modal-close" id="closeTaskModal" aria-label="Close task modal">&times;</button>
             </div>
             <form id="addTaskForm" class="modal-form">
                 <div class="form-group">
                     <label for="taskTitle">Task Name *</label>
                     <input type="text" id="taskTitle" name="taskTitle" required placeholder="Enter task name">
                 </div>
-
                 <div class="form-row">
                     <div class="form-group">
                         <label for="taskField">Field</label>
                         <select id="taskField" name="taskField">
-                            <option value="">Select Field</option>
-                            <option value="north">North Field</option>
-                            <option value="south">South Field</option>
-                            <option value="east">East Field</option>
-                            <option value="west">West Field</option>
+                            <option value="">Select field</option>
                         </select>
                     </div>
                     <div class="form-group">
                         <label for="taskType">Task Type</label>
                         <select id="taskType" name="taskType">
-                            <option value="watering">💧 Watering</option>
-                            <option value="fertilizer">🧪 Fertilizer</option>
-                            <option value="plowing">🚜 Plowing</option>
-                            <option value="harvesting">🌾 Harvesting</option>
+                            <option value="watering">Watering</option>
+                            <option value="fertilizer">Fertilizer</option>
+                            <option value="plowing">Plowing</option>
+                            <option value="harvesting">Harvesting</option>
                         </select>
                     </div>
                 </div>
-
                 <div class="form-row">
                     <div class="form-group">
                         <label for="taskDueDate">Due Date</label>
@@ -315,7 +332,6 @@
                         </select>
                     </div>
                 </div>
-
                 <div class="form-actions">
                     <button type="button" class="btn-secondary" id="cancelTask">Cancel</button>
                     <button type="submit" class="btn-primary">Add Task</button>
@@ -325,13 +341,15 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="src/js/utils.js"></script>
     <script src="src/js/supabase.js"></script>
+    <script src="src/js/api.js"></script>
+    <script src="src/js/utils.js"></script>
     <script src="src/js/main.js"></script>
     <script src="src/js/load-sidebar.js"></script>
     <script src="src/js/theme.js"></script>
     <script src="src/js/sidebar.js"></script>
-    <script src="src/js/fields.js"></script>
     <script src="src/js/user-ui.js"></script>
+    <script src="src/js/profile-modal.js"></script>
+    <script src="src/js/fields.js"></script>
 </body>
 </html>

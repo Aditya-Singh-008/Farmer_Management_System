@@ -5,7 +5,12 @@ document.addEventListener('DOMContentLoaded', () => {
 		if (!stored) return; // Stay in demo mode (keep "Farmer John")
 
 		const user = JSON.parse(stored);
-		const displayName = getDisplayName(user);
+		// Prefer enriched profile name if already loaded
+		const profile = window.currentProfile || {};
+		const displayName =
+			(profile.first_name && profile.last_name
+				? `${profile.first_name} ${profile.last_name}`
+				: getDisplayName(user));
 		if (!displayName) return;
 
 		// Update navbar user-name(s)

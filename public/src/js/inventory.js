@@ -13,115 +13,24 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeCharts();
 });
 
-// Sample inventory data
+// Sample inventory data (fallback when API returns nothing)
 const sampleInventory = [
     {
         id: 1,
-        name: 'Wheat Seeds - Premium',
-        category: 'seeds',
-        quantity: 45,
-        unit: 'kg',
-        minStock: 20,
-        cost: 2.50,
-        supplier: 'SeedCo Inc.',
-        location: 'Storage Room A',
-        description: 'High-yield wheat seeds for spring planting',
-        lastUpdated: '2023-10-15'
-    },
-    {
-        id: 2,
-        name: 'NPK Fertilizer',
+        name: 'Demo Fertilizer',
         category: 'fertilizers',
-        quantity: 8,
+        quantity: 10,
         unit: 'bags',
-        minStock: 10,
-        cost: 45.00,
-        supplier: 'AgroSupply Ltd.',
-        location: 'Fertilizer Shed',
-        description: 'Balanced NPK fertilizer 10-10-10',
-        lastUpdated: '2023-10-18'
-    },
-    {
-        id: 3,
-        name: 'Organic Pesticide',
-        category: 'pesticides',
-        quantity: 15,
-        unit: 'l',
         minStock: 5,
-        cost: 28.50,
-        supplier: 'EcoProtect',
-        location: 'Chemical Storage',
-        description: 'Organic pesticide for pest control',
-        lastUpdated: '2023-10-20'
-    },
-    {
-        id: 4,
-        name: 'Tractor Diesel Fuel',
-        category: 'equipment',
-        quantity: 200,
-        unit: 'l',
-        minStock: 50,
-        cost: 1.45,
-        supplier: 'Local Fuel Station',
-        location: 'Fuel Tank',
-        description: 'Diesel fuel for farm machinery',
-        lastUpdated: '2023-10-22'
-    },
-    {
-        id: 5,
-        name: 'Harvesting Tools Set',
-        category: 'tools',
-        quantity: 3,
-        unit: 'units',
-        minStock: 2,
-        cost: 120.00,
-        supplier: 'FarmTools Co.',
-        location: 'Tool Shed',
-        description: 'Complete set of harvesting tools',
-        lastUpdated: '2023-10-25'
-    },
-    {
-        id: 6,
-        name: 'Irrigation Pipes',
-        category: 'equipment',
-        quantity: 25,
-        unit: 'units',
-        minStock: 15,
-        cost: 35.00,
-        supplier: 'Irrigation Solutions',
-        location: 'Equipment Storage',
-        description: 'PVC pipes for irrigation system',
-        lastUpdated: '2023-10-28'
-    },
-    {
-        id: 7,
-        name: 'Corn Seeds - Hybrid',
-        category: 'seeds',
-        quantity: 12,
-        unit: 'kg',
-        minStock: 15,
-        cost: 3.20,
-        supplier: 'SeedCo Inc.',
-        location: 'Storage Room A',
-        description: 'Hybrid corn seeds for high yield',
-        lastUpdated: '2023-10-30'
-    },
-    {
-        id: 8,
-        name: 'Protective Gear Set',
-        category: 'tools',
-        quantity: 5,
-        unit: 'units',
-        minStock: 3,
-        cost: 85.00,
-        supplier: 'SafetyFirst Ltd.',
-        location: 'Tool Shed',
-        description: 'Protective gear for farm workers',
-        lastUpdated: '2023-11-01'
+        cost: 25,
+        supplier: 'Demo Supplier',
+        location: 'Demo Warehouse',
+        description: 'Demo inventory item',
+        lastUpdated: new Date().toISOString().split('T')[0]
     }
 ];
 
-let currentInventory = [...sampleInventory];
+let currentInventory = [];
 let currentEditingItem = null;
 
 // Initialize inventory management
@@ -138,6 +47,8 @@ function setupEventListeners() {
 
     if (addItemBtn && addItemModal) {
         addItemBtn.addEventListener('click', () => {
+            populateFarmOptions();
+            populateInputOptions();
             addItemModal.classList.add('active');
         });
     }
@@ -246,9 +157,45 @@ function setupEventListeners() {
 }
 
 // Load inventory data
-function loadInventoryData() {
+async function loadInventoryData() {
+    const notice = document.getElementById('demoNotice');
+    try {
+        const res = window.FarmerAPI?.getInventory ? await window.FarmerAPI.getInventory(200) : null;
+        if (res?.success && Array.isArray(res.data)) {
+            currentInventory = res.data.map(normalizeInventoryRow);
+            if (notice) notice.classList.toggle('hidden', !!currentInventory.length);
+        } else {
+            currentInventory = [...sampleInventory];
+            if (notice) notice.classList.remove('hidden');
+        }
+    } catch (err) {
+        console.error('loadInventoryData failed', err);
+        currentInventory = [...sampleInventory];
+        if (notice) notice.classList.remove('hidden');
+        showNotification('Using demo inventory data. Connect Supabase to see live inventory.', 'warning');
+    }
     displayInventoryItems(currentInventory);
     updateLowStockAlerts();
+    updateStats();
+}
+
+function normalizeInventoryRow(row) {
+    const input = row.inputs || row.input || {};
+    return {
+        id: row.inventory_id || row.id,
+        name: row.name || input.name || 'Inventory Item',
+        category: (row.category || input.category || 'uncategorized').toLowerCase(),
+        quantity: Number(row.quantity ?? row.available_qty ?? 0),
+        unit: row.unit || input.unit || 'units',
+        minStock: Number(row.min_stock ?? row.minStock ?? 0),
+        cost: Number(row.cost ?? row.unit_cost ?? 0),
+        supplier: row.supplier || row.vendor || '—',
+        location: row.location || '—',
+        description: row.description || row.notes || '',
+        lastUpdated: row.updated_at || row.added_on || new Date().toISOString(),
+        farm_id: row.farm_id,
+        input_id: row.input_id
+    };
 }
 
 // Display inventory items
@@ -314,11 +261,11 @@ function createInventoryItem(item) {
                 </div>
                 <div class="detail-item">
                     <span class="detail-label">Unit Cost</span>
-                    <span class="detail-value cost">$${item.cost.toFixed(2)}</span>
+                    <span class="detail-value cost">\u20b9${item.cost.toFixed(2)}</span>
                 </div>
                 <div class="detail-item">
                     <span class="detail-label">Total Value</span>
-                    <span class="detail-value cost">$${(item.quantity * item.cost).toFixed(2)}</span>
+                    <span class="detail-value cost">\u20b9${(item.quantity * item.cost).toFixed(2)}</span>
                 </div>
             </div>
             
@@ -373,6 +320,10 @@ function updateLowStockAlerts() {
     if (!lowStockAlerts) return;
 
     const lowStockItems = currentInventory.filter(item => item.quantity <= item.minStock);
+    const countEl = document.getElementById('lowStockCount');
+    if (countEl) {
+        countEl.textContent = `${lowStockItems.length} item${lowStockItems.length === 1 ? '' : 's'} need attention`;
+    }
     
     lowStockAlerts.innerHTML = '';
 
@@ -418,10 +369,14 @@ function updateStats() {
     const categories = new Set(currentInventory.map(item => item.category)).size;
 
     // Update stats cards
-    document.querySelectorAll('.stat-card .card-value')[0].textContent = totalItems;
-    document.querySelectorAll('.stat-card .card-value')[1].textContent = lowStockItems;
-    document.querySelectorAll('.stat-card .card-value')[2].textContent = `$${totalValue.toLocaleString()}`;
-    document.querySelectorAll('.stat-card .card-value')[3].textContent = categories;
+    const set = (id, val) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = val;
+    };
+    set('totalItems', totalItems || '--');
+    set('lowStockItems', lowStockItems);
+    set('totalValue', `\u20b9${totalValue.toLocaleString('en-IN', { maximumFractionDigits: 2 })}`);
+    set('categoriesCount', categories || '--');
 }
 
 // Handle add item form submission
@@ -430,6 +385,8 @@ function handleAddItem(e) {
     
     const formData = new FormData(e.target);
     const itemData = {
+        farm_id: Number(formData.get('farm_id')) || null,
+        input_id: Number(formData.get('input_id')) || null,
         id: Date.now(), // Generate unique ID
         name: document.getElementById('itemName').value,
         category: document.getElementById('itemCategory').value,
@@ -442,6 +399,33 @@ function handleAddItem(e) {
         description: document.getElementById('itemDescription').value,
         lastUpdated: new Date().toISOString().split('T')[0]
     };
+
+    // Persist to backend (Edge /create-inventory if exists, else supabase insert)
+    (async () => {
+        try {
+            if (!itemData.farm_id || !itemData.input_id) {
+                throw new Error('Farm and input are required.');
+            }
+            if (window.FarmerAPI?.createInventory) {
+                const res = await window.FarmerAPI.createInventory(itemData);
+                if (!res?.success) throw new Error(res?.error || 'Create inventory failed');
+            } else if (window.supabase?.from) {
+                const { error } = await window.supabase.from('inventory').insert([{
+                    farm_id: itemData.farm_id,
+                    input_id: itemData.input_id,
+                    quantity: itemData.quantity,
+                    min_stock: itemData.minStock,
+                    cost: itemData.cost,
+                    location: itemData.location || null,
+                    description: itemData.description || null,
+                    supplier: itemData.supplier || null
+                }]);
+                if (error) throw error;
+            }
+        } catch (err) {
+            console.warn('Backend add inventory failed, using local only', err);
+        }
+    })();
 
     currentInventory.push(itemData);
     displayInventoryItems(currentInventory);
@@ -569,7 +553,7 @@ function handleStockAdjustment(e) {
     const itemIndex = currentInventory.findIndex(i => i.id === itemId);
     
     if (itemIndex === -1) return;
-
+    
     const adjustmentType = document.getElementById('adjustmentType').value;
     const adjustmentQuantity = parseInt(document.getElementById('adjustmentQuantity').value);
     const reason = document.getElementById('adjustmentReason').value;
@@ -595,15 +579,19 @@ function handleStockAdjustment(e) {
     currentInventory[itemIndex].quantity = newQuantity;
     currentInventory[itemIndex].lastUpdated = new Date().toISOString().split('T')[0];
 
-    // Log the adjustment (in a real app, this would be saved to a database)
-    console.log(`Stock adjustment for ${currentInventory[itemIndex].name}:`, {
-        type: adjustmentType,
+    // Attempt to persist to backend; fallback to local-only
+    persistStockAdjustment({
+        inventory_id: currentInventory[itemIndex].id,
+        adjustment_type: adjustmentType,
         quantity: adjustmentQuantity,
-        reason: reason,
-        notes: notes,
-        previousStock: currentQuantity,
-        newStock: newQuantity,
-        timestamp: new Date().toISOString()
+        reason,
+        notes,
+        farm_id: currentInventory[itemIndex].farm_id,
+        input_id: currentInventory[itemIndex].input_id,
+        new_quantity: newQuantity // for Supabase fallback
+    }).catch((err) => {
+        console.warn('Persist stock failed, using local only', err);
+        showNotification('Saved locally. Backend update failed.', 'warning');
     });
 
     displayInventoryItems(currentInventory);
@@ -615,6 +603,31 @@ function handleStockAdjustment(e) {
     const modal = document.getElementById('adjustStockModal');
     modal.classList.remove('active');
     resetForms();
+}
+
+async function persistStockAdjustment(payload) {
+    // Try Edge/API first if available
+    if (window.FarmerAPI?.adjustInventory) {
+        // Edge expects { inventory_id, adjustment_type, quantity, reason, notes }
+        const res = await window.FarmerAPI.adjustInventory({
+            inventory_id: payload.inventory_id,
+            adjustment_type: payload.adjustment_type,
+            quantity: payload.quantity,
+            reason: payload.reason,
+            notes: payload.notes
+        });
+        if (!res?.success) throw new Error(res?.error || 'API adjust failed');
+        return;
+    }
+
+    // Fallback: update Supabase directly if client is available
+    if (window.supabase?.from && payload.inventory_id) {
+        const { error } = await window.supabase
+            .from('inventory')
+            .update({ quantity: payload.new_quantity, updated_at: new Date().toISOString() })
+            .eq('inventory_id', payload.inventory_id);
+        if (error) throw error;
+    }
 }
 
 // Delete item
@@ -854,7 +867,7 @@ function initializeCharts() {
                         beginAtZero: true,
                         ticks: {
                             callback: function(value) {
-                                return '$' + value.toLocaleString();
+                                return '₹' + value.toLocaleString('en-IN');
                             }
                         }
                     }
@@ -883,6 +896,55 @@ function resetForms() {
     const forms = document.querySelectorAll('form');
     forms.forEach(form => form.reset());
     currentEditingItem = null;
+}
+
+async function populateFarmOptions() {
+    const select = document.getElementById('itemFarmId');
+    if (!select) return;
+    if (!window.FarmerAPI?.getFarms) {
+        select.innerHTML = `<option value="">Farm list unavailable</option>`;
+        return;
+    }
+    select.innerHTML = `<option value="">Loading farms...</option>`;
+    try {
+        const res = await window.FarmerAPI.getFarms(100);
+        const farms = res?.data || [];
+        if (!farms.length) {
+            select.innerHTML = `<option value="">No farms found</option>`;
+            return;
+        }
+        select.innerHTML = `<option value="">Select farm</option>` +
+            farms.map(f => `<option value="${f.farm_id}">${f.farm_name || 'Farm'} (#${f.farm_id})</option>`).join('');
+    } catch (err) {
+        console.warn('populateFarmOptions failed', err);
+        select.innerHTML = `<option value="">Unable to load farms</option>`;
+    }
+}
+
+async function populateInputOptions() {
+    const select = document.getElementById('itemInputId');
+    if (!select) return;
+    if (!window.supabase?.from) {
+        select.innerHTML = `<option value="">Supabase client not available</option>`;
+        return;
+    }
+    select.innerHTML = `<option value="">Loading inputs...</option>`;
+    try {
+        const { data, error } = await window.supabase.from('inputs').select('input_id,name,category,unit').order('name');
+        if (error) throw error;
+        const inputs = data || [];
+        if (!inputs.length) {
+            select.innerHTML = `<option value="">No inputs found</option>`;
+            return;
+        }
+        select.innerHTML = `<option value="">Select input</option>` +
+            inputs
+                .map((i) => `<option value="${i.input_id}">${i.name} (${i.unit || 'unit'})</option>`)
+                .join('');
+    } catch (err) {
+        console.warn('populateInputOptions failed', err);
+        select.innerHTML = `<option value="">Unable to load inputs</option>`;
+    }
 }
 
 // Utility function for debouncing

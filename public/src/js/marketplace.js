@@ -1,999 +1,778 @@
-// Marketplace JavaScript
-document.addEventListener('DOMContentLoaded', function() {
-    // Initialize marketplace
-    initializeMarketplace();
-    
-    // Set up event listeners
-    setupEventListeners();
-    
-    // Load initial listings
-    loadListings();
-    
-    // Initialize charts
-    initializeCharts();
+// Minimal dynamic marketplace controller
+const MARKETPLACE_CART_KEY = 'smartfarmer_marketplace_cart';
+const DEFAULT_VISIBLE_COUNT = 12;
+
+const state = {
+  listings: [],
+  filtered: [],
+  visible: DEFAULT_VISIBLE_COUNT,
+  stats: {},
+  cart: [],
+  currentListing: null,
+  authId: null,
+  showMineOnly: false,
+  orders: { sales: [], purchases: [] }
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+  state.authId = getAuthId();
+  restoreCart();
+  attachEvents();
+  loadListings();
+  loadOrders();
 });
 
-// Sample crop data
-const sampleCrops = [
-    {
-        id: 1,
-        name: 'Organic Wheat',
-        type: 'wheat',
-        farmer: 'Green Fields Farm',
-        location: 'North Region',
-        price: 2.10,
-        quantity: 500,
-        harvestDate: '2023-10-15',
-        rating: 4.8,
-        image: 'wheat-bg',
-        icon: 'fas fa-wheat-alt',
-        description: 'Premium organic wheat grown with sustainable farming practices.',
-        immediate: true
-    },
-    {
-        id: 2,
-        name: 'Sweet Corn',
-        type: 'corn',
-        farmer: 'Sunshine Farms',
-        location: 'South Region',
-        price: 1.80,
-        quantity: 300,
-        harvestDate: '2023-10-20',
-        rating: 4.6,
-        image: 'corn-bg',
-        icon: 'fas fa-corn',
-        description: 'Fresh sweet corn harvested daily, perfect for markets.',
-        immediate: true
-    },
-    {
-        id: 3,
-        name: 'Ripe Tomatoes',
-        type: 'tomato',
-        farmer: 'Valley Growers',
-        location: 'East Region',
-        price: 2.50,
-        quantity: 200,
-        harvestDate: '2023-10-18',
-        rating: 4.9,
-        image: 'tomato-bg',
-        icon: 'fas fa-pepper-hot',
-        description: 'Vine-ripened tomatoes with exceptional flavor.',
-        immediate: true
-    },
-    {
-        id: 4,
-        name: 'Basmati Rice',
-        type: 'rice',
-        farmer: 'Paddy Fields Co.',
-        location: 'West Region',
-        price: 3.20,
-        quantity: 400,
-        harvestDate: '2023-11-01',
-        rating: 4.7,
-        image: 'rice-bg',
-        icon: 'fas fa-seedling',
-        description: 'Premium basmati rice with long grains and aromatic flavor.',
-        immediate: false
-    },
-    {
-        id: 5,
-        name: 'Fresh Potatoes',
-        type: 'potato',
-        farmer: 'Mountain Farms',
-        location: 'North Region',
-        price: 1.20,
-        quantity: 600,
-        harvestDate: '2023-10-25',
-        rating: 4.5,
-        image: 'potato-bg',
-        icon: 'fas fa-potato',
-        description: 'Fresh potatoes perfect for cooking and processing.',
-        immediate: true
-    },
-    {
-        id: 6,
-        name: 'Red Apples',
-        type: 'apple',
-        farmer: 'Orchard Fresh',
-        location: 'East Region',
-        price: 2.80,
-        quantity: 150,
-        harvestDate: '2023-10-22',
-        rating: 4.8,
-        image: 'apple-bg',
-        icon: 'fas fa-apple-alt',
-        description: 'Crisp red apples from our organic orchard.',
-        immediate: true
-    }
-];
-
-// Shopping cart
-let cart = [];
-let currentCrop = null;
-
-// Initialize marketplace
-function initializeMarketplace() {
-    updateCartUI();
-}
-
-// Set up event listeners
-function setupEventListeners() {
-    // Cart toggle
-    const cartToggle = document.getElementById('cartToggle');
-    const closeCart = document.getElementById('closeCart');
-    const cartSidebar = document.getElementById('cartSidebar');
-
-    if (cartToggle && cartSidebar) {
-        cartToggle.addEventListener('click', () => {
-            cartSidebar.classList.add('active');
-        });
-    }
-
-    if (closeCart && cartSidebar) {
-        closeCart.addEventListener('click', () => {
-            cartSidebar.classList.remove('active');
-        });
-    }
-
-    // Search functionality
-    const searchInput = document.getElementById('searchInput');
-    if (searchInput) {
-        searchInput.addEventListener('input', debounce(handleSearch, 300));
-    }
-
-    // Filter functionality
-    setupFilters();
-
-    // Sort functionality
-    const sortSelect = document.getElementById('sortBy');
-    if (sortSelect) {
-        sortSelect.addEventListener('change', handleSort);
-    }
-
-    // View toggle
-    const viewButtons = document.querySelectorAll('.view-btn');
-    viewButtons.forEach(btn => {
-        btn.addEventListener('click', function() {
-            viewButtons.forEach(b => b.classList.remove('active'));
-            this.classList.add('active');
-            toggleView(this.dataset.view);
-        });
-    });
-
-    // Sell crop modal
-    const sellCropBtn = document.getElementById('sellCropBtn');
-    const sellCropModal = document.getElementById('sellCropModal');
-    const sellCropForm = document.getElementById('sellCropForm');
-
-    if (sellCropBtn && sellCropModal) {
-        sellCropBtn.addEventListener('click', () => {
-            sellCropModal.classList.add('active');
-        });
-    }
-
-    if (sellCropForm) {
-        sellCropForm.addEventListener('submit', handleSellCrop);
-    }
-
-    // Clear filters
-    const clearFilters = document.getElementById('clearFilters');
-    if (clearFilters) {
-        clearFilters.addEventListener('click', clearAllFilters);
-    }
-
-    // Load more
-    const loadMore = document.getElementById('loadMore');
-    if (loadMore) {
-        loadMore.addEventListener('click', loadMoreListings);
-    }
-
-    // Checkout
-    const checkoutBtn = document.getElementById('checkoutBtn');
-    if (checkoutBtn) {
-        checkoutBtn.addEventListener('click', handleCheckout);
-    }
-
-    // Modal close buttons
-    const closeModalButtons = document.querySelectorAll('.close-modal');
-    closeModalButtons.forEach(btn => {
-        btn.addEventListener('click', function() {
-            const modal = this.closest('.modal');
-            if (modal) {
-                modal.classList.remove('active');
-            }
-        });
-    });
-
-    // Close modal when clicking outside
-    const modals = document.querySelectorAll('.modal');
-    modals.forEach(modal => {
-        modal.addEventListener('click', function(e) {
-            if (e.target === this) {
-                this.classList.remove('active');
-            }
-        });
-    });
-}
-
-// Setup filter functionality
-function setupFilters() {
-    // Crop type checkboxes
-    const cropTypeCheckboxes = document.querySelectorAll('input[name="cropType"]');
-    cropTypeCheckboxes.forEach(checkbox => {
-        checkbox.addEventListener('change', handleFilter);
-    });
-
-    // Location filter
-    const locationFilter = document.getElementById('locationFilter');
-    if (locationFilter) {
-        locationFilter.addEventListener('change', handleFilter);
-    }
-
-    // Price range
-    const minPrice = document.getElementById('minPrice');
-    const maxPrice = document.getElementById('maxPrice');
-    const priceRange = document.getElementById('priceRange');
-
-    if (minPrice && maxPrice && priceRange) {
-        minPrice.addEventListener('input', handlePriceFilter);
-        maxPrice.addEventListener('input', handlePriceFilter);
-        priceRange.addEventListener('input', handlePriceRange);
-    }
-
-    // Harvest date
-    const harvestRadios = document.querySelectorAll('input[name="harvestDate"]');
-    harvestRadios.forEach(radio => {
-        radio.addEventListener('change', handleFilter);
-    });
-
-    // Rating filter
-    const ratingStars = document.querySelectorAll('.rating-filter .stars i');
-    ratingStars.forEach(star => {
-        star.addEventListener('click', function() {
-            const rating = parseInt(this.dataset.rating);
-            setRatingFilter(rating);
-        });
-    });
-}
-
-// Handle search with debouncing
-function handleSearch(e) {
-    const searchTerm = e.target.value.toLowerCase();
-    filterListings();
-}
-
-// Handle filter changes
-function handleFilter() {
-    filterListings();
-}
-
-// Handle price filter
-function handlePriceFilter() {
-    filterListings();
-}
-
-// Handle price range slider
-function handlePriceRange(e) {
-    const price = e.target.value;
-    const minPrice = document.getElementById('minPrice');
-    const maxPrice = document.getElementById('maxPrice');
-    
-    if (minPrice && maxPrice) {
-        maxPrice.value = price;
-    }
-    filterListings();
-}
-
-// Set rating filter
-function setRatingFilter(rating) {
-    const stars = document.querySelectorAll('.rating-filter .stars i');
-    stars.forEach((star, index) => {
-        if (index < rating) {
-            star.classList.add('active');
-        } else {
-            star.classList.remove('active');
-        }
-    });
-    filterListings();
-}
-
-// Handle sort
-function handleSort(e) {
-    const sortBy = e.target.value;
-    sortListings(sortBy);
-}
-
-// Toggle view between grid and list
-function toggleView(viewType) {
-    const listingsGrid = document.getElementById('listingsGrid');
-    if (listingsGrid) {
-        listingsGrid.className = `listings-grid ${viewType}-view`;
-        const cropCards = listingsGrid.querySelectorAll('.crop-card');
-        cropCards.forEach(card => {
-            card.classList.toggle('list-view', viewType === 'list');
-        });
-    }
-}
-
-// Load crop listings
-function loadListings() {
-    const listingsGrid = document.getElementById('listingsGrid');
-    if (!listingsGrid) return;
-
-    listingsGrid.innerHTML = '';
-    
-    sampleCrops.forEach(crop => {
-        const cropCard = createCropCard(crop);
-        listingsGrid.appendChild(cropCard);
-    });
-}
-
-// Create crop card element
-function createCropCard(crop) {
-    const card = document.createElement('div');
-    card.className = 'crop-card';
-    card.innerHTML = `
-        ${crop.immediate ? '<span class="crop-badge">Immediate</span>' : ''}
-        <div class="crop-image ${crop.image}">
-            <i class="${crop.icon}"></i>
-        </div>
-        <div class="crop-info">
-            <h3>${crop.name}</h3>
-            <div class="crop-meta">
-                <span class="farmer">${crop.farmer}</span>
-                <span class="location">${crop.location}</span>
-            </div>
-            <div class="crop-price">$${crop.price.toFixed(2)}/kg</div>
-            <div class="crop-stats">
-                <span class="quantity">${crop.quantity} kg available</span>
-                <span class="rating">
-                    <i class="fas fa-star"></i> ${crop.rating}
-                </span>
-            </div>
-            <div class="crop-actions">
-                <button class="btn-sm btn-outline view-details" data-crop-id="${crop.id}">
-                    View Details
-                </button>
-                <button class="btn-sm btn-primary add-to-cart" data-crop-id="${crop.id}">
-                    Add to Cart
-                </button>
-            </div>
-        </div>
-    `;
-
-    // Add event listeners to buttons
-    const viewBtn = card.querySelector('.view-details');
-    const addBtn = card.querySelector('.add-to-cart');
-
-    viewBtn.addEventListener('click', () => showCropDetails(crop.id));
-    addBtn.addEventListener('click', () => addToCart(crop.id));
-
-    return card;
-}
-
-// Show crop details in modal
-function showCropDetails(cropId) {
-    const crop = sampleCrops.find(c => c.id === cropId);
-    if (!crop) return;
-
-    currentCrop = crop;
-    
-    const modal = document.getElementById('cropDetailModal');
-    const modalCropName = document.getElementById('modalCropName');
-    const modalCropImage = document.getElementById('modalCropImage');
-    const modalPrice = document.getElementById('modalPrice');
-    const modalQuantity = document.getElementById('modalQuantity');
-    const modalHarvest = document.getElementById('modalHarvest');
-    const modalRating = document.getElementById('modalRating');
-    const modalFarmerAvatar = document.getElementById('modalFarmerAvatar');
-    const modalFarmerName = document.getElementById('modalFarmerName');
-    const modalFarmerLocation = document.getElementById('modalFarmerLocation');
-
-    if (modalCropName) modalCropName.textContent = crop.name;
-    if (modalCropImage) {
-        modalCropImage.className = `image-placeholder ${crop.image}`;
-        modalCropImage.innerHTML = `<i class="${crop.icon}"></i>`;
-    }
-    if (modalPrice) modalPrice.textContent = `$${crop.price.toFixed(2)}/kg`;
-    if (modalQuantity) modalQuantity.textContent = `${crop.quantity} kg`;
-    if (modalHarvest) modalHarvest.textContent = crop.immediate ? 'Immediate' : new Date(crop.harvestDate).toLocaleDateString();
-    if (modalRating) {
-        modalRating.innerHTML = generateStarRating(crop.rating);
-    }
-    if (modalFarmerAvatar) modalFarmerAvatar.textContent = crop.farmer.split(' ').map(n => n[0]).join('');
-    if (modalFarmerName) modalFarmerName.textContent = crop.farmer;
-    if (modalFarmerLocation) modalFarmerLocation.textContent = crop.location;
-
-    // Setup quantity controls
-    setupQuantityControls();
-
-    modal.classList.add('active');
-}
-
-// Generate star rating HTML
-function generateStarRating(rating) {
-    const fullStars = Math.floor(rating);
-    const hasHalfStar = rating % 1 !== 0;
-    let stars = '';
-
-    for (let i = 1; i <= 5; i++) {
-        if (i <= fullStars) {
-            stars += '<i class="fas fa-star"></i>';
-        } else if (i === fullStars + 1 && hasHalfStar) {
-            stars += '<i class="fas fa-star-half-alt"></i>';
-        } else {
-            stars += '<i class="far fa-star"></i>';
-        }
-    }
-
-    return stars;
-}
-
-// Setup quantity controls in modal
-function setupQuantityControls() {
-    const decreaseBtn = document.getElementById('decreaseQty');
-    const increaseBtn = document.getElementById('increaseQty');
-    const quantityInput = document.getElementById('orderQty');
-    const totalPrice = document.getElementById('modalTotalPrice');
-
-    if (!decreaseBtn || !increaseBtn || !quantityInput || !totalPrice) return;
-
-    const updateTotalPrice = () => {
-        const quantity = parseInt(quantityInput.value);
-        const price = currentCrop ? currentCrop.price : 0;
-        const total = quantity * price;
-        totalPrice.textContent = `$${total.toFixed(2)}`;
-    };
-
-    decreaseBtn.addEventListener('click', () => {
-        let value = parseInt(quantityInput.value);
-        if (value > 1) {
-            quantityInput.value = value - 1;
-            updateTotalPrice();
-        }
-    });
-
-    increaseBtn.addEventListener('click', () => {
-        let value = parseInt(quantityInput.value);
-        const maxQuantity = currentCrop ? currentCrop.quantity : 100;
-        if (value < maxQuantity) {
-            quantityInput.value = value + 1;
-            updateTotalPrice();
-        }
-    });
-
-    quantityInput.addEventListener('input', updateTotalPrice);
-    updateTotalPrice();
-}
-
-// Add to cart from modal
-document.getElementById('addToCartModal')?.addEventListener('click', function() {
-    if (!currentCrop) return;
-
-    const quantity = parseInt(document.getElementById('orderQty').value);
-    addToCart(currentCrop.id, quantity);
-    
-    const modal = document.getElementById('cropDetailModal');
-    modal.classList.remove('active');
-});
-
-// Add item to cart
-function addToCart(cropId, quantity = 1) {
-    const crop = sampleCrops.find(c => c.id === cropId);
-    if (!crop) return;
-
-    const existingItem = cart.find(item => item.cropId === cropId);
-    
-    if (existingItem) {
-        existingItem.quantity += quantity;
+async function loadListings(showToast = false) {
+  setLoading(true);
+  try {
+    const res = window.FarmerAPI?.getListings ? await window.FarmerAPI.getListings(40) : null;
+    if (res?.success && Array.isArray(res.data)) {
+      state.listings = res.data.map(normalizeListing);
+      document.getElementById('demoNotice')?.classList.toggle('hidden', !!state.listings.length);
+      if (showToast) showNotification('Marketplace refreshed.', 'success');
     } else {
-        cart.push({
-            cropId: crop.id,
-            name: crop.name,
-            price: crop.price,
-            quantity: quantity,
-            image: crop.image,
-            icon: crop.icon,
-            farmer: crop.farmer
-        });
+      state.listings = [];
+      document.getElementById('demoNotice')?.classList.add('hidden');
+      if (showToast) showNotification(res?.error || 'No listings available.', 'warning');
     }
-
-    updateCartUI();
-    showNotification(`${crop.name} added to cart!`, 'success');
+  } catch (err) {
+    console.error(err);
+    state.listings = [];
+    if (showToast) showNotification('Unable to reach marketplace.', 'error');
+  } finally {
+    setLoading(false);
+    applyFilters();
+    renderStats();
+  }
 }
 
-// Update cart UI
+function normalizeListing(row) {
+  const farm = row.farms || {};
+  const crop = row.crops || {};
+  const sellerName = row.seller_name || farm.farmer_name || farm.owner_name || farm.farm_name || 'Farmer';
+  return {
+    id: row.listing_id || row.id,
+    cropName: crop.crop_name || row.crop_name || 'Crop',
+    cropType: (crop.crop_type || row.crop_type || 'general').toLowerCase(),
+    farmName: farm.farm_name || row.farm_name || 'Farm',
+    sellerName,
+    ownerId: row.owner_id || farm.user_id || null,
+    price: Number(row.price_per_unit ?? row.price ?? 0),
+    quantity: Number(row.available_qty ?? row.quantity ?? 0),
+    status: row.status || 'active',
+    listedOn: row.listed_on || row.listedOn || new Date().toISOString(),
+    harvest: crop.expected_harvest || row.expected_harvest || null
+  };
+}
+
+function attachEvents() {
+  document.getElementById('searchInput')?.addEventListener(
+    'input',
+    debounce((e) => {
+      const term = e.target.value.trim().toLowerCase();
+      state.searchTerm = term;
+      applyFilters();
+    }, 200)
+  );
+
+  document.getElementById('myListingsToggle')?.addEventListener('click', () => {
+    state.showMineOnly = !state.showMineOnly;
+    applyFilters();
+    const btn = document.getElementById('myListingsToggle');
+    if (btn) btn.textContent = state.showMineOnly ? 'Show All Listings' : 'Show My Listings';
+  });
+
+  // Disable remaining filter UI effects except search
+  document.getElementById('loadMore')?.addEventListener('click', () => {
+    state.visible += DEFAULT_VISIBLE_COUNT;
+    renderListings();
+  });
+
+  document.getElementById('listingsGrid')?.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-action]');
+    if (!btn) return;
+    const id = btn.dataset.id;
+    const item = state.listings.find((l) => String(l.id) === String(id));
+    if (!item) return;
+    if (btn.dataset.action === 'view') openModal(item);
+    if (btn.dataset.action === 'cart') addToCart(item, 1);
+  });
+
+  document.getElementById('addToCartModal')?.addEventListener('click', () => {
+    if (!state.currentListing) return;
+    const qty = Number(document.getElementById('orderQty')?.value || 1);
+    addToCart(state.currentListing, qty);
+    closeModal();
+  });
+  document.getElementById('decreaseQty')?.addEventListener('click', () => bumpQty(-1));
+  document.getElementById('increaseQty')?.addEventListener('click', () => bumpQty(1));
+  document.getElementById('closeCart')?.addEventListener('click', toggleCart);
+  document.getElementById('cartToggle')?.addEventListener('click', toggleCart);
+  document.getElementById('checkoutBtn')?.addEventListener('click', handleCheckout);
+  document.getElementById('cartItems')?.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-remove-id]');
+    if (!btn) return;
+    removeFromCart(btn.dataset.removeId);
+  });
+  document.getElementById('refreshMarketplaceBtn')?.addEventListener('click', () => {
+    loadListings(true);
+    loadOrders();
+  });
+  document.querySelectorAll('#cropDetailModal .close-modal')?.forEach((btn) => btn.addEventListener('click', closeModal));
+
+  // Sell crop modal open/close
+  document.getElementById('sellCropBtn')?.addEventListener('click', openSellModal);
+  document.querySelectorAll('#sellCropModal .close-modal')?.forEach((btn) => btn.addEventListener('click', closeSellModal));
+  document.getElementById('sellCropForm')?.addEventListener('submit', handleSellSubmit);
+  document.getElementById('sellFarmSelect')?.addEventListener('change', (e) => loadCropsForFarm(e.target.value));
+  document.querySelectorAll('.order-tab')?.forEach((btn) =>
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.order-tab').forEach((b) => b.classList.remove('active'));
+      btn.classList.add('active');
+      const tab = btn.dataset.orderTab;
+      const sellerPanel = document.getElementById('sellerOrdersList');
+      const buyerPanel = document.getElementById('buyerOrdersList');
+      if (tab === 'buyer') {
+        sellerPanel?.classList.add('hidden');
+        buyerPanel?.classList.remove('hidden');
+      } else {
+        sellerPanel?.classList.remove('hidden');
+        buyerPanel?.classList.add('hidden');
+      }
+    })
+  );
+
+  // View toggle (grid/list)
+  document.querySelectorAll('[data-view]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const view = btn.dataset.view;
+      const grid = document.getElementById('listingsGrid');
+      document.querySelectorAll('[data-view]').forEach((b) => b.classList.toggle('active', b === btn));
+      if (view === 'list') grid?.classList.add('list-view');
+      else grid?.classList.remove('list-view');
+    });
+  });
+}
+
+function applyFilters() {
+  // Refresh authId in case it was set after initial load (e.g., post-login)
+  if (!state.authId) state.authId = getAuthId();
+  state.filtered = [...state.listings].filter((l) =>
+    (state.showMineOnly && state.authId ? String(l.ownerId) === String(state.authId) : true) &&
+    (state.searchTerm ? `${l.cropName} ${l.farmName} ${l.cropType}`.toLowerCase().includes(state.searchTerm) : true)
+  );
+  state.visible = DEFAULT_VISIBLE_COUNT;
+  renderListings();
+}
+
+function renderListings() {
+  const grid = document.getElementById('listingsGrid');
+  if (!grid) return;
+  if (!state.filtered.length) {
+    grid.innerHTML = `<div class="empty-state"><i class="fas fa-leaf"></i><h3>No listings</h3></div>`;
+    document.getElementById('loadMore')?.classList.add('hidden');
+    return;
+  }
+  const maxItems = Math.min(state.visible, state.filtered.length);
+  grid.innerHTML = state.filtered
+    .slice(0, maxItems)
+    .map(
+      (l) => `
+      <article class="listing-card">
+        <header class="listing-head">
+          <div class="listing-icon"><i class="fas fa-seedling"></i></div>
+          <div class="listing-title">
+            <div class="badge badge-soft">${capitalize(l.cropType)}</div>
+            <h3>${l.cropName}</h3>
+            <p class="muted">Farm: ${l.farmName}</p>
+            <p class="muted">Seller: ${l.sellerName}${state.authId && String(l.ownerId) === String(state.authId) ? ' (You)' : ''}</p>
+          </div>
+          <div class="listing-meta-chip">
+            <i class="fas fa-clock"></i>
+            <span>${formatDate(l.listedOn)}</span>
+          </div>
+        </header>
+        <div class="listing-body">
+          <div class="stat">
+            <p class="stat-label">Price</p>
+            <p class="stat-value">${formatCurrency(l.price)}<span class="stat-suffix">/kg</span></p>
+          </div>
+          <div class="divider"></div>
+          <div class="stat">
+            <p class="stat-label">Available</p>
+            <p class="stat-value">${l.quantity.toLocaleString()}<span class="stat-suffix"> kg</span></p>
+          </div>
+        </div>
+        <footer class="listing-actions">
+          <button class="ghost-btn" data-action="view" data-id="${l.id}"><i class="fas fa-eye"></i> Details</button>
+          <button class="primary-btn" data-action="cart" data-id="${l.id}" ${state.authId && String(l.ownerId) === String(state.authId) ? 'disabled title="You cannot buy your own listing"' : ''}>
+            <i class="fas fa-cart-plus"></i> Add to Cart
+          </button>
+        </footer>
+      </article>`
+    )
+    .join('');
+  const loadMoreBtn = document.getElementById('loadMore');
+  if (loadMoreBtn) {
+    if (maxItems < state.filtered.length) loadMoreBtn.classList.remove('hidden');
+    else loadMoreBtn.classList.add('hidden');
+  }
+}
+
+function renderStats() {
+  if (!state.authId) state.authId = getAuthId();
+  const total = state.listings.length || 0;
+  const mine = state.authId ? state.listings.filter((l) => String(l.ownerId) === String(state.authId)).length : 0;
+  const openOrders = state.stats?.openOrders ?? 0;
+  const supplyCount = (state.supplyItems || []).length || 0;
+  const avgPriceText = state.stats?.avgPrice ? `${formatCurrency(state.stats.avgPrice)}/kg` : '—';
+
+  setText('statTotalListings', total || '--');
+  setText('statMyListings', mine.toString());
+  setText('statOrders', openOrders.toString());
+  setText('statSupply', supplyCount.toString());
+  setText('statTotalListingsLabel', avgPriceText);
+
+  renderMyActivity();
+  renderOrdersPanel();
+}
+
+function openModal(listing) {
+  state.currentListing = listing;
+  const modal = document.getElementById('cropDetailModal');
+  if (!modal) return;
+  setText('modalCropName', listing.cropName);
+  setText('modalPrice', `${formatCurrency(listing.price)}/kg`);
+  setText('modalQuantity', `${listing.quantity.toLocaleString()} kg`);
+  setText('modalHarvest', listing.harvest ? new Date(listing.harvest).toLocaleDateString() : 'Immediate');
+  setText('modalFarmerName', listing.farmName);
+  setText('modalFarmerLocation', listing.cropType ? capitalize(listing.cropType) : '—');
+  setText('modalTotalPrice', formatCurrency(listing.price));
+  const qtyInput = document.getElementById('orderQty');
+  if (qtyInput) {
+    qtyInput.value = 1;
+    qtyInput.max = listing.quantity || 9999;
+  }
+  modal.classList.add('active');
+  modal.style.display = 'flex';
+  updateModalPrice();
+}
+
+function closeModal() {
+  const modal = document.getElementById('cropDetailModal');
+  if (!modal) return;
+  modal.classList.remove('active');
+  modal.style.display = '';
+  state.currentListing = null;
+}
+
+function bumpQty(delta) {
+  const qtyInput = document.getElementById('orderQty');
+  if (!qtyInput) return;
+  const max = Number(qtyInput.max || 9999);
+  let next = Number(qtyInput.value || 1) + delta;
+  if (next < 1) next = 1;
+  if (next > max) next = max;
+  qtyInput.value = next;
+  updateModalPrice();
+}
+
+function updateModalPrice() {
+  const qtyInput = document.getElementById('orderQty');
+  const totalEl = document.getElementById('modalTotalPrice');
+  if (!qtyInput || !totalEl || !state.currentListing) return;
+  const qty = Number(qtyInput.value || 1);
+  const total = qty * (state.currentListing.price || 0);
+  totalEl.textContent = formatCurrency(total);
+}
+
+async function openSellModal() {
+  const modal = document.getElementById('sellCropModal');
+  if (!modal) return;
+  // Ensure modal is visible even if CSS class is missing
+  modal.classList.add('active');
+  modal.style.display = 'flex';
+  try {
+    await populateFarms();
+    showNotification('Select a farm to load crops.', 'info');
+  } catch (err) {
+    console.error('populateFarms failed', err);
+    showNotification('Could not load farms. Please refresh.', 'error');
+  }
+}
+
+function closeSellModal() {
+  const modal = document.getElementById('sellCropModal');
+  if (!modal) return;
+  modal.classList.remove('active');
+  modal.style.display = '';
+}
+
+async function populateFarms() {
+  const select = document.getElementById('sellFarmSelect');
+  if (!select || !window.FarmerAPI?.getFarms) return;
+  select.innerHTML = `<option value="">Loading farms...</option>`;
+  try {
+    const res = await window.FarmerAPI.getFarms(50);
+    if (!res?.success) throw new Error(res?.error || 'Unable to load farms');
+    const farms = res?.data || [];
+    if (!farms.length) {
+      select.innerHTML = `<option value="">No farms found</option>`;
+      showNotification('No farms found for your account.', 'warning');
+      return;
+    }
+    select.innerHTML = `<option value="">Select a farm</option>` + farms.map((f) => `<option value="${f.farm_id}">${f.farm_name || 'Farm'} (#${f.farm_id})</option>`).join('');
+  } catch (err) {
+    console.error('getFarms failed', err);
+    select.innerHTML = `<option value="">Unable to load farms</option>`;
+    showNotification(err.message || 'Unable to load farms. Check login/permissions.', 'error');
+  }
+}
+
+async function loadCropsForFarm(farmId) {
+  const cropSelect = document.getElementById('sellCropSelect');
+  if (!cropSelect || !farmId || !window.FarmerAPI?.getCrops) {
+    if (cropSelect) cropSelect.innerHTML = `<option value="">Select a field first</option>`;
+    return;
+  }
+  cropSelect.innerHTML = `<option value="">Loading crops...</option>`;
+  try {
+    const res = await window.FarmerAPI.getCrops(100);
+    const crops = (res?.data || []).filter((c) => String(c.farm_id) === String(farmId));
+    if (!crops.length) {
+      cropSelect.innerHTML = `<option value="">No crops for this field</option>`;
+      return;
+    }
+    cropSelect.innerHTML = `<option value="">Select a crop</option>` + crops.map((c) => `<option value="${c.crop_id}">${c.crop_name || 'Crop'} (#${c.crop_id})</option>`).join('');
+  } catch (err) {
+    console.error('loadCropsForFarm failed', err);
+    cropSelect.innerHTML = `<option value="">Unable to load crops</option>`;
+    showNotification('Unable to load crops for that farm.', 'error');
+  }
+}
+
+async function handleSellSubmit(e) {
+  e.preventDefault();
+  const farmId = document.getElementById('sellFarmSelect')?.value;
+  const cropId = document.getElementById('sellCropSelect')?.value;
+  const price = parseFloat(document.getElementById('cropPrice')?.value || '0');
+  const qty = parseFloat(document.getElementById('cropQuantity')?.value || '0');
+  const harvestDate = document.getElementById('harvestDate')?.value || null;
+  const submitBtn = e.target.querySelector('button[type="submit"]');
+
+  if (!farmId || !cropId || !price || !qty) {
+    showNotification('Please fill farm, crop, price, and quantity.', 'warning');
+    return;
+  }
+  if (!window.FarmerAPI?.createListing) {
+    showNotification('Listing API not available.', 'error');
+    return;
+  }
+  try {
+    setLoading(true);
+    if (submitBtn) submitBtn.disabled = true;
+    const payload = {
+      farm_id: Number(farmId),
+      crop_id: Number(cropId),
+      price_per_unit: price,
+      available_qty: qty,
+      status: 'active',
+      expected_harvest: harvestDate || null
+    };
+    const res = await window.FarmerAPI.createListing(payload);
+    if (res?.success) {
+      showNotification('Crop listed successfully.', 'success');
+      closeSellModal();
+      if (res.data) {
+        // Optimistically add to UI if API returns the new row
+        state.listings.unshift(normalizeListing(res.data));
+        applyFilters();
+        renderStats();
+      } else {
+        loadListings(true);
+      }
+      e.target.reset();
+    } else {
+      throw new Error(res?.error || 'Failed to create listing');
+    }
+  } catch (err) {
+    console.error(err);
+    showNotification(err.message || 'Failed to list crop.', 'error');
+  } finally {
+    setLoading(false);
+    if (submitBtn) submitBtn.disabled = false;
+  }
+}
+
+function addToCart(item, qty) {
+  const existing = state.cart.find((c) => c.id === item.id && c.type === 'listing');
+  if (existing) existing.qty = Math.min(existing.qty + qty, item.quantity || existing.qty + qty);
+  else state.cart.push({ id: item.id, name: item.cropName, type: 'listing', price: item.price, unit: 'kg', qty });
+  updateCartUI();
+  showNotification(`${item.cropName} added to cart.`, 'success');
+}
+
+function removeFromCart(id) {
+  state.cart = state.cart.filter((c) => String(c.id) !== String(id));
+  updateCartUI();
+}
+
 function updateCartUI() {
-    const cartItems = document.getElementById('cartItems');
-    const cartCount = document.querySelector('.cart-count');
-    const totalAmount = document.querySelector('.total-amount');
-    const checkoutBtn = document.getElementById('checkoutBtn');
-
-    if (!cartItems) return;
-
-    // Update cart count
-    if (cartCount) {
-        const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
-        cartCount.textContent = totalItems;
-        cartCount.style.display = totalItems > 0 ? 'flex' : 'none';
-    }
-
-    // Update cart items
-    if (cart.length === 0) {
-        cartItems.innerHTML = `
-            <div class="empty-cart">
-                <i class="fas fa-shopping-cart"></i>
-                <p>Your cart is empty</p>
-            </div>
-        `;
-    } else {
-        cartItems.innerHTML = '';
-        cart.forEach(item => {
-            const cartItem = document.createElement('div');
-            cartItem.className = 'cart-item';
-            cartItem.innerHTML = `
-                <div class="cart-item-image ${item.image}">
-                    <i class="${item.icon}"></i>
-                </div>
-                <div class="cart-item-info">
-                    <div class="cart-item-name">${item.name}</div>
-                    <div class="cart-item-meta">${item.farmer}</div>
-                    <div class="cart-item-controls">
-                        <div class="cart-item-qty">
-                            <button class="decrease-qty" data-crop-id="${item.cropId}">-</button>
-                            <input type="number" value="${item.quantity}" min="1" class="item-qty" data-crop-id="${item.cropId}">
-                            <button class="increase-qty" data-crop-id="${item.cropId}">+</button>
-                        </div>
-                        <button class="cart-item-remove" data-crop-id="${item.cropId}">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </div>
-                </div>
-                <div class="cart-item-price">$${(item.price * item.quantity).toFixed(2)}</div>
-            `;
-            cartItems.appendChild(cartItem);
-        });
-
-        // Add event listeners to cart item controls
-        setupCartItemControls();
-    }
-
-    // Update total amount
-    if (totalAmount) {
-        const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-        totalAmount.textContent = `$${total.toFixed(2)}`;
-    }
-
-    // Enable/disable checkout button
-    if (checkoutBtn) {
-        checkoutBtn.disabled = cart.length === 0;
-    }
+  const itemsEl = document.getElementById('cartItems');
+  const countEl = document.querySelector('.cart-count');
+  const totalEl = document.querySelector('.total-amount');
+  const checkoutBtn = document.getElementById('checkoutBtn');
+  const totalItems = state.cart.reduce((sum, c) => sum + c.qty, 0);
+  const totalPrice = state.cart.reduce((sum, c) => sum + c.price * c.qty, 0);
+  if (countEl) countEl.textContent = totalItems;
+  if (totalEl) totalEl.textContent = formatCurrency(totalPrice);
+  if (checkoutBtn) checkoutBtn.disabled = !state.cart.length;
+  if (!itemsEl) return;
+  if (!state.cart.length) {
+    itemsEl.innerHTML = `<div class="empty-cart"><i class="fas fa-shopping-cart"></i><p>Your cart is empty</p></div>`;
+  } else {
+    itemsEl.innerHTML = state.cart
+      .map(
+        (c) => `
+        <div class="cart-item">
+          <div>
+            <h4>${c.name}</h4>
+            <p>${c.qty} ${c.unit}</p>
+          </div>
+          <div class="cart-item-actions">
+            <strong>${formatCurrency(c.price * c.qty)}</strong>
+            <button data-remove-id="${c.id}" aria-label="Remove ${c.name}"><i class="fas fa-times"></i></button>
+          </div>
+        </div>`
+      )
+      .join('');
+  }
+  persistCart();
 }
 
-// Setup cart item controls
-function setupCartItemControls() {
-    // Quantity decrease
-    document.querySelectorAll('.decrease-qty').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const cropId = parseInt(this.dataset.cropId);
-            updateCartQuantity(cropId, -1);
-        });
-    });
-
-    // Quantity increase
-    document.querySelectorAll('.increase-qty').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const cropId = parseInt(this.dataset.cropId);
-            updateCartQuantity(cropId, 1);
-        });
-    });
-
-    // Quantity input
-    document.querySelectorAll('.item-qty').forEach(input => {
-        input.addEventListener('change', function() {
-            const cropId = parseInt(this.dataset.cropId);
-            const quantity = parseInt(this.value);
-            if (quantity > 0) {
-                setCartQuantity(cropId, quantity);
-            }
-        });
-    });
-
-    // Remove item
-    document.querySelectorAll('.cart-item-remove').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const cropId = parseInt(this.dataset.cropId);
-            removeFromCart(cropId);
-        });
-    });
+function toggleCart() {
+  document.getElementById('cartSidebar')?.classList.toggle('active');
 }
 
-// Update cart quantity
-function updateCartQuantity(cropId, change) {
-    const item = cart.find(item => item.cropId === cropId);
-    if (item) {
-        const newQuantity = item.quantity + change;
-        if (newQuantity > 0) {
-            item.quantity = newQuantity;
-        } else {
-            removeFromCart(cropId);
-            return;
-        }
-        updateCartUI();
-    }
-}
-
-// Set cart quantity
-function setCartQuantity(cropId, quantity) {
-    const item = cart.find(item => item.cropId === cropId);
-    if (item) {
-        item.quantity = quantity;
-        updateCartUI();
-    }
-}
-
-// Remove from cart
-function removeFromCart(cropId) {
-    cart = cart.filter(item => item.cropId !== cropId);
-    updateCartUI();
-    showNotification('Item removed from cart', 'warning');
-}
-
-// Handle checkout
 function handleCheckout() {
-    if (cart.length === 0) return;
+  if (!state.cart.length) return;
+  const items = state.cart
+    .filter((c) => c.type === 'listing')
+    .map((c) => ({ listing_id: c.id, quantity: c.qty }));
+  if (!items.length) return;
 
-    // In a real app, this would process the payment and create an order
-    const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-    
-    showNotification(`Order placed successfully! Total: $${total.toFixed(2)}`, 'success');
-    
-    // Clear cart
-    cart = [];
-    updateCartUI();
-    
-    // Close cart sidebar
-    const cartSidebar = document.getElementById('cartSidebar');
-    if (cartSidebar) {
-        cartSidebar.classList.remove('active');
+  (async () => {
+    try {
+      const res = window.FarmerAPI?.createOrder
+        ? await window.FarmerAPI.createOrder({ items })
+        : { success: false, error: 'Order API unavailable' };
+      if (!res.success) throw new Error(res.error || 'Checkout failed');
+      showNotification('Order placed successfully.', 'success');
+      state.cart = [];
+      updateCartUI();
+      toggleCart();
+    } catch (err) {
+      console.error('Checkout failed', err);
+      showNotification(err.message || 'Unable to place order.', 'error');
     }
+  })();
 }
 
-// Handle sell crop form submission
-function handleSellCrop(e) {
-    e.preventDefault();
-    
-    // In a real app, this would send data to the backend
-    const formData = new FormData(e.target);
-    const cropData = Object.fromEntries(formData);
-    
-    showNotification('Crop listed successfully!', 'success');
-    
-    // Close modal and reset form
-    const modal = document.getElementById('sellCropModal');
-    if (modal) {
-        modal.classList.remove('active');
+function setLoading(isLoading) {
+  const grid = document.getElementById('listingsGrid');
+  if (!grid) return;
+  if (isLoading) {
+    grid.innerHTML = `
+      <div class="loading-state">
+        <div class="spinner"></div>
+        <h3>Loading listings</h3>
+        <p>Fetching live crops from the marketplace...</p>
+      </div>`;
+  }
+}
+
+function restoreCart() {
+  try {
+    const raw = sessionStorage.getItem(MARKETPLACE_CART_KEY);
+    if (raw) {
+      state.cart = JSON.parse(raw);
+      updateCartUI();
     }
-    e.target.reset();
+  } catch (err) {
+    console.warn('Restore cart failed', err);
+  }
 }
 
-// Filter listings based on current filters
-function filterListings() {
-    // Get current filter values
-    const searchTerm = document.getElementById('searchInput')?.value.toLowerCase() || '';
-    const selectedTypes = Array.from(document.querySelectorAll('input[name="cropType"]:checked')).map(cb => cb.value);
-    const location = document.getElementById('locationFilter')?.value || '';
-    const minPrice = parseFloat(document.getElementById('minPrice')?.value) || 0;
-    const maxPrice = parseFloat(document.getElementById('maxPrice')?.value) || Infinity;
-    const harvestDate = document.querySelector('input[name="harvestDate"]:checked')?.value;
-    const activeStars = document.querySelectorAll('.rating-filter .stars i.active');
-    const minRating = activeStars.length;
-
-    const filteredCrops = sampleCrops.filter(crop => {
-        // Search filter
-        if (searchTerm && !crop.name.toLowerCase().includes(searchTerm) && 
-            !crop.farmer.toLowerCase().includes(searchTerm)) {
-            return false;
-        }
-
-        // Crop type filter
-        if (selectedTypes.length > 0 && !selectedTypes.includes(crop.type)) {
-            return false;
-        }
-
-        // Location filter
-        if (location && !crop.location.toLowerCase().includes(location)) {
-            return false;
-        }
-
-        // Price filter
-        if (crop.price < minPrice || crop.price > maxPrice) {
-            return false;
-        }
-
-        // Harvest date filter
-        if (harvestDate === 'immediate' && !crop.immediate) {
-            return false;
-        } else if (harvestDate === 'week') {
-            const harvestDateObj = new Date(crop.harvestDate);
-            const weekFromNow = new Date();
-            weekFromNow.setDate(weekFromNow.getDate() + 7);
-            if (harvestDateObj > weekFromNow) {
-                return false;
-            }
-        } else if (harvestDate === 'month') {
-            const harvestDateObj = new Date(crop.harvestDate);
-            const monthFromNow = new Date();
-            monthFromNow.setMonth(monthFromNow.getMonth() + 1);
-            if (harvestDateObj > monthFromNow) {
-                return false;
-            }
-        }
-
-        // Rating filter
-        if (crop.rating < minRating) {
-            return false;
-        }
-
-        return true;
-    });
-
-    displayFilteredListings(filteredCrops);
+function persistCart() {
+  try {
+    sessionStorage.setItem(MARKETPLACE_CART_KEY, JSON.stringify(state.cart));
+  } catch (err) {
+    console.warn('Persist cart failed', err);
+  }
 }
 
-// Display filtered listings
-function displayFilteredListings(crops) {
-    const listingsGrid = document.getElementById('listingsGrid');
-    if (!listingsGrid) return;
-
-    listingsGrid.innerHTML = '';
-    
-    if (crops.length === 0) {
-        listingsGrid.innerHTML = `
-            <div class="no-results">
-                <i class="fas fa-search"></i>
-                <h3>No crops found</h3>
-                <p>Try adjusting your filters or search terms</p>
-            </div>
-        `;
-        return;
-    }
-
-    crops.forEach(crop => {
-        const cropCard = createCropCard(crop);
-        listingsGrid.appendChild(cropCard);
-    });
+function formatCurrency(val) {
+  return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 2 }).format(Number(val) || 0);
+}
+function formatDate(val) {
+  if (!val) return '—';
+  const d = new Date(val);
+  if (Number.isNaN(d.getTime())) return '—';
+  return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+}
+function capitalize(val) {
+  if (!val) return '';
+  return val.charAt(0).toUpperCase() + val.slice(1);
 }
 
-// Sort listings
-function sortListings(sortBy) {
-    let sortedCrops = [...sampleCrops];
+function renderMyActivity() {
+  const listEl = document.getElementById('myListingsList');
+  const countEl = document.getElementById('myListingsCount');
+  if (!listEl || !countEl) return;
 
-    switch (sortBy) {
-        case 'price-low':
-            sortedCrops.sort((a, b) => a.price - b.price);
-            break;
-        case 'price-high':
-            sortedCrops.sort((a, b) => b.price - a.price);
-            break;
-        case 'popular':
-            sortedCrops.sort((a, b) => b.rating - a.rating);
-            break;
-        case 'rating':
-            sortedCrops.sort((a, b) => b.rating - a.rating);
-            break;
-        case 'newest':
-        default:
-            // Keep original order for newest
-            break;
-    }
+  if (!state.authId) state.authId = getAuthId();
+  const mine = state.authId ? state.listings.filter((l) => String(l.ownerId) === String(state.authId)) : [];
 
-    displayFilteredListings(sortedCrops);
-}
+  countEl.textContent = mine.length.toString();
 
-// Clear all filters
-function clearAllFilters() {
-    // Reset checkboxes
-    document.querySelectorAll('input[name="cropType"]').forEach(cb => {
-        cb.checked = true;
-    });
+  if (!mine.length) {
+    listEl.innerHTML = `
+      <div class="empty-state">
+        <i class="fas fa-leaf"></i>
+        <h3>No listings yet</h3>
+        <p>Use "Sell Crop" to create your first offer.</p>
+      </div>`;
+    return;
+  }
 
-    // Reset location
-    document.getElementById('locationFilter').value = '';
-
-    // Reset price
-    document.getElementById('minPrice').value = '';
-    document.getElementById('maxPrice').value = '';
-    document.getElementById('priceRange').value = 250;
-
-    // Reset harvest date
-    document.querySelector('input[name="harvestDate"][value="immediate"]').checked = true;
-
-    // Reset rating
-    setRatingFilter(0);
-
-    // Reset search
-    document.getElementById('searchInput').value = '';
-
-    filterListings();
-}
-
-// Load more listings (simulated)
-function loadMoreListings() {
-    // In a real app, this would fetch more data from the server
-    showNotification('Loading more listings...', 'info');
-    
-    // Simulate API call delay
-    setTimeout(() => {
-        showNotification('More listings loaded!', 'success');
-    }, 1000);
-}
-
-// Initialize charts
-function initializeCharts() {
-    // Price Trend Chart
-    const priceTrendCtx = document.getElementById('priceTrendChart');
-    if (priceTrendCtx) {
-        new Chart(priceTrendCtx.getContext('2d'), {
-            type: 'line',
-            data: {
-                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
-                datasets: [{
-                    label: 'Average Price ($/kg)',
-                    data: [2.1, 2.2, 2.15, 2.3, 2.25, 2.2, 2.15],
-                    borderColor: '#4caf50',
-                    backgroundColor: 'rgba(76, 175, 80, 0.1)',
-                    borderWidth: 2,
-                    tension: 0.3,
-                    fill: true
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        display: false
-                    }
-                }
-            }
-        });
-    }
-
-    // Orders Chart
-    const ordersCtx = document.getElementById('ordersChart');
-    if (ordersCtx) {
-        new Chart(ordersCtx.getContext('2d'), {
-            type: 'bar',
-            data: {
-                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
-                datasets: [{
-                    label: 'Orders',
-                    data: [45, 52, 48, 65, 58, 62, 70],
-                    backgroundColor: 'rgba(79, 70, 229, 0.7)',
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        display: false
-                    }
-                }
-            }
-        });
-    }
-}
-
-// Utility function for debouncing
-function debounce(func, wait) {
-    let timeout;
-    return function executedFunction(...args) {
-        const later = () => {
-            clearTimeout(timeout);
-            func(...args);
-        };
-        clearTimeout(timeout);
-        timeout = setTimeout(later, wait);
-    };
-}
-
-// Show notification
-function showNotification(message, type = 'info') {
-    // Create notification element
-    const notification = document.createElement('div');
-    notification.className = `notification notification-${type}`;
-    notification.innerHTML = `
-        <div class="notification-content">
-            <i class="fas fa-${getNotificationIcon(type)}"></i>
-            <span>${message}</span>
+  listEl.innerHTML = mine
+    .slice(0, 5)
+    .map(
+      (l) => `
+      <div class="panel-row">
+        <div>
+          <div class="panel-title">${l.cropName}</div>
+          <div class="panel-subtitle">${l.farmName || 'Farm'} • ${formatDate(l.listedOn)}</div>
         </div>
-    `;
-
-    // Add to page
-    document.body.appendChild(notification);
-
-    // Animate in
-    setTimeout(() => {
-        notification.classList.add('show');
-    }, 100);
-
-    // Remove after delay
-    setTimeout(() => {
-        notification.classList.remove('show');
-        setTimeout(() => {
-            if (notification.parentNode) {
-                notification.parentNode.removeChild(notification);
-            }
-        }, 300);
-    }, 3000);
+        <div class="panel-meta">
+          <span>${formatCurrency(l.price)}/kg</span>
+          <span>${l.quantity.toLocaleString()} kg</span>
+        </div>
+      </div>`
+    )
+    .join('');
 }
 
-// Get notification icon based on type
+async function loadOrders() {
+  if (!window.FarmerAPI?.getOrders) {
+    return; // backend not available
+  }
+  try {
+    const res = await window.FarmerAPI.getOrders(50);
+    if (res?.success) {
+      // backend may return {sales, purchases} at root or under data
+      const payload = res.data ?? res;
+      normalizeOrders(payload);
+    } else {
+      state.orders = { sales: [], purchases: [] };
+    }
+  } catch (err) {
+    console.warn('loadOrders failed', err);
+    state.orders = { sales: [], purchases: [] };
+  }
+  // update openOrders stat: count seller pending
+  const pendingSales = (state.orders.sales || []).filter((o) => (o.status || '').toLowerCase() === 'pending').length;
+  state.stats.openOrders = pendingSales;
+  renderOrdersPanel();
+  renderStats();
+}
+
+function normalizeOrders(data) {
+  if (!data) {
+    state.orders = { sales: [], purchases: [] };
+    return;
+  }
+  const authId = getAuthId();
+  const lower = (v) => (typeof v === 'string' ? v.toLowerCase() : v);
+  const flat = Array.isArray(data) ? data : [];
+  const sales = [];
+  const purchases = [];
+
+  if (Array.isArray(data.sales) || Array.isArray(data.purchases)) {
+    state.orders = {
+      sales: (data.sales || []).map(normalizeOrderRow),
+      purchases: (data.purchases || []).map(normalizeOrderRow)
+    };
+    return;
+  }
+
+  flat.forEach((row) => {
+    const normalized = normalizeOrderRow(row);
+    if (normalized.isSale(authId)) sales.push(normalized);
+    if (normalized.isPurchase(authId)) purchases.push(normalized);
+  });
+  state.orders = { sales, purchases };
+}
+
+function normalizeOrderRow(row) {
+  const listing = row.marketplace_listings || row.listing || {};
+  const farm = row.farms || listing.farms || {};
+  const crop = row.crops || listing.crops || {};
+  return {
+    id: row.order_id || row.id,
+    listingId: row.listing_id,
+    qty: Number(row.quantity ?? 0),
+    total: Number(row.total_price ?? 0),
+    status: (row.status || 'pending').toLowerCase(),
+    orderedOn: row.ordered_on || row.created_at || row.updated_at || null,
+    cropName: crop.crop_name || row.crop_name || 'Crop',
+    farmName: farm.farm_name || row.farm_name || 'Farm',
+    sellerId: row.seller_id || row.owner_id || farm.user_id || listing.farms?.user_id || null,
+    buyerId: row.buyer_id || null,
+    isSale: (authId) => authId && row.seller_id ? String(row.seller_id) === String(authId) : authId && row.farms?.user_id ? String(row.farms.user_id) === String(authId) : false,
+    isPurchase: (authId) => authId && row.buyer_id ? String(row.buyer_id) === String(authId) : false
+  };
+}
+
+function renderOrdersPanel() {
+  const sellerEl = document.getElementById('sellerOrdersList');
+  const buyerEl = document.getElementById('buyerOrdersList');
+  if (!sellerEl || !buyerEl) return;
+
+  const sales = state.orders.sales || [];
+  const purchases = state.orders.purchases || [];
+
+  sellerEl.addEventListener('click', async (e) => {
+    const btn = e.target.closest('[data-accept-order]');
+    if (!btn) return;
+    const orderId = btn.dataset.acceptOrder;
+    btn.disabled = true;
+    try {
+      const res = window.FarmerAPI?.updateOrderStatus
+        ? await window.FarmerAPI.updateOrderStatus(orderId, 'accepted')
+        : { success: false, error: 'Order API unavailable' };
+      if (!res.success) throw new Error(res.error || 'Failed to accept');
+      showNotification(`Order #${orderId} accepted.`, 'success');
+      await loadOrders();
+    } catch (err) {
+      console.error('Accept order failed', err);
+      showNotification(err.message || 'Unable to accept order.', 'error');
+      btn.disabled = false;
+    }
+  }, { once: false });
+
+  sellerEl.innerHTML = sales.length
+    ? sales
+        .slice(0, 5)
+        .map(
+          (o) => `
+        <div class="panel-row">
+          <div>
+            <div class="panel-title">${o.cropName}</div>
+            <div class="panel-subtitle">${o.farmName || 'Farm'} • ${formatDate(o.orderedOn)}</div>
+          </div>
+          <div class="panel-meta">
+            <span>${o.qty} kg</span>
+            <span>${formatCurrency(o.total)}</span>
+            <span class="order-status ${o.status}">${capitalize(o.status)}</span>
+            ${o.status === 'pending' ? `<button class="primary-btn tiny" data-accept-order="${o.id}">Accept</button>` : ''}
+          </div>
+        </div>`
+        )
+        .join('')
+    : `<div class="empty-state compact"><p>No sales recorded yet.</p></div>`;
+
+  buyerEl.innerHTML = purchases.length
+    ? purchases
+        .slice(0, 5)
+        .map(
+          (o) => `
+        <div class="panel-row">
+          <div>
+            <div class="panel-title">${o.cropName}</div>
+            <div class="panel-subtitle">${o.farmName || 'Farm'} • ${formatDate(o.orderedOn)}</div>
+          </div>
+          <div class="panel-meta">
+            <span>${o.qty} kg</span>
+            <span>${formatCurrency(o.total)}</span>
+            <span class="order-status ${o.status}">${capitalize(o.status)}</span>
+          </div>
+        </div>`
+        )
+        .join('')
+    : `<div class="empty-state compact"><p>No purchases recorded yet.</p></div>`;
+}
+function getAuthId() {
+  try {
+    // Prefer explicit authUserId saved alongside appUserId
+    const authUserId = sessionStorage.getItem('authUserId');
+    if (authUserId) return authUserId;
+
+    // Fallback to combined currentUser blob
+    const stored = sessionStorage.getItem('currentUser');
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      if (parsed?.authUserId) return parsed.authUserId;
+      if (parsed?.id) return parsed.id;
+    }
+  } catch (_) {
+    /* ignore */
+  }
+  if (window.currentProfile?.user_id) return window.currentProfile.user_id;
+  if (window.currentUser?.id) return window.currentUser.id;
+  return null;
+}
+function setText(id, text) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = text;
+}
+
+function showNotification(message, type = 'info') {
+  const notification = document.createElement('div');
+  notification.className = `notification notification-${type}`;
+  notification.innerHTML = `
+    <div class="notification-content">
+      <i class="fas fa-${getNotificationIcon(type)}"></i>
+      <span>${message}</span>
+    </div>`;
+  document.body.appendChild(notification);
+  requestAnimationFrame(() => notification.classList.add('show'));
+  setTimeout(() => {
+    notification.classList.remove('show');
+    setTimeout(() => notification.remove(), 300);
+  }, 3000);
+}
 function getNotificationIcon(type) {
-    switch (type) {
-        case 'success': return 'check-circle';
-        case 'warning': return 'exclamation-triangle';
-        case 'error': return 'times-circle';
-        default: return 'info-circle';
-    }
+  switch (type) {
+    case 'success':
+      return 'check-circle';
+    case 'warning':
+      return 'exclamation-triangle';
+    case 'error':
+      return 'times-circle';
+    default:
+      return 'info-circle';
+  }
+}
+function debounce(fn, delay = 250) {
+  let t;
+  return (...args) => {
+    clearTimeout(t);
+    t = setTimeout(() => fn(...args), delay);
+  };
 }
 
-// Add notification styles
 const notificationStyles = `
-    .notification {
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background: white;
-        border-radius: 8px;
-        padding: 15px 20px;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-        border-left: 4px solid #4caf50;
-        transform: translateX(400px);
-        transition: transform 0.3s ease;
-        z-index: 10000;
-        max-width: 300px;
-    }
-    
-    .notification.show {
-        transform: translateX(0);
-    }
-    
-    .notification-success {
-        border-left-color: #4caf50;
-    }
-    
-    .notification-warning {
-        border-left-color: #ff9800;
-    }
-    
-    .notification-info {
-        border-left-color: #2196f3;
-    }
-    
-    .notification-error {
-        border-left-color: #f44336;
-    }
-    
-    .notification-content {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
-    
-    .notification-content i {
-        font-size: 1.2rem;
-    }
-    
-    .notification-success i { color: #4caf50; }
-    .notification-warning i { color: #ff9800; }
-    .notification-info i { color: #2196f3; }
-    .notification-error i { color: #f44336; }
+  .notification { position: fixed; top: 20px; right: 20px; background: var(--bg-primary); color: var(--text-primary);
+    border-radius: 12px; padding: 15px 20px; box-shadow: 0 12px 30px rgba(0,0,0,0.35);
+    border-left: 4px solid #22c55e; transform: translateX(400px); transition: transform 0.3s ease;
+    z-index: 1200; max-width: 340px; }
+  .notification.show { transform: translateX(0); }
+  .notification-warning { border-left-color: #f59e0b; }
+  .notification-info { border-left-color: #3b82f6; }
+  .notification-error { border-left-color: #ef4444; }
+  .notification-content { display: flex; align-items: center; gap: 10px; }
 `;
-
-// Inject notification styles
 const styleSheet = document.createElement('style');
 styleSheet.textContent = notificationStyles;
 document.head.appendChild(styleSheet);
