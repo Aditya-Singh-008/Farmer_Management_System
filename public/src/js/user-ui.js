@@ -1,4 +1,4 @@
-// user-ui.js — Replace placeholder name/avatar with logged-in user's data when available
+// user-ui.js - Replace placeholder name/avatar with logged-in user's data when available
 document.addEventListener('DOMContentLoaded', () => {
 	try {
 		const stored = sessionStorage.getItem('currentUser') || localStorage.getItem('currentUser');
@@ -29,7 +29,7 @@ document.addEventListener('DOMContentLoaded', () => {
 			if (!h1) return;
 			const text = h1.textContent || '';
 			if (text.startsWith('Hello,')) {
-				h1.textContent = `Hello, ${displayName}! 👋`;
+				h1.textContent = `Hello, ${displayName}!`;
 			} else if (text.startsWith('Good Morning,')) {
 				h1.textContent = `Good Morning, ${displayName}`;
 			}
@@ -63,5 +63,4 @@ function getInitials(name) {
 	const parts = name.trim().split(/\s+/).slice(0, 2);
 	return parts.map(p => p.charAt(0).toUpperCase()).join('');
 }
-
 

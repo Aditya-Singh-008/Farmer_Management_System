@@ -6,11 +6,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // Set up event listeners
     setupEventListeners();
     
-    // Load inventory data
+    // Load inventory data (charts render after data load)
     loadInventoryData();
-    
-    // Initialize charts
-    initializeCharts();
 });
 
 // Sample inventory data (fallback when API returns nothing)
@@ -32,6 +29,8 @@ const sampleInventory = [
 
 let currentInventory = [];
 let currentEditingItem = null;
+let categoryChartInstance = null;
+let valueChartInstance = null;
 
 // Initialize inventory management
 function initializeInventory() {
@@ -48,7 +47,6 @@ function setupEventListeners() {
     if (addItemBtn && addItemModal) {
         addItemBtn.addEventListener('click', () => {
             populateFarmOptions();
-            populateInputOptions();
             addItemModal.classList.add('active');
         });
     }
@@ -177,6 +175,7 @@ async function loadInventoryData() {
     displayInventoryItems(currentInventory);
     updateLowStockAlerts();
     updateStats();
+    renderCharts();
 }
 
 function normalizeInventoryRow(row) {
@@ -379,6 +378,14 @@ function updateStats() {
     set('categoriesCount', categories || '--');
 }
 
+// Unified UI refresh
+function refreshUI() {
+    displayInventoryItems(currentInventory);
+    updateLowStockAlerts();
+    updateStats();
+    renderCharts();
+}
+
 // Handle add item form submission
 function handleAddItem(e) {
     e.preventDefault();
@@ -386,13 +393,17 @@ function handleAddItem(e) {
     const formData = new FormData(e.target);
     const itemData = {
         farm_id: Number(formData.get('farm_id')) || null,
-        input_id: Number(formData.get('input_id')) || null,
+        input_id: null,
         id: Date.now(), // Generate unique ID
         name: document.getElementById('itemName').value,
         category: document.getElementById('itemCategory').value,
         quantity: parseInt(document.getElementById('itemQuantity').value),
         unit: document.getElementById('itemUnit').value,
-        minStock: parseInt(document.getElementById('itemMinStock').value),
+        minStock: (() => {
+            const raw = document.getElementById('itemMinStock').value;
+            const val = parseFloat(raw);
+            return Number.isFinite(val) && val > 0 ? val : 1;
+        })(),
         cost: parseFloat(document.getElementById('itemCost').value),
         supplier: document.getElementById('itemSupplier').value,
         location: document.getElementById('itemLocation').value,
@@ -403,16 +414,19 @@ function handleAddItem(e) {
     // Persist to backend (Edge /create-inventory if exists, else supabase insert)
     (async () => {
         try {
-            if (!itemData.farm_id || !itemData.input_id) {
-                throw new Error('Farm and input are required.');
+            if (!itemData.farm_id) {
+                throw new Error('Farm is required.');
             }
+            const payload = {
+                ...itemData,
+                min_stock: itemData.minStock // ensure backend receives correct field name
+            };
             if (window.FarmerAPI?.createInventory) {
-                const res = await window.FarmerAPI.createInventory(itemData);
+                const res = await window.FarmerAPI.createInventory(payload);
                 if (!res?.success) throw new Error(res?.error || 'Create inventory failed');
             } else if (window.supabase?.from) {
                 const { error } = await window.supabase.from('inventory').insert([{
                     farm_id: itemData.farm_id,
-                    input_id: itemData.input_id,
                     quantity: itemData.quantity,
                     min_stock: itemData.minStock,
                     cost: itemData.cost,
@@ -428,9 +442,7 @@ function handleAddItem(e) {
     })();
 
     currentInventory.push(itemData);
-    displayInventoryItems(currentInventory);
-    updateLowStockAlerts();
-    updateStats();
+    refreshUI();
     
     showNotification('Item added successfully!', 'success');
     
@@ -485,9 +497,7 @@ function handleEditItem(e) {
         lastUpdated: new Date().toISOString().split('T')[0]
     };
 
-    displayInventoryItems(currentInventory);
-    updateLowStockAlerts();
-    updateStats();
+    refreshUI();
     
     showNotification('Item updated successfully!', 'success');
     
@@ -726,20 +736,39 @@ function toggleView(viewType) {
 
 // Handle quick actions
 function handleQuickAction(action) {
-    switch (action) {
-        case 'reorder':
+    const actions = {
+        reorder: () => {
             showLowStockItems();
-            break;
-        case 'audit':
+            scrollToSection('lowStockAlerts');
+        },
+        audit: () => {
             startInventoryAudit();
-            break;
-        case 'export':
-            exportInventory();
-            break;
-        case 'suppliers':
-            contactSuppliers();
-            break;
+            highlightSection('inventoryGrid');
+        },
+        export: () => exportInventory(),
+        suppliers: () => contactSuppliers()
+    };
+    const fn = actions[action];
+    if (fn) {
+        fn();
+    } else {
+        console.warn('Unknown quick action:', action);
     }
+}
+
+function scrollToSection(id) {
+    const el = document.getElementById(id);
+    if (el && typeof el.scrollIntoView === 'function') {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+}
+
+// Briefly highlight a section after scrolling
+function highlightSection(id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.classList.add('pulse-highlight');
+    setTimeout(() => el.classList.remove('pulse-highlight'), 1200);
 }
 
 // Show low stock items
@@ -753,10 +782,12 @@ function showLowStockItems() {
     
     // Activate low stock filter
     document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
-    document.querySelector('.filter-btn[data-category="all"]').classList.add('active');
+    const allBtn = document.querySelector('.filter-btn[data-category="all"]');
+    if (allBtn) allBtn.classList.add('active');
     
     displayInventoryItems(lowStockItems);
-    showNotification(`Showing ${lowStockItems.length} low stock items`, 'info');
+    showNotification(`Showing ${lowStockItems.length} low stock item(s)`, 'info');
+    scrollToSection('inventoryGrid');
 }
 
 // Start inventory audit
@@ -798,19 +829,27 @@ function contactSuppliers() {
     // In a real app, this would open a suppliers contact interface
 }
 
-// Initialize charts
+// Charts
 function initializeCharts() {
-    // Category Distribution Chart
+    renderCharts();
+}
+
+function renderCharts() {
     const categoryCtx = document.getElementById('categoryChart');
+    const valueTrendCtx = document.getElementById('valueTrendChart');
+
+    if (categoryChartInstance) categoryChartInstance.destroy();
+    if (valueChartInstance) valueChartInstance.destroy();
+
+    // Category distribution by quantity
     if (categoryCtx) {
-        const categoryData = getCategoryDistribution();
-        
-        new Chart(categoryCtx.getContext('2d'), {
+        const dist = getCategoryDistribution();
+        categoryChartInstance = new Chart(categoryCtx.getContext('2d'), {
             type: 'doughnut',
             data: {
-                labels: categoryData.labels,
+                labels: dist.labels,
                 datasets: [{
-                    data: categoryData.values,
+                    data: dist.values,
                     backgroundColor: [
                         '#22c55e', '#f59e0b', '#ef4444', '#3b82f6', 
                         '#8b5cf6', '#06b6d4', '#ec4899', '#9ca3af'
@@ -827,9 +866,7 @@ function initializeCharts() {
                         position: 'bottom',
                         labels: {
                             color: 'var(--text-primary)',
-                            font: {
-                                size: 11
-                            }
+                            font: { size: 11 }
                         }
                     }
                 }
@@ -837,37 +874,36 @@ function initializeCharts() {
         });
     }
 
-    // Value Trend Chart
-    const valueTrendCtx = document.getElementById('valueTrendChart');
+    // Top value items (quantity * cost)
     if (valueTrendCtx) {
-        new Chart(valueTrendCtx.getContext('2d'), {
-            type: 'line',
+        const topItems = [...currentInventory]
+            .map((i) => ({ name: i.name || 'Item', value: Number(i.quantity || 0) * Number(i.cost || 0) }))
+            .sort((a, b) => b.value - a.value)
+            .slice(0, 7);
+        valueChartInstance = new Chart(valueTrendCtx.getContext('2d'), {
+            type: 'bar',
             data: {
-                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
+                labels: topItems.map((i) => i.name),
                 datasets: [{
-                    label: 'Inventory Value',
-                    data: [8500, 9200, 10100, 11500, 10800, 12450, 12000],
-                    borderColor: '#4caf50',
-                    backgroundColor: 'rgba(76, 175, 80, 0.1)',
-                    borderWidth: 2,
-                    tension: 0.3,
-                    fill: true
+                    label: 'Value (INR)',
+                    data: topItems.map((i) => i.value),
+                    backgroundColor: 'rgba(34, 197, 94, 0.3)',
+                    borderColor: '#22c55e',
+                    borderWidth: 1
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
-                    legend: {
-                        display: false
-                    }
+                    legend: { display: false }
                 },
                 scales: {
                     y: {
                         beginAtZero: true,
                         ticks: {
                             callback: function(value) {
-                                return '₹' + value.toLocaleString('en-IN');
+                                return '₹' + Number(value).toLocaleString('en-IN');
                             }
                         }
                     }
@@ -882,7 +918,7 @@ function getCategoryDistribution() {
     const categories = {};
     
     currentInventory.forEach(item => {
-        categories[item.category] = (categories[item.category] || 0) + 1;
+        categories[item.category || 'Uncategorized'] = (categories[item.category || 'Uncategorized'] || 0) + Number(item.quantity || 0);
     });
     
     return {
@@ -921,31 +957,7 @@ async function populateFarmOptions() {
     }
 }
 
-async function populateInputOptions() {
-    const select = document.getElementById('itemInputId');
-    if (!select) return;
-    if (!window.supabase?.from) {
-        select.innerHTML = `<option value="">Supabase client not available</option>`;
-        return;
-    }
-    select.innerHTML = `<option value="">Loading inputs...</option>`;
-    try {
-        const { data, error } = await window.supabase.from('inputs').select('input_id,name,category,unit').order('name');
-        if (error) throw error;
-        const inputs = data || [];
-        if (!inputs.length) {
-            select.innerHTML = `<option value="">No inputs found</option>`;
-            return;
-        }
-        select.innerHTML = `<option value="">Select input</option>` +
-            inputs
-                .map((i) => `<option value="${i.input_id}">${i.name} (${i.unit || 'unit'})</option>`)
-                .join('');
-    } catch (err) {
-        console.warn('populateInputOptions failed', err);
-        select.innerHTML = `<option value="">Unable to load inputs</option>`;
-    }
-}
+// removed input options loading
 
 // Utility function for debouncing
 function debounce(func, wait) {

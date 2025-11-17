@@ -199,12 +199,12 @@ function setupDashboard() {
 
     const initWeather = async () => {
         try {
-            const res = await getDashboard(5);
+            const res = window.FarmerAPI?.getDashboard ? await window.FarmerAPI.getDashboard(5) : null;
             if (!res || !res.success) return;
             const data = res.data || {};
             window.currentProfile = data.profile || {};
             try {
-                const profileResponse = await getProfile();
+                const profileResponse = window.FarmerAPI?.getProfile ? await window.FarmerAPI.getProfile() : null;
                 if (profileResponse?.success && profileResponse?.data) {
                     window.currentProfile = { ...(window.currentProfile || {}), ...profileResponse.data };
                 }
@@ -213,7 +213,11 @@ function setupDashboard() {
             }
             const city = (window.currentProfile || {}).city;
             if (city) {
-                updateWeatherFromCity(city);
+                if (typeof window.updateWeatherFromCity === 'function') {
+                    window.updateWeatherFromCity(city);
+                } else {
+                    console.warn('updateWeatherFromCity is not available; skipping live weather fetch');
+                }
             }
             const tasks = data.recent_tasks || data.tasks || data.demo?.tasks || [];
             renderDashboardTasks(tasks);
