@@ -364,18 +364,56 @@ class FieldsDashboard {
     const selectedFieldId = formData.get('taskField')?.toString();
     const selectedField = this.fields.find((f) => String(f.id) === selectedFieldId);
     const taskType = formData.get('taskType') || 'general';
-    const task = {
+    const dueDate = formData.get('taskDueDate') || new Date().toISOString().split('T')[0];
+    const priority = formData.get('taskPriority') || 'medium';
+    const localTask = {
       id: Date.now(),
       title,
       field: selectedField?.name || 'General',
       fieldId: selectedField?.id || null,
       type: taskType,
-      dueDate: formData.get('taskDueDate') || new Date().toISOString().split('T')[0],
+      dueDate,
       status: 'scheduled',
-      priority: formData.get('taskPriority') || 'medium',
+      priority,
       icon: this.resolveTaskIcon(taskType)
     };
-    this.tasks.unshift(task);
+
+    // Try backend so it appears on dashboard too
+    let created = null;
+    if (window.FarmerAPI?.createTask) {
+      try {
+        const payload = {
+          title: localTask.title,
+          description: null,
+          due_date: localTask.dueDate,
+          farm_id: selectedField?.id || null,
+          status: localTask.status,
+          priority: localTask.priority
+        };
+        const res = await window.FarmerAPI.createTask(payload);
+        if (res?.success && res.data) {
+          created = res.data;
+        }
+      } catch (err) {
+        console.warn('createTask from fields failed, using local only', err);
+      }
+    }
+
+    const normalized = created
+      ? {
+          id: created.task_id || created.id || Date.now(),
+          title: created.title || localTask.title,
+          field: selectedField?.name || created.field || 'General',
+          fieldId: selectedField?.id || null,
+          type: localTask.type,
+          dueDate: created.due_date || localTask.dueDate,
+          status: created.status || localTask.status,
+          priority: created.priority || localTask.priority,
+          icon: localTask.icon
+        }
+      : localTask;
+
+    this.tasks.unshift(normalized);
     this.saveTasks();
     this.renderTasks();
     this.closeAddTaskModal();

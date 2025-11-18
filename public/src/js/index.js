@@ -114,8 +114,12 @@ function setupDashboard() {
 
     const renderTasksList = (tasks) => {
         if (!tasksContainer) return;
+        const countEl = document.getElementById('tasksCount');
+        if (countEl) {
+            countEl.textContent = tasks.length ? `${tasks.length} task${tasks.length === 1 ? '' : 's'}` : 'No tasks';
+        }
         if (tasks.length === 0) {
-            tasksContainer.innerHTML = `<div class="empty-state">No upcoming tasks. Add a task to get started.</div>`;
+            tasksContainer.innerHTML = `<div class="empty-state">No upcoming tasks.</div>`;
             return;
         }
         tasksContainer.innerHTML = '';
@@ -160,14 +164,15 @@ function setupDashboard() {
     };
 
     const renderDashboardTasks = (serverTasks = []) => {
-        serverTasksCache = serverTasks;
+        serverTasksCache = Array.isArray(serverTasks) ? serverTasks : [];
         const persisted = getStoredTasks();
-        const combined = [...persisted, ...serverTasks];
+        // Prefer remote if available; fall back to local cache when empty/offline
+        const combined = serverTasksCache.length ? serverTasksCache : persisted;
         renderTasksList(combined);
         populateTaskFieldSelect(combined);
     };
 
-    const handleTaskFormSubmit = (event) => {
+    const handleTaskFormSubmit = async (event) => {
         event.preventDefault();
         const title = taskForm?.title?.value?.trim();
         if (!title) return;
@@ -180,28 +185,74 @@ function setupDashboard() {
         }
         const due = taskForm?.due?.value || new Date().toISOString().split('T')[0];
         const notes = taskForm?.notes?.value?.trim() || '';
-        const task = {
-            id: Date.now(),
+        const payload = {
             title,
-            field: fieldName,
-            due,
-            notes,
-            status: 'scheduled'
+            description: notes || null,
+            due_date: due,
+            farm_id: null, // Could be extended to select farm
+            status: 'scheduled',
+            priority: 'normal'
         };
-        const persisted = getStoredTasks();
-        const updated = [task, ...persisted];
-        storeTasks(updated);
-        const combined = [...updated, ...serverTasksCache];
-        renderTasksList(combined);
-        populateTaskFieldSelect(combined);
+
+        // Try backend first
+        let created = null;
+        if (window.FarmerAPI?.createTask) {
+            try {
+                const res = await window.FarmerAPI.createTask(payload);
+                if (res?.success && res.data) {
+                    created = res.data;
+                    // On success, clear local cache and refresh from server
+                    storeTasks([]);
+                    // If refresh fails, still render the created task immediately
+                    const refreshed = await loadRemoteTasks().catch(() => []);
+                    if (!refreshed || refreshed.length === 0) {
+                        renderDashboardTasks([created]);
+                    }
+                }
+            } catch (err) {
+                console.warn('createTask failed, falling back to local', err);
+            }
+        }
+
+        if (!created) {
+            // Fallback to local storage if backend fails/unavailable
+            const localTask = {
+                id: Date.now(),
+                title,
+                field: fieldName,
+                due,
+                notes,
+                status: 'scheduled'
+            };
+            const persisted = getStoredTasks();
+            const updated = [localTask, ...persisted];
+            storeTasks(updated);
+            const combined = serverTasksCache.length ? [...serverTasksCache, ...updated] : updated;
+            renderTasksList(combined);
+            populateTaskFieldSelect(combined);
+        }
+
         closeTaskModal();
+    };
+
+    const loadRemoteTasks = async (fallback = []) => {
+        let remoteTasks = Array.isArray(fallback) ? fallback : [];
+        try {
+            const taskRes = window.FarmerAPI?.getTasks ? await window.FarmerAPI.getTasks(100) : null;
+            if (taskRes?.success && Array.isArray(taskRes.data)) {
+                remoteTasks = taskRes.data;
+            }
+        } catch (err) {
+            console.warn('getTasks failed, using fallback tasks', err);
+        }
+        renderDashboardTasks(remoteTasks);
+        return remoteTasks;
     };
 
     const initWeather = async () => {
         try {
             const res = window.FarmerAPI?.getDashboard ? await window.FarmerAPI.getDashboard(5) : null;
-            if (!res || !res.success) return;
-            const data = res.data || {};
+            const data = res?.success ? (res.data || {}) : {};
             window.currentProfile = data.profile || {};
             try {
                 const profileResponse = window.FarmerAPI?.getProfile ? await window.FarmerAPI.getProfile() : null;
@@ -219,12 +270,15 @@ function setupDashboard() {
                     console.warn('updateWeatherFromCity is not available; skipping live weather fetch');
                 }
             }
-            const tasks = data.recent_tasks || data.tasks || data.demo?.tasks || [];
-            renderDashboardTasks(tasks);
+            const dashboardTasks = data.recent_tasks || data.tasks || data.demo?.tasks || [];
+            await loadRemoteTasks(dashboardTasks);
         } catch (err) {
             console.error('initWeather error', err);
         }
     };
+
+    // Kick off a tasks fetch right away (even if dashboard call fails)
+    loadRemoteTasks([]);
 
     const openTaskModal = () => {
         if (!taskModal) return;
@@ -243,6 +297,15 @@ function setupDashboard() {
     document.getElementById('closeTaskModal')?.addEventListener('click', closeTaskModal);
     cancelTaskBtn?.addEventListener('click', closeTaskModal);
     taskFieldSelect?.addEventListener('change', toggleCustomFieldInput);
+    // Explicit listeners for task buttons (in case data-open-task delegate is blocked)
+    document.getElementById('addTaskBtn')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        openTaskModal();
+    });
+    document.getElementById('quickAddTaskBtn')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        openTaskModal();
+    });
 
     if (navigateFieldsBtn) {
         navigateFieldsBtn.addEventListener('click', () => {

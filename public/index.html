@@ -54,18 +54,10 @@
                         <button class="action-btn" id="navigateCropsBtn" aria-label="Add Crop">
                             <i class="fas fa-seedling" aria-hidden="true"></i> Add Crop
                         </button>
-                        <button class="action-btn" id="quickAddTaskBtn" data-open-task="true" aria-label="Add Task">
-                            <i class="fas fa-tasks" aria-hidden="true"></i> Add Task
-                        </button>
                     </div>
                     
-                    <!-- Notification & Profile -->
+                    <!-- Profile -->
                     <div class="user-actions">
-                        <button class="notification-btn" title="Notifications" aria-label="Notifications">
-                            <i class="fas fa-bell" aria-hidden="true"></i>
-                            <span class="notification-dot" aria-hidden="true"></span>
-                        </button>
-
                         <!-- user menu: button toggles dropdown -->
                         <div class="user-profile" id="user-profile-wrapper">
                             <button id="userMenuBtn" class="user-button" aria-haspopup="true" aria-expanded="false" aria-controls="userMenu" title="User menu">
@@ -164,9 +156,7 @@
                 <div class="tasks-card">
                     <div class="card-header">
                         <h2>Upcoming Tasks</h2>
-                        <button class="add-btn" id="addTaskBtn" data-open-task="true" aria-label="Add New Task">
-                            <i class="fas fa-plus" aria-hidden="true"></i> Add New
-                        </button>
+                        <span id="tasksCount" class="badge subtle-badge" aria-live="polite"></span>
                     </div>
                     <div class="tasks-list" id="tasks-list">
                         <!-- tasks will be rendered here -->
@@ -313,134 +303,8 @@
     <script src="src/js/sidebar.js"></script>
     <script src="src/js/profile-modal.js"></script>
 
-    <!-- minimal dynamic wiring: populate greeting, stats, tasks, crops from getDashboard() -->
+    <!-- Weather helpers; dashboard data is rendered via src/js/index.js to avoid duplicate calls -->
     <script>
-    (async function loadDashboardUI() {
-        try {
-            setWeatherPlaceholders();
-            // [`getDashboard`](public/src/js/api.js) is defined in src/js/api.js
-            const res = await getDashboard(5);
-            if (!res || !res.success) {
-                console.warn('getDashboard failed', res);
-                return;
-            }
-            const data = res.data || {};
-            // store for later profile editing
-            window.currentProfile = data.profile || {};
-
-            // pull freshest profile (ensures profile modal + city data stay in sync)
-            try {
-                const profileResponse = await getProfile();
-                if (profileResponse?.success && profileResponse?.data) {
-                    window.currentProfile = { ...(window.currentProfile || {}), ...profileResponse.data };
-                }
-            } catch (profileErr) {
-                console.warn('Unable to fetch profile from edge function', profileErr);
-            }
-
-            // Profile / greeting
-            const profile = window.currentProfile || {};
-            if (profile.user_id) {
-                sessionStorage.setItem('appUserId', profile.user_id);
-            }
-            if (profile.auth_user_id) {
-                sessionStorage.setItem('authUserId', profile.auth_user_id);
-            }
-            const firstName = profile.first_name || profile?.firstName || profile?.name || 'Farmer';
-            document.getElementById('greeting').textContent = `Good Morning, ${firstName}`;
-            document.getElementById('user-name').textContent = `${firstName}`;
-
-            // avatar: if profile_picture exists show image initial otherwise initials
-            const avatarEl = document.getElementById('avatar');
-            if (profile.profile_picture) {
-                avatarEl.style.backgroundImage = `url('${profile.profile_picture}')`;
-                avatarEl.textContent = '';
-            } else {
-                avatarEl.style.backgroundImage = '';
-                const initials = ((profile.first_name || '').charAt(0) + (profile.last_name || '').charAt(0)).toUpperCase() || 'FJ';
-                avatarEl.textContent = initials;
-            }
-
-            // Weather: prefer OpenWeather using saved city, fallback to dashboard payload/demo
-            setWeatherPlaceholders();
-            const fallbackWeather = data.weather || data.demo?.weather || null;
-            const profileCity =
-                profile.city ||
-                profile.address_city ||
-                profile.location_city ||
-                (profile.address && profile.address.split(',')[1]?.trim()) ||
-                data.profile?.city ||
-                '';
-
-            if (profileCity) {
-                await updateWeatherFromCity(profileCity, fallbackWeather);
-            } else if (fallbackWeather) {
-                applyWeatherFromDataset(fallbackWeather);
-            } else {
-                setWeatherErrorState();
-            }
-
-            // Tasks
-            const tasksContainer = document.getElementById('tasks-list');
-            tasksContainer.innerHTML = '';
-            const tasks = data.recent_tasks || data.tasks || data.demo?.tasks || [];
-            if (tasks.length === 0) {
-                tasksContainer.innerHTML = `<div class="empty-state">No upcoming tasks. Add your first task.</div>`;
-            } else {
-                for (const t of tasks) {
-                    const due = t.due || t.due_date || t.dueDate || 'TBD';
-                    const status = t.status || 'scheduled';
-                    const location = t.field || t.location || t.task_location || 'Field';
-                    const title = t.title || t.name || 'Task';
-                    const item = document.createElement('div');
-                    item.className = 'task-item';
-                    item.innerHTML = `
-                        <div class="task-info">
-                            <div class="task-icon watering" aria-hidden="true"><i class="fas fa-tint" aria-hidden="true"></i></div>
-                            <div>
-                                <h3 class="task-title">${title}</h3>
-                                <p class="task-location">${location}</p>
-                            </div>
-                        </div>
-                        <div class="task-meta">
-                            <p class="task-due">Due: ${due}</p>
-                            <span class="status-badge ${status}">${status}</span>
-                        </div>
-                    `;
-                    tasksContainer.appendChild(item);
-                }
-            }
-
-            // Crops
-            const cropsContainer = document.getElementById('crops-grid');
-            cropsContainer.innerHTML = '';
-            const crops = data.recent_crops || data.crops || data.demo?.crop ? (Array.isArray(data.demo?.crop) ? data.demo.crop : (data.recent_crops || data.crops || [data.demo.crop])) : [];
-            if (crops.length === 0) {
-                cropsContainer.innerHTML = `<div class="empty-state">No crop data available.</div>`;
-            } else {
-                for (const c of crops) {
-                    const name = c.crop_name || c.name || 'Crop';
-                    const yieldVal = (c.yield || c.crop_yield || c.expected_yield) ? `${c.yield || c.crop_yield || c.expected_yield}` : '—';
-                    const trendClass = (c.trend === 'down' ? 'neutral' : 'positive');
-                    const cropNode = document.createElement('div');
-                    cropNode.className = `crop-item ${(c.type || name).toLowerCase()}`;
-                    cropNode.innerHTML = `
-                        <div class="crop-icon" aria-hidden="true"><i class="${c.icon || 'fas fa-seedling'}" aria-hidden="true"></i></div>
-                        <h3 class="crop-name">${name}</h3>
-                        <p class="crop-yield">${yieldVal}</p>
-                        <div class="crop-trend">
-                            <span class="trend-badge ${trendClass}">${c.change ? (c.change+'%') : ''}</span>
-                        </div>
-                    `;
-                    cropsContainer.appendChild(cropNode);
-                }
-            }
-
-        } catch (err) {
-            console.error('Error loading dashboard UI', err);
-        }
-    })();
-
     function setWeatherPlaceholders() {
         const valueTargets = ['soilMoistureValue', 'airTempValue', 'windSpeedValue', 'rainfallValue'];
         valueTargets.forEach((id) => {
@@ -466,7 +330,6 @@
             if (el) el.textContent = 'Unavailable';
         });
     }
-
     function renderWeatherReadings({ humidity, temperature, windSpeed, rainChance }) {
         const normalize = (value) => {
             if (value === null || typeof value === 'undefined') return null;
@@ -590,7 +453,105 @@
         }
     }
     </script>
+    <script>
+        // Override tasks/crops tiles with richer info and counts
+        document.addEventListener('DOMContentLoaded', () => {
+            refreshTasksAndCrops();
+        });
+
+        async function refreshTasksAndCrops() {
+            await Promise.all([renderTasksTile(), renderCropsTile()]);
+        }
+
+        async function renderTasksTile() {
+            const container = document.getElementById('tasks-list');
+            if (!container) return;
+            const countEl = document.getElementById('tasksCount');
+            let tasks = [];
+            try {
+                const res = window.FarmerAPI?.getTasks ? await window.FarmerAPI.getTasks(20) : null;
+                if (res?.success && Array.isArray(res.data)) {
+                    tasks = res.data;
+                }
+            } catch (err) {
+                console.warn('refresh tasks tile failed', err);
+            }
+            if (tasks.length === 0) {
+                container.innerHTML = `<div class="empty-state">No upcoming tasks.</div>`;
+                if (countEl) countEl.textContent = 'No tasks';
+                return;
+            }
+            if (countEl) countEl.textContent = `${tasks.length} task${tasks.length === 1 ? '' : 's'}`;
+            container.innerHTML = '';
+            tasks.forEach((t) => {
+                const due = t.due_date || t.due || t.dueDate || 'TBD';
+                const status = (t.status || 'scheduled').toLowerCase();
+                const title = t.title || t.name || 'Task';
+                const field = t.field || t.field_name || 'Field';
+                const item = document.createElement('div');
+                item.className = 'task-item';
+                item.innerHTML = `
+                    <div class="task-info">
+                        <div class="task-icon watering" aria-hidden="true"><i class="fas fa-tint" aria-hidden="true"></i></div>
+                        <div>
+                            <h3 class="task-title">${title}</h3>
+                            <p class="task-location">${field}</p>
+                        </div>
+                    </div>
+                    <div class="task-meta">
+                        <p class="task-due">Due: ${due}</p>
+                        <span class="status-badge ${status}">${status}</span>
+                    </div>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        async function renderCropsTile() {
+            const container = document.getElementById('crops-grid');
+            if (!container) return;
+            let crops = [];
+            try {
+                const res = window.FarmerAPI?.getCrops ? await window.FarmerAPI.getCrops(12) : null;
+                if (res?.success && Array.isArray(res.data)) {
+                    crops = res.data;
+                }
+            } catch (err) {
+                console.warn('refresh crops tile failed', err);
+            }
+            if (crops.length === 0) {
+                container.innerHTML = `<div class="empty-state">No crop data available.</div>`;
+                return;
+            }
+            container.innerHTML = '';
+            crops.forEach((c) => {
+                const name = c.crop_name || c.name || 'Crop';
+                const status = c.status || 'active';
+                const harvest = c.expected_harvest || c.harvest_date || c.expected_harvest_date || 'Not set';
+                const trendClass = (c.trend === 'down' ? 'neutral' : 'positive');
+                const areaVal = Number(c.area || c.field_area || 0);
+                const estimated = c.yield || c.crop_yield || c.expected_yield || c.estimated_yield;
+                const yieldVal = estimated
+                    ? `${estimated}`
+                    : areaVal
+                        ? `${(areaVal * 2.5).toFixed(1)}`
+                        : '--';
+                const node = document.createElement('div');
+                node.className = `crop-item ${(c.type || name).toLowerCase()}`;
+                node.innerHTML = `
+                    <div class="crop-icon" aria-hidden="true"><i class="${c.icon || 'fas fa-seedling'}" aria-hidden="true"></i></div>
+                    <h3 class="crop-name">${name}</h3>
+                    <p class="crop-yield">${yieldVal}</p>
+                    <p class="crop-status"><strong>Status:</strong> ${status}</p>
+                    <p class="crop-harvest"><strong>Harvest:</strong> ${harvest}</p>
+                    <div class="crop-trend">
+                        <span class="trend-badge ${trendClass}">${c.change ? (c.change+'%') : ''}</span>
+                    </div>
+                `;
+                container.appendChild(node);
+            });
+        }
+    </script>
 
 </body>
 </html>
-

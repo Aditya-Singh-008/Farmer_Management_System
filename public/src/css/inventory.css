@@ -444,6 +444,21 @@
     gap: 12px;
 }
 
+/* Header quick action buttons */
+.quick-actions .action-btn {
+    background: var(--primary-color);
+    color: #fff;
+    border: 1px solid var(--primary-color);
+}
+
+.quick-actions .action-btn:hover,
+.quick-actions .action-btn:focus-visible {
+    background: var(--primary-dark);
+    border-color: var(--primary-dark);
+    color: #fff;
+    transform: translateY(-1px);
+}
+
 .quick-action-btn {
     display: flex;
     align-items: center;

@@ -65,20 +65,23 @@ body {
 
 .action-btn {
     padding: 0.5rem 1rem;
-    background-color: var(--primary-light);
-    color: var(--primary-color);
-    border: none;
+    background-color: var(--primary-color);
+    color: #fff;
+    border: 1px solid var(--primary-color);
     border-radius: 0.5rem;
     font-size: 0.875rem;
-    font-weight: 500;
+    font-weight: 600;
     cursor: pointer;
     transition: all 0.2s ease;
     white-space: nowrap;
 }
 
-.action-btn:hover {
-    background-color: var(--primary-color);
-    color: white;
+.action-btn:hover,
+.action-btn:focus-visible {
+    background-color: var(--primary-dark);
+    border-color: var(--primary-dark);
+    color: #fff;
+    transform: translateY(-1px);
 }
 
 .user-actions {

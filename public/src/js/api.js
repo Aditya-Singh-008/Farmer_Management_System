@@ -221,6 +221,19 @@ async function getCrops(limit = 5) {
   return await fetchJSON(url);
 }
 
+// Tasks
+async function getTasks(limit = 100) {
+  const url = `/tasks${limit ? `?limit=${limit}` : ''}`;
+  return await fetchJSON(url);
+}
+
+async function createTask(payload) {
+  return await fetchJSON('/tasks', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+}
+
 /**
  * Get inventory for current user
  * @param {number} limit - Limit for results (default: 5)
@@ -682,6 +695,8 @@ if (typeof window !== 'undefined') {
     getDashboard,
     getFarms,
   getCrops,
+  getTasks,
+  createTask,
   getInventory,
   createInventory,
   adjustInventory,

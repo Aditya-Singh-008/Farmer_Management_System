@@ -604,7 +604,7 @@ body {
 /* Content Grid */
 .content-grid {
     display: grid;
-    grid-template-columns: 2fr 1fr;
+    grid-template-columns: 40% 60%; /* even more space to crops vs tasks */
     gap: 1.5rem;
 }
 
@@ -769,27 +769,13 @@ body {
     border-radius: 0.75rem;
     text-align: center;
     transition: all 0.2s ease;
+    background: rgba(34, 197, 94, 0.12) !important;
+    border: 1px solid rgba(34, 197, 94, 0.25);
 }
 
 .crop-item:hover {
     transform: translateY(-2px);
     box-shadow: var(--shadow);
-}
-
-.wheat {
-    background-color: rgba(34, 197, 94, 0.1);
-}
-
-.corn {
-    background-color: rgba(245, 158, 11, 0.1);
-}
-
-.apple {
-    background-color: rgba(239, 68, 68, 0.1);
-}
-
-.tomato {
-    background-color: rgba(249, 115, 22, 0.1);
 }
 
 .crop-icon {
@@ -831,6 +817,27 @@ body {
     font-size: 0.875rem;
     color: var(--text-secondary);
     margin-bottom: 0.75rem;
+}
+
+.crop-status,
+.crop-harvest {
+    font-size: 0.85rem;
+    margin-bottom: 0.35rem;
+}
+
+.crop-status strong,
+.crop-harvest strong {
+    color: #0f5132;
+}
+
+.crop-status {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    background: rgba(34, 197, 94, 0.28);
+    border: 1px solid rgba(34, 197, 94, 0.45);
+    border-radius: 0.5rem;
+    font-weight: 700;
+    color: #064e3b; /* darker for better contrast */
 }
 
 .trend-badge {
