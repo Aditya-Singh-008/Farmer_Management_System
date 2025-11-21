@@ -1,3 +1,4 @@
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/Aditya-Singh-008/Farmer_Management_System)
 <<<<<<< HEAD
 # Smart Farmer Management System (SFMS)
 
