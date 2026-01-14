@@ -1,9 +1,5 @@
-[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/Aditya-Singh-008/Farmer_Management_System)
-<<<<<<< HEAD
 # Smart Farmer Management System (SFMS)
 
-Modern, Supabase-backed dashboard that helps farmers monitor crops, fields, inventory, marketplace listings, and analytics from one responsive web interface.
-=======
 #🌾 Smart Farmer Management System (SFMS)
 #Working url:https://farmer-management-system-mjse.vercel.app
 ### 🚀 Overview
