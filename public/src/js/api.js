@@ -4,7 +4,7 @@
 // Prefer runtime-injected base (window.__ENV.EDGE_FUNCTION_BASE_URL) where available.
 const BASE =
   (window.__ENV && window.__ENV.EDGE_FUNCTION_BASE_URL) ||
-  'https://bmdypirsqwhghrvbhqoy.functions.supabase.co';
+  'https://utrqtyocuziqsxwborup.functions.supabase.co';
 
 const SERVICE_ROLE_TOKEN =
   (window.__ENV &&

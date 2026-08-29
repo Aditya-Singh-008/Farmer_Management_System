@@ -78,7 +78,7 @@ function setupEventListeners() {
         adjustmentQuantity.addEventListener('input', updateStockPreview);
     }
 
-    // Filter buttons
+    // Filter buttons  
     const filterButtons = document.querySelectorAll('.filter-btn');
     filterButtons.forEach(btn => {
         btn.addEventListener('click', function() {

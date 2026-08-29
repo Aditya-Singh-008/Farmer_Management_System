@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="src/css/sidebar.css">
     <link rel="stylesheet" href="src/css/theme.css">
     <link rel="stylesheet" href="src/css/inventory.css">
+    <link rel="stylesheet" href="src/css/ai-week2.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- Font Awesome with fallback CDN -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" 
@@ -480,5 +481,16 @@
     <script src="src/js/inventory.js"></script>
     <script src="src/js/user-ui.js"></script>
     <script src="src/js/profile-modal.js"></script>
+    <script src="src/js/ai-week2.js"></script>
+    <script>
+      // Initialize Week 2 AI Inventory Intelligence
+      document.addEventListener('DOMContentLoaded', function () {
+        setTimeout(function () {
+          if (window.SFMS_AI && window.SFMS_AI.initInventory) {
+            window.SFMS_AI.initInventory();
+          }
+        }, 1000);
+      });
+    </script>
 </body>
 </html>

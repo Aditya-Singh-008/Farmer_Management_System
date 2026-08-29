@@ -1,0 +1,260 @@
+/* ============================================================
+   ai-week1.css — FarmBot Floating Chat Widget & AI Auto-Fill Styles
+   ============================================================ */
+
+/* ── Floating FarmBot Launcher Button ──────────────────────────── */
+.farmbot-launcher {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  border: none;
+  box-shadow: 0 8px 24px rgba(16, 185, 129, 0.4);
+  cursor: pointer;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.6rem;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.farmbot-launcher:hover {
+  transform: scale(1.1) rotate(5deg);
+  box-shadow: 0 12px 28px rgba(16, 185, 129, 0.5);
+}
+
+.farmbot-badge {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 14px;
+  height: 14px;
+  background: #6366f1;
+  border: 2px solid white;
+  border-radius: 50%;
+  animation: pulse-badge 2s infinite;
+}
+
+@keyframes pulse-badge {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.7); }
+  70% { transform: scale(1); box-shadow: 0 0 0 8px rgba(99, 102, 241, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(99, 102, 241, 0); }
+}
+
+/* ── Chat Modal Window ────────────────────────────────────────── */
+.farmbot-window {
+  position: fixed;
+  bottom: 96px;
+  right: 24px;
+  width: 380px;
+  max-width: calc(100vw - 32px);
+  height: 540px;
+  max-height: calc(100vh - 120px);
+  background: var(--bg-primary, #ffffff);
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: 1.25rem;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.18);
+  z-index: 9998;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  opacity: 0;
+  transform: translateY(20px) scale(0.95);
+  pointer-events: none;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.farmbot-window.open {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: all;
+}
+
+/* Chat Header */
+.farmbot-header {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  padding: 1rem 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.farmbot-header-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.farmbot-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+}
+
+.farmbot-title {
+  font-weight: 700;
+  font-size: 1rem;
+  line-height: 1.2;
+}
+
+.farmbot-subtitle {
+  font-size: 0.72rem;
+  opacity: 0.9;
+}
+
+.farmbot-close-btn {
+  background: transparent;
+  border: none;
+  color: white;
+  font-size: 1.2rem;
+  cursor: pointer;
+  opacity: 0.8;
+  transition: opacity 0.2s;
+}
+
+.farmbot-close-btn:hover {
+  opacity: 1;
+}
+
+/* Chat Body / Message List */
+.farmbot-body {
+  flex: 1;
+  padding: 1rem;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  background: var(--bg-secondary, #f8f9fa);
+}
+
+.farmbot-msg {
+  display: flex;
+  gap: 0.5rem;
+  max-width: 85%;
+  font-size: 0.875rem;
+  line-height: 1.45;
+  animation: fadeIn 0.25s ease;
+}
+
+.farmbot-msg.bot {
+  align-self: flex-start;
+}
+
+.farmbot-msg.user {
+  align-self: flex-end;
+  flex-direction: row-reverse;
+}
+
+.farmbot-msg-bubble {
+  padding: 0.75rem 1rem;
+  border-radius: 1rem;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.farmbot-msg.bot .farmbot-msg-bubble {
+  background: var(--bg-primary, #ffffff);
+  color: var(--text-primary, #2d3748);
+  border-bottom-left-radius: 0.25rem;
+  border: 1px solid var(--border-color, #e2e8f0);
+}
+
+.farmbot-msg.user .farmbot-msg-bubble {
+  background: #10b981;
+  color: white;
+  border-bottom-right-radius: 0.25rem;
+}
+
+/* Quick Suggestion Chips */
+.farmbot-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.5rem;
+}
+
+.farmbot-chip {
+  background: var(--bg-primary, #ffffff);
+  border: 1px solid #10b981;
+  color: #059669;
+  font-size: 0.75rem;
+  padding: 0.3rem 0.65rem;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.farmbot-chip:hover {
+  background: #10b981;
+  color: white;
+}
+
+/* Chat Input */
+.farmbot-footer {
+  padding: 0.75rem;
+  background: var(--bg-primary, #ffffff);
+  border-top: 1px solid var(--border-color, #e2e8f0);
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.farmbot-input {
+  flex: 1;
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: 999px;
+  padding: 0.6rem 1rem;
+  font-size: 0.875rem;
+  background: var(--bg-secondary, #f8f9fa);
+  color: var(--text-primary, #2d3748);
+  outline: none;
+}
+
+.farmbot-send-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #10b981;
+  color: white;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+
+.farmbot-send-btn:hover {
+  background: #059669;
+}
+
+/* ── Inline Auto-Fill Button for Forms ────────────────────────── */
+.ai-autofill-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.3rem 0.6rem;
+  background: linear-gradient(135deg, #8b5cf6, #6366f1);
+  color: white;
+  border: none;
+  border-radius: 0.4rem;
+  cursor: pointer;
+  margin-left: 0.5rem;
+  transition: transform 0.2s ease;
+}
+
+.ai-autofill-btn:hover {
+  transform: translateY(-1px);
+}

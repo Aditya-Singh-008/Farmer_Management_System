@@ -83,8 +83,8 @@
   },
   "variable": [
     {
-      "key": "base_url",
-      "value": "https://bmdypirsqwhghrvbhqoy.supabase.co/functions/v1",
+      "key": "baseUrl",
+      "value": "https://utrqtyocuziqsxwborup.supabase.co/functions/v1",
       "type": "string"
     },
     {
@@ -204,7 +204,7 @@
    ```
 
 2. **Supabase Project** set up
-   - Project URL: `https://bmdypirsqwhghrvbhqoy.supabase.co`
+   - Project URL: `https://utrqtyocuziqsxwborup.supabase.co`
    - Service role key (from Supabase dashboard)
    - Anon key (from Supabase dashboard)
 
@@ -215,7 +215,7 @@
 
 4. **Link to your project**
    ```bash
-   supabase link --project-ref bmdypirsqwhghrvbhqoy
+   supabase link --project-ref utrqtyocuziqsxwborup
    ```
 
 ### Environment Variables
@@ -223,7 +223,7 @@
 Create a `.env` file in the project root (or set in Supabase dashboard):
 
 ```env
-SUPABASE_URL=https://bmdypirsqwhghrvbhqoy.supabase.co
+SUPABASE_URL=https://utrqtyocuziqsxwborup.supabase.co
 SUPABASE_ANON_KEY=your_anon_key_here
 SUPABASE_SERVICE_ROLE_KEY=your_service_role_key_here
 ```
@@ -286,7 +286,7 @@ After deployment, test each function:
 
 ```bash
 # Test get-dashboard
-curl -X GET "https://bmdypirsqwhghrvbhqoy.supabase.co/functions/v1/get-dashboard" \
+curl -X GET "https://utrqtyocuziqsxwborup.supabase.co/functions/v1/get-dashboard" \
   -H "Authorization: Bearer YOUR_JWT_TOKEN" \
   -H "Accept: application/json"
 ```
@@ -304,13 +304,13 @@ curl -X GET "https://bmdypirsqwhghrvbhqoy.supabase.co/functions/v1/get-dashboard
 
 After deployment, functions will be available at:
 
-- `https://bmdypirsqwhghrvbhqoy.supabase.co/functions/v1/get-dashboard`
-- `https://bmdypirsqwhghrvbhqoy.supabase.co/functions/v1/get-farms`
-- `https://bmdypirsqwhghrvbhqoy.supabase.co/functions/v1/get-crops`
-- `https://bmdypirsqwhghrvbhqoy.supabase.co/functions/v1/get-inventory`
-- `https://bmdypirsqwhghrvbhqoy.supabase.co/functions/v1/get-listings`
-- `https://bmdypirsqwhghrvbhqoy.supabase.co/functions/v1/get-profile`
-- `https://bmdypirsqwhghrvbhqoy.supabase.co/functions/v1/search`
+- `https://utrqtyocuziqsxwborup.supabase.co/functions/v1/get-dashboard`
+- `https://utrqtyocuziqsxwborup.supabase.co/functions/v1/get-farms`
+- `https://utrqtyocuziqsxwborup.supabase.co/functions/v1/get-crops`
+- `https://utrqtyocuziqsxwborup.supabase.co/functions/v1/get-inventory`
+- `https://utrqtyocuziqsxwborup.supabase.co/functions/v1/get-listings`
+- `https://utrqtyocuziqsxwborup.supabase.co/functions/v1/get-profile`
+- `https://utrqtyocuziqsxwborup.supabase.co/functions/v1/search`
 
 ---
 

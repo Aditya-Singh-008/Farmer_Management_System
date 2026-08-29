@@ -1,50 +1,47 @@
-# Smart Farmer Dashboard - Edge Functions Implementation Plan
+# Farmer Management System - Offline-First Roadmap
 
-## Overview
-
-This plan outlines the creation of 7 Supabase Edge Functions (Deno) to serve as the secure data API layer for the Farmer Management System. All functions will authenticate users via JWT tokens in the Authorization header, return consistent JSON responses with demo data for empty states, support optional limit query parameters (default 5, max 50), and include proper CORS headers for cross-origin requests.
-
-## Edge Functions to Create
-
-1. **`/get-dashboard`** - Returns user profile, counts (farms, crops, inventory, listings), and recent crops/listings arrays (top 5 each). Includes demo object with sample crop and listing.
-
-2. **`/get-farms`** - Returns user's farms (top 5 by created_at). Returns demo farm object if empty.
-
-3. **`/get-crops`** - Returns user's crops with farm_name via JOIN (top 5). Returns demo crop if empty.
-
-4. **`/get-inventory`** - Returns inventory items for user's farms with input names via JOIN (top 5). Returns demo inventory item if empty.
-
-5. **`/get-listings`** - Returns marketplace listings (user's farms if farmer, all active if buyer, top 5). Returns demo listing if empty.
-
-6. **`/get-profile`** - Returns consolidated user profile from user_profile (preferred) or users table fallback. Includes user_id, auth_user_id, first_name, last_name, email, role, phone_number, address, profile_picture.
-
-7. **`/search`** - Optional search endpoint filtering crops and listings by text query (limit 20).
-
-## Technical Specifications
-
-- **Authentication**: All functions verify JWT via `supabase.auth.getUser(token)` from Authorization header
-- **Database Access**: Use service_role key server-side (never exposed to client)
-- **Query Pattern**: Default LIMIT 5, optional ?limit=N (max 50), ORDER BY created_at/listed_on/added_on DESC
-- **Response Format**: `{ success: boolean, data: [...], demo?: {...}, message?: string, error?: string }`
-- **CORS Headers**: Access-Control-Allow-Origin: *, Access-Control-Allow-Methods: GET, POST, OPTIONS, Access-Control-Allow-Headers: Content-Type, Authorization
-- **Empty State**: When data array is empty, return demo object in response for frontend to display
-
-## Frontend Integration
-
-- **Session Storage**: Login flow already stores `sessionToken` (JWT) and `currentUser` (JSON profile) in sessionStorage
-- **API Calls**: Frontend will use GET requests with `Authorization: Bearer <sessionToken>` header
-- **Demo Mode**: localStorage key `demoMode` ('on'|'off') controls whether to show demo items
-- **Empty State UI**: Show CTA card linking to add pages (farms.html, crops.html, inventory.html, marketplace.html) plus demo preview card
-
-## File Structure
-
-Edge Functions will be created in: `supabase/functions/<function-name>/index.ts`
-
-## Deployment
-
-Functions will be deployable via Supabase CLI: `supabase functions deploy <function-name>`
+## 🚀 Overview
+The Farmer Management System is evolving into an **offline-first** application. This ensures that farmers can continue their work in low-connectivity areas, with all data automatically syncing when they return online.
 
 ---
 
-**Ready to proceed?** Please confirm (yes/no) to generate the Edge Functions code, response shapes, frontend integration plan, testing checklist, and deployment instructions.
+## 🛠️ Phase 1: Local Queue System (Core)
+**Goal**: Store operations locally when offline.
+- **Storage**: Implement IndexedDB (`db.js`) for structured local data.
+- **Queue**: Create an `operations` table to store `ADD_CROP`, `UPDATE_INVENTORY`, and `DELETE_RECORD` actions.
+- **Persistence**: Ensure local data is used for rendering even before it reaches the backend.
+
+## 🔄 Phase 2: Sync Engine
+**Goal**: Process the queue and push data to Supabase.
+- **Detection**: Monitor network status (`online`/`offline` events).
+- **Processing**: Push pending operations sequentially to the backend.
+- **Cleanup**: Remove operations from the local queue only after successful server confirmation.
+
+## ⚔️ Phase 3: Conflict Handling
+**Goal**: Resolve differences between local and server state.
+- **Strategy**: Last-Write-Wins (LWW) based on `updated_at` timestamps.
+- **Versioning**: Each record will have a version number to prevent overwriting newer server data with stale local edits.
+
+## 🛡️ Phase 4: Retry Mechanism
+**Goal**: Ensure reliability under flaky network conditions.
+- **Logic**: Implement exponential backoff (e.g., retry after 1s, 2s, 4s, 8s...).
+- **Failure Handling**: Mark operations as "Failed" after maximum retries and notify the user.
+
+## ☁️ Phase 5: Minimal Backend Integration
+**Goal**: Prepare Supabase Edge Functions for sync.
+- **Endpoints**: Update existing functions to support batch updates and version checks.
+- **Auth**: Ensure JWT authentication is maintained during background sync.
+
+---
+
+## 📝 Recurring Problems & Solutions
+*This section will be updated during execution with common pitfalls and their optimizations.*
+
+| Problem | Solution | Optimization |
+| :--- | :--- | :--- |
+| *Pending* | *Pending* | *Pending* |
+
+---
+
+**Current Status**: 🏗️ Planning Phase 1.
 

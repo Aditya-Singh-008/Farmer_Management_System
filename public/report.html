@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="src/css/index.css">
     <link rel="stylesheet" href="src/css/sidebar.css">
     <link rel="stylesheet" href="src/css/theme.css">
+    <link rel="stylesheet" href="src/css/ai-week2.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -435,6 +436,18 @@
     <script src="src/js/reports.js"></script>
     <script src="src/js/user-ui.js"></script>
     <script src="src/js/profile-modal.js"></script>
+    <script src="src/js/ai-week2.js"></script>
+    <script>
+      // Initialize Week 2 AI features on report page
+      document.addEventListener('DOMContentLoaded', function () {
+        // Wait a tick so FarmerAPI and the report stats start loading first
+        setTimeout(function () {
+          if (window.SFMS_AI && window.SFMS_AI.initReport) {
+            window.SFMS_AI.initReport();
+          }
+        }, 800);
+      });
+    </script>
 </body>
 </html>
 

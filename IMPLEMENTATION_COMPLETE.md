@@ -105,7 +105,7 @@ All Edge Functions, shared utilities, documentation, and frontend integration fi
 supabase login
 
 # Link to project
-supabase link --project-ref bmdypirsqwhghrvbhqoy
+supabase link --project-ref utrqtyocuziqsxwborup
 
 # Deploy all functions
 supabase functions deploy
@@ -114,7 +114,7 @@ supabase functions deploy
 ### 2. Set Environment Variables
 
 In Supabase Dashboard → Project Settings → Edge Functions:
-- `SUPABASE_URL=https://bmdypirsqwhghrvbhqoy.supabase.co`
+- `SUPABASE_URL=https://utrqtyocuziqsxwborup.supabase.co`
 - `SUPABASE_ANON_KEY=your_anon_key`
 - `SUPABASE_SERVICE_ROLE_KEY=your_service_role_key`
 
@@ -122,7 +122,7 @@ In Supabase Dashboard → Project Settings → Edge Functions:
 
 ```bash
 # Get dashboard
-curl -X GET "https://bmdypirsqwhghrvbhqoy.supabase.co/functions/v1/get-dashboard" \
+curl -X GET "https://utrqtyocuziqsxwborup.supabase.co/functions/v1/get-dashboard" \
   -H "Authorization: Bearer YOUR_JWT_TOKEN" \
   -H "Accept: application/json"
 ```

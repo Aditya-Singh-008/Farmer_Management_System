@@ -70,7 +70,9 @@ document.addEventListener('DOMContentLoaded', function () {
     try {
       // Call create-user Edge Function
       const response = await fetch(
-        'https://bmdypirsqwhghrvbhqoy.supabase.co/functions/v1/create-user',
+        (window.__ENV && window.__ENV.EDGE_FUNCTION_BASE_URL)
+          ? `${window.__ENV.EDGE_FUNCTION_BASE_URL}/create-user`
+          : 'https://utrqtyocuziqsxwborup.supabase.co/functions/v1/create-user',
         {
           method: 'POST',
           headers: {

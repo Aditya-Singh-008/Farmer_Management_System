@@ -29,12 +29,12 @@ sessionStorage.setItem('currentUser', JSON.stringify({
 
 All Edge Functions are hosted at:
 ```
-https://bmdypirsqwhghrvbhqoy.supabase.co/functions/v1/<function-name>
+https://utrqtyocuziqsxwborup.supabase.co/functions/v1/<function-name>
 ```
 
 Example:
 ```
-https://bmdypirsqwhghrvbhqoy.supabase.co/functions/v1/get-dashboard
+https://utrqtyocuziqsxwborup.supabase.co/functions/v1/get-dashboard
 ```
 
 ---
@@ -53,7 +53,7 @@ async function callEdgeFunction(functionName, limit = 5) {
     return null;
   }
 
-  const url = `https://bmdypirsqwhghrvbhqoy.supabase.co/functions/v1/${functionName}?limit=${limit}`;
+  const url = `https://utrqtyocuziqsxwborup.supabase.co/functions/v1/${functionName}?limit=${limit}`;
   
   try {
     const response = await fetch(url, {
@@ -408,7 +408,7 @@ async function loadFarms() {
 ```javascript
 async function searchCropsAndListings(query, limit = 20) {
   const token = sessionStorage.getItem('sessionToken');
-  const url = `https://bmdypirsqwhghrvbhqoy.supabase.co/functions/v1/search?q=${encodeURIComponent(query)}&limit=${limit}`;
+  const url = `https://utrqtyocuziqsxwborup.supabase.co/functions/v1/search?q=${encodeURIComponent(query)}&limit=${limit}`;
   
   const response = await fetch(url, {
     method: 'GET',

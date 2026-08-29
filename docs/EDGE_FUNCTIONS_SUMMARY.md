@@ -228,22 +228,22 @@ supabase functions deploy search
 
 ## Function URLs
 
-Base URL: `https://bmdypirsqwhghrvbhqoy.supabase.co/functions/v1/`
+Base URL: `https://utrqtyocuziqsxwborup.supabase.co/functions/v1/`
 
-- `https://bmdypirsqwhghrvbhqoy.supabase.co/functions/v1/get-dashboard`
-- `https://bmdypirsqwhghrvbhqoy.supabase.co/functions/v1/get-farms`
-- `https://bmdypirsqwhghrvbhqoy.supabase.co/functions/v1/get-crops`
-- `https://bmdypirsqwhghrvbhqoy.supabase.co/functions/v1/get-inventory`
-- `https://bmdypirsqwhghrvbhqoy.supabase.co/functions/v1/get-listings`
-- `https://bmdypirsqwhghrvbhqoy.supabase.co/functions/v1/get-profile`
-- `https://bmdypirsqwhghrvbhqoy.supabase.co/functions/v1/search`
+- `https://utrqtyocuziqsxwborup.supabase.co/functions/v1/get-dashboard`
+- `https://utrqtyocuziqsxwborup.supabase.co/functions/v1/get-farms`
+- `https://utrqtyocuziqsxwborup.supabase.co/functions/v1/get-crops`
+- `https://utrqtyocuziqsxwborup.supabase.co/functions/v1/get-inventory`
+- `https://utrqtyocuziqsxwborup.supabase.co/functions/v1/get-listings`
+- `https://utrqtyocuziqsxwborup.supabase.co/functions/v1/get-profile`
+- `https://utrqtyocuziqsxwborup.supabase.co/functions/v1/search`
 
 ---
 
 ## Example Request
 
 ```bash
-curl -X GET "https://bmdypirsqwhghrvbhqoy.supabase.co/functions/v1/get-crops?limit=5" \
+curl -X GET "https://utrqtyocuziqsxwborup.supabase.co/functions/v1/get-crops?limit=5" \
   -H "Authorization: Bearer <ACCESS_TOKEN>" \
   -H "Accept: application/json"
 ```
