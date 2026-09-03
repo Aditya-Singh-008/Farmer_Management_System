@@ -27,13 +27,22 @@ serve(async (req) => {
       return errorResponse(authError.message, 400)
     }
 
-    // Insert into user_profile
+    // Insert into public.users and public.user_profile
     if (authData?.user) {
-      await supabase.from('user_profile').insert({
+      await supabase.from('users').upsert({
         user_id: authData.user.id,
-        first_name,
-        last_name,
-        email
+        auth_user_id: authData.user.id,
+        first_name: first_name || 'Farmer',
+        last_name: last_name || 'User',
+        email: email,
+        role: role || 'farmer'
+      })
+
+      await supabase.from('user_profile').upsert({
+        user_id: authData.user.id,
+        first_name: first_name || 'Farmer',
+        last_name: last_name || 'User',
+        email: email
       })
     }
 
