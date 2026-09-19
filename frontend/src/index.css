@@ -134,6 +134,23 @@
     padding: 20px;
   }
 
+  /* Sidebar icon micro-interactions: expressive, quick, and subtle. */
+  .nav-item .nav-item-icon { transform-origin: center; }
+  .nav-item:hover .nav-item-icon { color: #f4f0e5 !important; }
+  .nav-item-crops:hover .nav-item-icon { animation: nav-grow .55s ease-out both; }
+  .nav-item-fields:hover .nav-item-icon { animation: nav-fold-open .55s ease-out both; }
+  .nav-item-inventory:hover .nav-item-icon { animation: nav-box-flip .55s ease-out both; }
+  .nav-item-marketplace:hover .nav-item-icon { animation: nav-bag-open .55s ease-out both; }
+  .nav-item-reports:hover .nav-item-icon { animation: nav-tilt .45s ease-out both; }
+  @keyframes nav-grow { 0% { transform: scale(.92) translateY(2px) rotate(-8deg); } 55% { transform: scale(1.14) translateY(-1px) rotate(5deg); } 100% { transform: scale(1.04) rotate(0); } }
+  @keyframes nav-fold-open { 0% { transform: perspective(80px) rotateY(0); } 50% { transform: perspective(80px) rotateY(-28deg); } 100% { transform: perspective(80px) rotateY(0); } }
+  @keyframes nav-box-flip { 0% { transform: perspective(70px) rotateX(0); } 50% { transform: perspective(70px) rotateX(-32deg) rotateY(8deg); } 100% { transform: perspective(70px) rotateX(0) rotateY(0); } }
+  @keyframes nav-bag-open { 0% { transform: translateY(1px) scale(.96); } 45% { transform: translateY(-2px) scale(1.08) rotate(-4deg); } 100% { transform: translateY(0) scale(1.02) rotate(0); } }
+  @keyframes nav-tilt { 0% { transform: rotate(0); } 35% { transform: rotate(-10deg); } 70% { transform: rotate(8deg); } 100% { transform: rotate(0); } }
+  @media (prefers-reduced-motion: reduce) {
+    .nav-item:hover .nav-item-icon { animation: none; }
+  }
+
   .metric-icon {
     width: 48px;
     height: 48px;

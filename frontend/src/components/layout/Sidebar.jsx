@@ -60,7 +60,7 @@ export default function Sidebar() {
           >
             {({ isActive }) => (
               <div
-                className="relative flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200"
+                className={`nav-item nav-item-${label.toLowerCase()} group relative flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200`}
                 style={isActive
                   ? { background: 'rgba(16,185,129,0.1)', color: '#34D399', border: '1px solid rgba(52,211,153,0.2)' }
                   : { color: '#9CA3AF', border: '1px solid transparent' }
@@ -69,7 +69,7 @@ export default function Sidebar() {
                 {isActive && (
                   <span className="absolute left-0 w-1 h-6 rounded-r-full" style={{ background: '#10B981' }} />
                 )}
-                <Icon size={18} style={{ flexShrink: 0, color: isActive ? '#34D399' : 'inherit' }} />
+                <Icon size={18} className="nav-item-icon" style={{ flexShrink: 0, color: isActive ? '#34D399' : 'inherit' }} />
                 {!collapsed && <span>{label}</span>}
               </div>
             )}
