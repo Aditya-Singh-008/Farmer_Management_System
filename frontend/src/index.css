@@ -157,6 +157,19 @@
   50% { transform: translateY(-6px); }
 }
 
+@keyframes orbit {
+  0% { transform: rotate(0deg) translateX(122px) rotate(0deg); }
+  100% { transform: rotate(360deg) translateX(122px) rotate(-360deg); }
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-120%); }
+  100% { transform: translateX(220%); }
+}
+
+.auth-orbit { animation: orbit 16s linear infinite; }
+.auth-shimmer { animation: shimmer 4s ease-in-out infinite; }
+
 .landing-page { min-height: 100vh; background: var(--paper); color: var(--ink); font-family: 'Plus Jakarta Sans', sans-serif; }
 .landing-nav { display: flex; align-items: center; justify-content: space-between; padding: 24px clamp(22px, 5vw, 76px); border-bottom: 1px solid var(--line); }
 .brand-lockup { display: inline-flex; align-items: center; gap: 10px; color: var(--ink); font-size: 15px; font-weight: 800; letter-spacing: -.04em; text-decoration: none; }

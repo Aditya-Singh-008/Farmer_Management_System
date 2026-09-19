@@ -2,11 +2,11 @@ import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useAuth } from '../context/AuthContext'
-import { Tractor, Eye, EyeOff, Loader2 } from 'lucide-react'
+import { Tractor, Eye, EyeOff, Loader2, Sprout, BarChart3, ShoppingBasket, Bot, ArrowRight, CheckCircle2 } from 'lucide-react'
 
 const demoAccounts = [
-  { label: 'Farmer Demo', email: 'helehi2643@burangir.com', password: '12345678', icon: '🌾' },
-  { label: 'Admin Demo',  email: 'admin@demo.com',          password: 'admin123',  icon: '🛡️' },
+  { label: 'Farmer Demo', email: 'helehi2643@burangir.com', password: '12345678', icon: Sprout },
+  { label: 'Admin Demo',  email: 'admin@demo.com',          password: 'admin123',  icon: BarChart3 },
 ]
 
 export default function Login() {
@@ -41,13 +41,16 @@ export default function Login() {
       <div className="hidden lg:flex flex-col justify-between w-2/5 p-12"
         style={{ background: 'rgba(7,13,10,0.6)', borderRight: '1px solid rgba(52,211,153,0.1)' }}>
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl flex items-center justify-center"
-            style={{ background: 'linear-gradient(135deg, #34D399, #10B981)' }}>
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #34D399, #10B981)' }}>
             <Tractor size={20} style={{ color: '#070D0A' }} />
           </div>
           <span className="font-bold text-xl text-gradient-green">SmartFarm</span>
         </div>
-        <div>
+        <div className="relative overflow-hidden rounded-3xl p-6" style={{ background: 'linear-gradient(145deg, rgba(52,211,153,0.12), rgba(16,185,129,0.03))', border: '1px solid rgba(52,211,153,0.16)' }}>
+          <div className="absolute -right-10 -top-10 h-36 w-36 rounded-full" style={{ background: 'rgba(52,211,153,0.12)', filter: 'blur(2px)' }} />
+          <div className="relative flex items-center gap-2 mb-8 text-xs font-medium" style={{ color: '#6EE7B7' }}>
+            <span className="pulse-dot" /> Your farm, in sync
+          </div>
           <h2 className="font-bold text-4xl text-white leading-tight mb-4">
             Your farm's <br />
             <span className="text-gradient-green">intelligent hub</span>
@@ -56,12 +59,15 @@ export default function Login() {
             Track crops, manage inventory, sell produce, and get AI-powered insights — all in one place.
           </p>
           <div className="mt-8 grid grid-cols-2 gap-3">
-            {['🌱 Crop Tracking', '📊 AI Analytics', '🏪 Marketplace', '🤖 FarmBot AI'].map(f => (
-              <div key={f} className="px-4 py-3 rounded-xl text-sm font-medium" style={{ color: '#D1D5DB', background: 'rgba(52,211,153,0.06)', border: '1px solid rgba(52,211,153,0.1)' }}>
-                {f}
+            {[[Sprout, 'Crop tracking'], [BarChart3, 'AI analytics'], [ShoppingBasket, 'Marketplace'], [Bot, 'FarmBot AI']].map(([Icon, label]) => (
+              <div key={label} className="flex items-center gap-2 px-3 py-3 rounded-xl text-xs font-medium" style={{ color: '#D1D5DB', background: 'rgba(52,211,153,0.07)', border: '1px solid rgba(52,211,153,0.1)' }}>
+                <Icon size={15} style={{ color: '#34D399' }} /> {label}
               </div>
             ))}
           </div>
+        </div>
+        <div className="flex items-center gap-3 text-xs" style={{ color: '#6B7280' }}>
+          <CheckCircle2 size={15} style={{ color: '#34D399' }} /> Trusted by growing farms everywhere
         </div>
         <p className="text-xs" style={{ color: '#374151' }}>© 2026 SmartFarm Management System</p>
       </div>
@@ -72,7 +78,7 @@ export default function Login() {
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
-          className="w-full max-w-md"
+          className="w-full max-w-md glass-card p-8"
         >
           {/* Mobile logo */}
           <div className="flex items-center gap-3 mb-8 lg:hidden">
@@ -97,7 +103,7 @@ export default function Login() {
                 onMouseEnter={e => { e.currentTarget.style.background = 'rgba(52,211,153,0.06)'; e.currentTarget.style.borderColor = 'rgba(52,211,153,0.2)' }}
                 onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)' }}
               >
-                <span>{acc.icon}</span> {acc.label}
+                <acc.icon size={15} style={{ color: '#34D399' }} /> {acc.label}
               </button>
             ))}
           </div>
@@ -142,7 +148,7 @@ export default function Login() {
             </div>
 
             <button type="submit" disabled={loading} className="btn-primary w-full flex items-center justify-center gap-2 py-3">
-              {loading ? <><Loader2 size={16} className="animate-spin" /> Signing in...</> : 'Sign In'}
+              {loading ? <><Loader2 size={16} className="animate-spin" /> Signing in...</> : <>Sign In <ArrowRight size={16} /></>}
             </button>
           </form>
 
