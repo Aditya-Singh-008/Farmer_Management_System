@@ -24,7 +24,7 @@ export default function Navbar({ title }) {
       <div className="flex-1 min-w-0">
         <h1 className="text-lg font-bold text-white truncate" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{title}</h1>
         <p className="text-xs" style={{ color: '#6B7280' }}>
-          {greetingText()}, {user?.first_name || 'Farmer'} 👋
+          {greetingText()}, {user?.first_name || 'Farmer'}
         </p>
       </div>
 
