@@ -1,4 +1,5 @@
-const BASE = import.meta.env.VITE_EDGE_BASE_URL || 'https://utrqtyocuziqsxwborup.functions.supabase.co'
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || 'https://utrqtyocuziqsxwborup.supabase.co'
+const BASE = (import.meta.env.VITE_EDGE_BASE_URL || `${SUPABASE_URL}/functions/v1`).replace(/\/$/, '')
 
 function getToken() {
   return localStorage.getItem('sfms_token') || sessionStorage.getItem('sfms_token')
@@ -12,9 +13,21 @@ async function fetchJSON(path, options = {}) {
     ...options.headers,
   }
 
-  const res = await fetch(`${BASE}${path}`, { ...options, headers })
-  const data = await res.json().catch(() => ({}))
-  return data
+  try {
+    const res = await fetch(`${BASE}${path}`, { ...options, headers })
+    const data = await res.json().catch(() => ({}))
+
+    if (!res.ok) {
+      return { success: false, error: data.error || data.message || `Request failed (${res.status})` }
+    }
+
+    return data
+  } catch (error) {
+    return {
+      success: false,
+      error: `Unable to reach the server. Check the API configuration and try again.`,
+    }
+  }
 }
 
 const api = {
