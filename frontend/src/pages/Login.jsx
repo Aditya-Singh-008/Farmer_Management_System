@@ -96,16 +96,19 @@ export default function Login() {
 
           {/* Demo Account Buttons */}
           <div className="grid grid-cols-2 gap-3 mb-6">
-            {demoAccounts.map(acc => (
-              <button key={acc.email} onClick={() => fillDemo(acc)}
-                className="flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-medium transition-all"
-                style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: '#D1D5DB', cursor: 'pointer' }}
-                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(52,211,153,0.06)'; e.currentTarget.style.borderColor = 'rgba(52,211,153,0.2)' }}
-                onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)' }}
-              >
-                <acc.icon size={15} style={{ color: '#34D399' }} /> {acc.label}
-              </button>
-            ))}
+            {demoAccounts.map(acc => {
+              const DemoIcon = acc.icon
+              return (
+                <button key={acc.email} onClick={() => fillDemo(acc)}
+                  className="flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-medium transition-all"
+                  style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: '#D1D5DB', cursor: 'pointer' }}
+                  onMouseEnter={e => { e.currentTarget.style.background = 'rgba(52,211,153,0.06)'; e.currentTarget.style.borderColor = 'rgba(52,211,153,0.2)' }}
+                  onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)' }}
+                >
+                  <DemoIcon size={15} style={{ color: '#34D399' }} /> {acc.label}
+                </button>
+              )
+            })}
           </div>
 
           {/* Divider */}
