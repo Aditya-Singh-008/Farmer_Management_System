@@ -24,7 +24,7 @@ export default function Login() {
     const res = await login(form.email, form.password)
     setLoading(false)
     if (res.success) {
-      navigate('/', { replace: true })
+      navigate('/dashboard', { replace: true })
     } else {
       setError(res.error || 'Invalid credentials. Please try again.')
     }
