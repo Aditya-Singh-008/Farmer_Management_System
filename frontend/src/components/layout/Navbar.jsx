@@ -16,7 +16,7 @@ export default function Navbar({ title }) {
   return (
     <header className="sticky top-0 z-30 flex items-center gap-4 px-6 py-3"
       style={{
-        background: 'rgba(7, 13, 10, 0.85)',
+        background: 'rgba(16, 26, 45, 0.92)',
         backdropFilter: 'blur(20px)',
         borderBottom: '1px solid rgba(52, 211, 153, 0.08)',
       }}>

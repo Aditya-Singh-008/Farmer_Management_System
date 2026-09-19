@@ -23,7 +23,7 @@ export default function Sidebar() {
     <aside
       className={`flex flex-col h-screen sticky top-0 transition-all duration-300 ${collapsed ? 'w-16' : 'w-60'}`}
       style={{
-        background: 'rgba(7, 13, 10, 0.95)',
+        background: 'rgba(16, 26, 45, 0.98)',
         backdropFilter: 'blur(20px)',
         borderRight: '1px solid rgba(52, 211, 153, 0.1)',
         flexShrink: 0,

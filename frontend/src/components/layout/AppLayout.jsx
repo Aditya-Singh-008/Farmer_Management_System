@@ -13,7 +13,7 @@ export default function AppLayout() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="w-10 h-10 rounded-full border-2 border-t-transparent animate-spin"
-          style={{ borderColor: '#10B981', borderTopColor: 'transparent' }} />
+          style={{ borderColor: '#D39A63', borderTopColor: 'transparent' }} />
       </div>
     )
   }
